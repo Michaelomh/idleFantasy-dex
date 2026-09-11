@@ -37,4 +37,5 @@ pnpm-debug.log*
 docs/*
 
 CLAUDE.md
+AGENTS.md
 CONTEXT.md
