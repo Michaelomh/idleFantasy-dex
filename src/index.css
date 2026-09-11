@@ -5,8 +5,6 @@
 @import '@fontsource/roboto-mono/latin-500.css';
 @import '@fontsource/roboto-mono/latin-700.css';
 
-/* Theme resolves from prefers-color-scheme, overridable by [data-theme] on <html>.
-   Dark is the native design; light is a first-class "day desk" equivalent. */
 @custom-variant dark (&:is([data-theme='dark'] *));
 
 @theme inline {
@@ -51,23 +49,26 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  /* hairline — always 1px, always border-hairline; never 2px, never a surface tint */
   --hairline: 1px;
 
   /* motion */
-  --dur-fill: 550ms; /* progress + strip segment fill */
-  --dur-sheet: 250ms; /* bottom sheet spring */
-  --dur-push: 250ms; /* screen push from the right */
-  --dur-pulse: 400ms; /* Goal card border pulse on strip tap */
+  --dur-fill: 550ms;
+  --dur-sheet: 250ms;
+  --dur-push: 250ms;
+  --dur-pulse: 400ms;
   --stagger-seg: 50ms;
   --stagger-card: 60ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-sheet: cubic-bezier(0.2, 0.9, 0.2, 1);
 
   /* layout */
-  --frame-width: 390px; /* mobile-only; centre this column on wider viewports */
+  --frame-width: 390px;
   --statusbar-height: 52px;
-  --reserved-bottom: 96px; /* v2 tab bar — must stay empty in v1 */
+  --reserved-bottom: 96px;
+
+  --notice-bg: #241c0c;
+  --notice-border: #453314;
+  --notice-text: #e4dac6;
 }
 
 /* ---------- dark (native) ---------- */
@@ -139,15 +140,6 @@
   }
 }
 
-/* ---------- usage rules, enforced by convention ----------
- * accent        progress, fill, every interactive affordance — the one dominant colour
- * gold          100%-complete state and the app mark. Nothing else. Ever.
- * fresh/aging/stale   the freshness pill only; deliberately desaturated so they
- *               never compete with accent
- * error         destructive actions and parse/load failures
- * bg-overlay    always behind a backdrop-filter: blur(12px)
- */
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -157,18 +149,10 @@
   }
   html {
     @apply font-sans;
-    /* Tabular figures everywhere: digits must sit in columns so numbers don't
-       jitter as they count up or change between saves. */
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;
   }
 }
-
-/* ---------- type scale ----------
- * Two families, split by content type, not size: Roboto Flex (font-sans) is the
- * app talking; Roboto Mono (font-mono) is anything read out of the save file.
- * Line heights are deliberately dense — this is a stat sheet, not a marketing page.
- */
 
 /* the overall completion percentage. Nothing else in the app is 72px. */
 .num-xl {
