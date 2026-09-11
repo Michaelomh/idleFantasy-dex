@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "generate-pwa-assets": "pwa-assets-generator",
     "sync-game-data": "node scripts/sync-game-data.js",
-    "verify-game-data": "node scripts/sync-game-data.js --verify"
+    "verify-game-data": "node scripts/sync-game-data.js --verify",
+    "make-save-samples": "node scripts/make-save-samples.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
