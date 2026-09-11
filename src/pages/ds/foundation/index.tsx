@@ -15,9 +15,8 @@ export function Component() {
         </Link>
         <h1 className="h1 mt-2">Design system foundation</h1>
         <p className="body mt-1">
-          Live reference for every token in <code className="data">src/index.css</code>.
-          Values are read from computed styles, not hardcoded, so this page can't drift
-          from the real CSS.
+          Live reference for every token in <code className="data">src/index.css</code>. Values are read from computed
+          styles, not hardcoded, so this page can't drift from the real CSS.
         </p>
       </header>
 

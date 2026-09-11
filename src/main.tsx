@@ -10,9 +10,7 @@ import { ReloadPrompt } from './components/reload-prompt.tsx';
 // time and the dead `if` branch (including the lazy import) is tree-shaken.
 const routes: RouteObject[] = [
   { path: '/', element: <App /> },
-  ...(import.meta.env.DEV
-    ? [{ path: '/ds/foundation', lazy: () => import('./pages/ds/foundation/index.tsx') }]
-    : []),
+  ...(import.meta.env.DEV ? [{ path: '/ds/foundation', lazy: () => import('./pages/ds/foundation/index.tsx') }] : []),
 ];
 
 const router = createBrowserRouter(routes, { basename: import.meta.env.BASE_URL });
