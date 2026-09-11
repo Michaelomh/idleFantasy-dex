@@ -1,16 +1,11 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { Link } from 'react-router';
 
-/**
- * Maintainer-only reference for the design system foundation tokens in
- * `src/index.css` — colour, type, spacing, radius, motion. Dev-only route
- * (see src/main.tsx); never ships in production.
- */
 export function Component() {
   return (
-    <div className="min-h-screen bg-[var(--bg-base)] p-8 text-[var(--text-primary)]">
+    <div className="min-h-screen bg-(--bg-base) p-8 text-(--text-primary)">
       <header className="mb-10">
-        <Link to="/" className="label text-[var(--accent)]">
+        <Link to="/" className="label text-(--accent)">
           ← back
         </Link>
         <h1 className="h1 mt-2">Design system foundation</h1>
@@ -64,13 +59,13 @@ function ThemeColumn({ theme }: { theme: 'dark' | 'light' }) {
     <div
       ref={ref}
       data-theme={theme}
-      className="rounded-card border border-[var(--border-hairline)] bg-[var(--bg-base)] p-4 text-[var(--text-primary)]"
+      className="rounded-card border border-(--border-hairline) bg-(--bg-base) p-4 text-(--text-primary)"
     >
       <div className="label mb-3">{theme}</div>
       <div className="flex flex-col gap-4">
         {COLOR_GROUPS.map((group) => (
           <div key={group.title}>
-            <div className="label mb-2 text-[var(--text-muted)]">{group.title}</div>
+            <div className="label mb-2 text-muted-foreground">{group.title}</div>
             <div className="flex flex-col gap-2">
               {group.tokens.map((name) => (
                 <Swatch key={name} name={name} scopeRef={ref} />
@@ -88,7 +83,7 @@ function Swatch({ name, scopeRef }: { name: string; scopeRef: RefObject<HTMLElem
   return (
     <div className="flex items-center gap-3">
       <div
-        className="h-10 w-10 shrink-0 rounded-lg border border-[var(--border-hairline)]"
+        className="h-10 w-10 shrink-0 rounded-lg border border-(--border-hairline)"
         style={{ background: `var(--${name})` }}
       />
       <div className="min-w-0">
@@ -117,8 +112,8 @@ function TypeSection() {
       <h2 className="h2 mb-4">Type</h2>
       <div className="flex flex-col gap-4">
         {TYPE_ROLES.map((role) => (
-          <div key={role.cls} className="border-b border-[var(--border-hairline)] pb-4">
-            <div className="label mb-1 text-[var(--text-muted)]">{role.label}</div>
+          <div key={role.cls} className="border-b border-(--border-hairline) pb-4">
+            <div className="label mb-1 text-muted-foreground">{role.label}</div>
             <div className={role.cls}>{role.sample}</div>
           </div>
         ))}
@@ -137,7 +132,7 @@ function SpacingSection() {
         {SPACE_STEPS.map((n) => (
           <div key={n} className="flex items-center gap-3">
             <div className="label w-24 shrink-0">--space-{n}</div>
-            <div className="h-4 bg-[var(--accent)]" style={{ width: `var(--space-${n})` }} />
+            <div className="h-4 bg-(--accent)" style={{ width: `var(--space-${n})` }} />
           </div>
         ))}
       </div>
@@ -160,7 +155,7 @@ function RadiusSection() {
         {RADIUS_TOKENS.map((token) => (
           <div key={token.name} className="flex flex-col items-center gap-2">
             <div
-              className="h-16 w-16 border border-[var(--accent)] bg-[var(--accent-track)]"
+              className="h-16 w-16 border border-(--accent) bg-accent"
               style={{ borderRadius: `var(--${token.name})` }}
             />
             <div className="label">{token.label}</div>
@@ -200,8 +195,8 @@ function MotionSection() {
 function MotionRow({ name }: { name: string }) {
   const value = useCssVar(`--${name}`);
   return (
-    <tr className="border-b border-[var(--border-hairline)]">
-      <td className="py-2 pr-4 text-[var(--text-muted)]">--{name}</td>
+    <tr className="border-b border-(--border-hairline)">
+      <td className="py-2 pr-4 text-muted-foreground">--{name}</td>
       <td className="py-2">{value || '—'}</td>
     </tr>
   );
