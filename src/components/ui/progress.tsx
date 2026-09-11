@@ -5,10 +5,11 @@ function Progress({
   className,
   trackClassName,
   indicatorClassName,
+  complete,
   children,
   value,
   ...props
-}: ProgressPrimitive.Root.Props & { trackClassName?: string; indicatorClassName?: string }) {
+}: ProgressPrimitive.Root.Props & { trackClassName?: string; indicatorClassName?: string; complete?: boolean }) {
   return (
     <ProgressPrimitive.Root
       value={value}
@@ -18,7 +19,7 @@ function Progress({
     >
       {children}
       <ProgressTrack className={trackClassName}>
-        <ProgressIndicator className={indicatorClassName} />
+        <ProgressIndicator className={cn(complete ? 'bg-primary' : 'bg-(--progress)', indicatorClassName)} />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   );
@@ -38,7 +39,7 @@ function ProgressIndicator({ className, ...props }: ProgressPrimitive.Indicator.
   return (
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
-      className={cn('h-full bg-(--accent) transition-all', className)}
+      className={cn('h-full transition-all', className)}
       {...props}
     />
   );

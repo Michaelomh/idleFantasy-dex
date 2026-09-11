@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { FlaskConical, Gauge, Link2Off, TrendingUp, X } from 'lucide-react';
 import { Link } from 'react-router';
 
@@ -31,9 +31,9 @@ export function Component() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <div className="min-h-screen bg-(--bg-base) p-8 text-(--text-primary)">
+    <div className="min-h-screen bg-background p-8 text-foreground">
       <header className="mb-10">
-        <Link to="/" className="label text-(--accent)">
+        <Link to="/" className="label text-primary">
           ← back
         </Link>
         <h1 className="h1 mt-2">Design system components</h1>
@@ -56,11 +56,7 @@ export function Component() {
         <div className="flex max-w-sm flex-col gap-3">
           <Progress value={25} max={100} />
           <Progress value={75} max={100} />
-          <Progress
-            value={100}
-            max={100}
-            style={{ '--accent': 'var(--gold)', '--accent-track': 'var(--gold)' } as CSSProperties}
-          />
+          <Progress value={100} max={100} complete />
         </div>
       </Section>
 
@@ -98,25 +94,17 @@ export function Component() {
 
       <Section title="Banner">
         <div className="flex max-w-sm flex-col gap-3">
-          <Banner
-            icon={
-              <span className="size-1.5 shrink-0 rounded-full" style={{ background: 'var(--stale)' }} aria-hidden />
-            }
-          >
-            <span className="body flex-1" style={{ color: 'var(--notice-text)' }}>
-              Showing data from 3 days ago
-            </span>
+          <Banner icon={<span className="size-1.5 shrink-0 rounded-full bg-(--stale)" aria-hidden />}>
+            <span className="body flex-1 text-(--notice-text)">Showing data from 3 days ago</span>
             <Button variant="text" className="h-auto px-0" onClick={() => {}}>
               Refresh
             </Button>
             <button type="button" onClick={() => {}} aria-label="Dismiss">
-              <X className="size-4" style={{ color: 'var(--notice-text)' }} />
+              <X className="size-4 text-(--notice-text)" />
             </button>
           </Banner>
-          <Banner icon={<Link2Off className="size-4 shrink-0" style={{ color: 'var(--aging)' }} />}>
-            <span className="body flex-1" style={{ color: 'var(--notice-text)' }}>
-              Reconnect to your backup folder to refresh
-            </span>
+          <Banner icon={<Link2Off className="size-4 shrink-0 text-(--aging)" />}>
+            <span className="body flex-1 text-(--notice-text)">Reconnect to your backup folder to refresh</span>
             <Button variant="text" className="h-auto px-0" onClick={() => {}}>
               Reconnect
             </Button>
@@ -153,7 +141,7 @@ export function Component() {
 
       <Section title="Theme toggle">
         <div className="flex items-center gap-3">
-          <ThemeToggle className="border border-(--border-hairline)" />
+          <ThemeToggle className="border border-border" />
           <span className="body">
             Flips a manual light/dark override, persisted to <code className="data">localStorage</code>.
           </span>
