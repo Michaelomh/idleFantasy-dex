@@ -51,11 +51,23 @@ export function TopStatusBar({
             ＋ LOAD
           </Button>
         ) : (
-          <Button variant="ghost" size="icon-sm" className='border border-(--border-hairline)' onClick={onRefresh} aria-label="Refresh">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="border border-(--border-hairline)"
+            onClick={onRefresh}
+            aria-label="Refresh"
+          >
             <RefreshCw className="size-4" />
           </Button>
         )}
-        <Button variant="ghost" size="icon-sm" className='border border-(--border-hairline)' onClick={onSettings} aria-label="Settings">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="border border-(--border-hairline)"
+          onClick={onSettings}
+          aria-label="Settings"
+        >
           <Settings className="size-4" />
         </Button>
       </div>
