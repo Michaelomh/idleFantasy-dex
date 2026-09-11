@@ -1,0 +1,40 @@
+# OS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node
+node_modules/
+dist/
+dist-ssr
+dev-dist
+*.local
+build/
+logs
+*.log
+pnpm-debug.log*
+
+# Env
+.env
+.env.*
+!.env.example
+.dev.vars
+
+.scratch/*
+docs/*
+
+CLAUDE.md
+CONTEXT.md
