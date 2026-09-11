@@ -9,7 +9,7 @@ const routes: RouteObject[] = [
   { path: '/', element: <App /> },
   ...(import.meta.env.DEV
     ? [
-        { path: '/ds/foundation', lazy: () => import('./pages/ds/foundation/index.tsx') },
+        { path: '/ds/foundations', lazy: () => import('./pages/ds/foundations/index.tsx') },
         { path: '/ds/components', lazy: () => import('./pages/ds/components/index.tsx') },
       ]
     : []),

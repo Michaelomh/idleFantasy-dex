@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react';
 import { Award, ChevronRight } from 'lucide-react';
 import { cn } from 'cn';
 
@@ -24,14 +23,14 @@ export function GoalCard({
     <div
       onClick={onClick}
       className={cn(
-        'flex flex-col gap-3 rounded-card border border-(--border-hairline) bg-(--bg-elevated) p-4',
+        'flex flex-col gap-3 rounded-card border border-border bg-card p-4',
         onClick && 'cursor-pointer',
         className,
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <span className="h3">{name}</span>
-        <ChevronRight className="size-3.5 shrink-0 text-(--text-muted)" />
+        <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
       </div>
 
       {complete ? (
@@ -48,12 +47,7 @@ export function GoalCard({
         </div>
       )}
 
-      <Progress
-        value={percent}
-        max={100}
-        className="w-full"
-        style={complete ? ({ '--accent': 'var(--gold)', '--accent-track': 'var(--gold)' } as CSSProperties) : undefined}
-      />
+      <Progress value={percent} max={100} className="w-full" complete={complete} />
     </div>
   );
 }
