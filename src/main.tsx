@@ -59,7 +59,7 @@ const routes: RouteObject[] = [
     : []),
 ];
 
-const router = createHashRouter(routes, { basename: import.meta.env.BASE_URL });
+const router = createHashRouter(routes);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
