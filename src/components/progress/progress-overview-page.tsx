@@ -22,7 +22,7 @@ export function ProgressOverviewPage() {
     };
   }, [playerState]);
 
-  if (playerState || !categories) {
+  if (!playerState || !categories) {
     return <LoadingScreen />;
   }
 
