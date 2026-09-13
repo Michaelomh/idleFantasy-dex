@@ -94,17 +94,17 @@ export function Component() {
 
       <Section title="Banner">
         <div className="flex max-w-sm flex-col gap-3">
-          <Banner icon={<span className="size-1.5 shrink-0 rounded-full bg-(--stale)" aria-hidden />}>
-            <span className="body flex-1 text-(--notice-text)">Showing data from 3 days ago</span>
+          <Banner icon={<span className="size-1.5 shrink-0 rounded-full bg-stale" aria-hidden />}>
+            <span className="body flex-1 text-notice-text">Showing data from 3 days ago</span>
             <Button variant="text" className="h-auto px-0" onClick={() => {}}>
               Refresh
             </Button>
             <button type="button" onClick={() => {}} aria-label="Dismiss">
-              <X className="size-4 text-(--notice-text)" />
+              <X className="size-4 text-notice-text" />
             </button>
           </Banner>
-          <Banner icon={<Link2Off className="size-4 shrink-0 text-(--aging)" />}>
-            <span className="body flex-1 text-(--notice-text)">Reconnect to your backup folder to refresh</span>
+          <Banner icon={<Link2Off className="size-4 shrink-0 text-aging" />}>
+            <span className="body flex-1 text-notice-text">Reconnect to your backup folder to refresh</span>
             <Button variant="text" className="h-auto px-0" onClick={() => {}}>
               Reconnect
             </Button>

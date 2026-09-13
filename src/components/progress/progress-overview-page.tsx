@@ -1,0 +1,75 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { GoalCard } from '@/components/goal-card';
+import { Progress } from '@/components/ui/progress';
+import { usePlayerState } from '@/lib/player/use-player-state';
+import { computeAllCategories, rollUp, PROGRESS_SECTIONS, type ProgressCategory } from '@/lib/progress';
+
+export function ProgressOverviewPage() {
+  const playerState = usePlayerState();
+  const [categories, setCategories] = useState<ProgressCategory[] | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!playerState) return;
+    let cancelled = false;
+    void computeAllCategories(playerState).then((result) => {
+      if (!cancelled) setCategories(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [playerState]);
+
+  if (!playerState || !categories) {
+    return <div className="body p-4 text-text-secondary">Loading progress…</div>;
+  }
+
+  const overall = Math.round(rollUp(categories) * 100);
+
+  return (
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
+        <div className="flex items-baseline justify-between">
+          <span className="h2">Overall Completion</span>
+          <span className="data text-2xl">{overall}%</span>
+        </div>
+        <Progress value={overall} max={100} className="w-full" complete={overall >= 100} />
+      </div>
+
+      {PROGRESS_SECTIONS.map((section) => {
+        const sectionCategories = section.categoryIds
+          .map((id) => categories.find((c) => c.id === id))
+          .filter((c): c is ProgressCategory => !!c);
+        if (sectionCategories.length === 0) return null;
+
+        const sectionPoints = sectionCategories.reduce((sum, c) => sum + Math.floor(c.points), 0);
+        const sectionMax = sectionCategories.reduce((sum, c) => sum + c.max, 0);
+        const sectionPct = sectionMax > 0 ? (sectionPoints / sectionMax) * 100 : 0;
+
+        return (
+          <div key={section.label} className="flex flex-col gap-3">
+            <div className="flex items-baseline justify-between">
+              <span className="h3">{section.label}</span>
+              <span className="data text-text-secondary">
+                {sectionPoints} / {sectionMax} ({sectionPct.toFixed(2)}%)
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {sectionCategories.map((c) => (
+                <GoalCard
+                  key={c.id}
+                  name={c.label}
+                  current={Math.floor(c.points)}
+                  total={c.max}
+                  info={c.info}
+                  onClick={c.hasDrilldown ? () => navigate(`/progress/${c.id}`) : undefined}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

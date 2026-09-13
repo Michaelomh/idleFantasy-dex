@@ -10,7 +10,7 @@ import {
   supportsDirectoryHandle,
   type IngestOutcome,
 } from '@/lib/save-source';
-import { clearExplore, setExplore, setSelectedSlot } from '@/lib/boot-state.ts';
+import { clearExplore, setExplore, setSelectedSlot } from '@/lib/app/boot-state.ts';
 
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -76,8 +76,8 @@ export function OnboardingPage() {
     enterSlot(identity);
   }
 
-  function handleExplore(kind: 'fresh' | 'mock') {
-    setExplore(kind);
+  function handleExplore() {
+    setExplore();
     navigate('/', { replace: true });
   }
 
@@ -85,7 +85,7 @@ export function OnboardingPage() {
     return (
       <div className="flex flex-col gap-3 p-4">
         <h1 className="h1">Pick a character</h1>
-        <p className="body text-(--text-secondary)">Found more than one character in that folder.</p>
+        <p className="body text-text-secondary">Found more than one character in that folder.</p>
         {picking.map(({ identity }) => (
           <Button key={identity} variant="secondary" onClick={() => enterSlot(identity)}>
             {identity}
@@ -98,10 +98,10 @@ export function OnboardingPage() {
   return (
     <div className="flex flex-col gap-3 p-4">
       <h1 className="h1">Welcome</h1>
-      <p className="body text-(--text-secondary)">Load your Idle Fantasy save to get started</p>
+      <p className="body text-text-secondary">Load your Idle Fantasy save to get started</p>
 
       {error && <p className="body text-destructive">{error}</p>}
-      {folderName && <p className="body text-(--text-secondary)">Backup folder: {folderName}</p>}
+      {folderName && <p className="body text-text-secondary">Backup folder: {folderName}</p>}
 
       <Button variant="primary" onClick={handleFolderPick} disabled={!supportsDirectoryHandle}>
         <FolderOpen /> {folderName ? 'Change backup folder' : 'Pick backup folder'}
@@ -112,11 +112,8 @@ export function OnboardingPage() {
       <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={handleFileChange} />
 
       <div className="mt-4 flex flex-col gap-3">
-        <p className="body text-(--text-secondary)">Or explore without a save:</p>
-        <Button variant="ghost" onClick={() => handleExplore('fresh')}>
-          Explore with a fresh account
-        </Button>
-        <Button variant="ghost" onClick={() => handleExplore('mock')}>
+        <p className="body text-text-secondary">Or explore without a save:</p>
+        <Button variant="ghost" onClick={handleExplore}>
           Explore with a mock account
         </Button>
       </div>

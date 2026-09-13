@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Eye, FolderOpen, FolderSync, RefreshCw, Trash2, Upload } from 'lucide-react';
+import { Eye, FolderOpen, FolderSync, RefreshCw, Trash2, Upload, File } from 'lucide-react';
 import { Button } from '@/components/ui/button.tsx';
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import {
   type CachedSave,
   type IngestOutcome,
 } from '@/lib/save-source';
-import { clearExplore, getSelectedSlot, setSelectedSlot } from '@/lib/boot-state.ts';
+import { clearExplore, getSelectedSlot, setSelectedSlot } from '@/lib/app/boot-state.ts';
 
 export function SavesPage() {
   const navigate = useNavigate();
@@ -164,14 +164,14 @@ export function SavesPage() {
     <div className="flex flex-col gap-3 p-4">
       <h1 className="h1">Saves</h1>
 
-      {toast && <p className="body text-(--text-secondary)">{toast}</p>}
+      {toast && <p className="body text-text-secondary">{toast}</p>}
       {error && <p className="body text-destructive">{error}</p>}
-      {busy && <p className="body text-(--text-secondary)">Working…</p>}
+      {busy && <p className="body text-text-secondary">Working…</p>}
 
       {loading ? (
-        <p className="body text-(--text-secondary)">Loading…</p>
+        <p className="body text-text-secondary">Loading…</p>
       ) : identities.length === 0 ? (
-        <p className="body text-(--text-secondary)">No characters loaded.</p>
+        <p className="body text-text-secondary">No characters loaded.</p>
       ) : (
         identities.map((identity) => {
           const { playerState, arrival } = slots[identity];
@@ -184,8 +184,7 @@ export function SavesPage() {
                   {playerState.character ?? identity}
                   {viewing ? ' (viewing)' : ''}
                 </p>
-                <p className="label flex items-center gap-1 text-(--text-secondary)">
-                  {/* Tap-to-open, not hover — this is a touch/PWA surface, hover doesn't exist. */}
+                <p className="label flex items-center gap-1 text-text-secondary">
                   <Tooltip
                     open={openTooltip === identity}
                     onOpenChange={(open) => setOpenTooltip(open ? identity : null)}
@@ -194,7 +193,7 @@ export function SavesPage() {
                       {arrival.source === 'directory' ? (
                         <FolderSync className="size-3.5" />
                       ) : (
-                        <Upload className="size-3.5" />
+                        <File className="size-3.5" />
                       )}
                     </TooltipTrigger>
                     <TooltipContent>
@@ -229,7 +228,7 @@ export function SavesPage() {
         })
       )}
 
-      {folderName && <p className="body text-(--text-secondary)">Backup folder: {folderName}</p>}
+      {folderName && <p className="body text-text-secondary">Backup folder: {folderName}</p>}
       <Button variant="secondary" onClick={handleResync} disabled={busy || !folderName}>
         <RefreshCw /> Re-sync folder
       </Button>

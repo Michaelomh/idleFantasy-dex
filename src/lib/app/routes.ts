@@ -11,8 +11,8 @@ export type RouteMeta = {
 export const DOCK_TABS = [
   { label: 'Overview', path: '/' },
   { label: 'Progress', path: '/progress' },
-  { label: 'Simulator', path: '/simulator' },
   { label: 'Calculator', path: '/calculator' },
+  { label: 'Simulator', path: '/simulator' },
   { label: 'Settings', path: '/settings' },
 ];
 

@@ -5,7 +5,7 @@ export function Banner({ icon, children, className }: { icon?: ReactNode; childr
   return (
     <div
       className={cn(
-        'flex w-full items-center gap-3 border-b border-(--notice-border) bg-(--notice-bg) px-4 py-3 text-(--notice-text)',
+        'flex w-full items-center gap-3 border-b border-notice-border bg-notice-bg px-4 py-3 text-notice-text',
         className,
       )}
     >

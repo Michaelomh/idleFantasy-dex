@@ -29,7 +29,7 @@ export function TopStatusBar({
   return (
     <div
       className={cn(
-        'sticky top-0 z-10 flex items-center gap-2.5 border-b border-border bg-(--bg-overlay) px-4 backdrop-blur-md',
+        'sticky top-0 z-10 flex items-center gap-2.5 border-b border-border bg-bg-overlay px-4 backdrop-blur-md',
         className,
       )}
       style={{ height: 'var(--statusbar-height)' }}
@@ -94,7 +94,7 @@ export function GoalDetailHeader({
   return (
     <div
       className={cn(
-        'sticky top-0 z-10 border-b border-border bg-(--bg-overlay) px-4 pt-3 pb-3.5 backdrop-blur-md',
+        'sticky top-0 z-10 border-b border-border bg-bg-overlay px-4 pt-3 pb-3.5 backdrop-blur-md',
         className,
       )}
     >
@@ -105,7 +105,7 @@ export function GoalDetailHeader({
         <span className="h2">{goalName}</span>
       </div>
       <div className="mt-2 flex items-center gap-3">
-        <span className="data text-[13px] text-(--text-secondary)">
+        <span className="data text-[13px] text-text-secondary">
           {current} / {total}
         </span>
         <Progress value={percent} max={100} className="flex-1" trackClassName="h-1" complete={complete} />

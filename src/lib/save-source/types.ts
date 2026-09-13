@@ -1,4 +1,4 @@
-// Known values as of game version 1.14.11
+// Known values as of game version 1.14.12
 export const CHARACTER_RACES = ['human', 'elf', 'dwarf', 'orc', 'halfling', 'gnome'] as const;
 export type CharacterRace = (typeof CHARACTER_RACES)[number] | (string & {});
 
@@ -28,6 +28,23 @@ export const CHARACTER_TITLES = [
 ] as const;
 export type CharacterTitle = (typeof CHARACTER_TITLES)[number] | (string & {});
 
+export type QuestProgressEntry = {
+  questId: string;
+  completed: boolean;
+  progress?: number;
+  [key: string]: unknown;
+};
+
+export type PlayerStateRaw = {
+  skillLevels: Record<string, number>;
+  skillXp: Record<string, number>;
+  inventory: Record<string, number>;
+  equipped: Record<string, string | null>;
+  pets: { id: string; boostPercent?: number }[];
+  questProgress: QuestProgressEntry[];
+  flags: Record<string, unknown>;
+};
+
 export type PlayerState = {
   exportedAt: number | null;
   character: string | null;
@@ -46,6 +63,7 @@ export type PlayerState = {
   carnivalTickets: number | null;
   slayerPoints: number | null;
   flagsNote: string | null;
+  raw: PlayerStateRaw;
 };
 
 export type SaveSourceKind = 'file' | 'directory';
