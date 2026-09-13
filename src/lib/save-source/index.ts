@@ -1,5 +1,5 @@
 export * from './types';
-export { validate } from './validate';
+export { validate, warnOnDrift } from './validate';
 export { staleness, humanAge } from './staleness';
 export { slotIdentity, isEmptySlot } from './slot-identity';
 export { ingest, isNewerOrEqual } from './ingest';

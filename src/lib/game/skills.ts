@@ -1,5 +1,7 @@
 export type SkillCategory = 'Gathering' | 'Crafting' | 'Support' | 'Combat';
 
+export const CATEGORY_ORDER: SkillCategory[] = ['Gathering', 'Crafting', 'Support', 'Combat'];
+
 export const SKILLS: { id: string; label: string; category: SkillCategory }[] = [
   { id: 'mining', label: 'Mining', category: 'Gathering' },
   { id: 'fishing', label: 'Fishing', category: 'Gathering' },
