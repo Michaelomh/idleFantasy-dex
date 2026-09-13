@@ -35,6 +35,7 @@ pnpm-debug.log*
 
 .scratch/*
 docs/*
+!docs/adr/
 
 CLAUDE.md
 AGENTS.md

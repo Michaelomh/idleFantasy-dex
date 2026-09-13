@@ -77,3 +77,18 @@ export const getEnemies = () => load<Record<string, EnemyEntry>>('enemies.json')
 
 export type FishEntry = { id?: string; display_name?: string; [key: string]: unknown };
 export const getFish = () => load<Record<string, FishEntry>>('fish.json');
+
+export type MarketplaceCategory = {
+  category_name?: string;
+  description?: string;
+  items: Record<string, { display_name?: string; description?: string; price?: number; stock?: string | number }>;
+};
+export const getMarketplace = () => load<Record<string, MarketplaceCategory>>('marketplace.json');
+
+export type ResourceEntry = { display_name?: string; [key: string]: unknown };
+export const getGems = () => load<Record<string, ResourceEntry>>('gems.json');
+export const getOres = () => load<Record<string, ResourceEntry>>('ores.json');
+export const getLogs = () => load<Record<string, ResourceEntry>>('logs.json');
+export const getCrops = () => load<Record<string, ResourceEntry>>('crops.json');
+export const getBones = () => load<Record<string, ResourceEntry>>('bones.json');
+export const getRunes = () => load<Record<string, ResourceEntry>>('runes.json');

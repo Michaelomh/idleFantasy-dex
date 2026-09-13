@@ -40,6 +40,13 @@ const FILES = [
   'pets.json',
   'buildings.json',
   'seasonal_events.json',
+  'marketplace.json',
+  'gems.json',
+  'ores.json',
+  'logs.json',
+  'crops.json',
+  'bones.json',
+  'runes.json',
 ];
 
 /**
@@ -128,10 +135,7 @@ function buildExpeditionsTs(source) {
     ' */\n\n' +
     'export const EXPEDITION_KEYS = [\n' +
     keysList +
-    '\n] as const;\n\n' +
-    'export const EXPEDITION_LABEL_OVERRIDES: Partial<Record<(typeof EXPEDITION_KEYS)[number], string>> = {\n' +
-    overrideLines +
-    '\n};\n'
+    '\n] as const;\n\n'
   );
 }
 
