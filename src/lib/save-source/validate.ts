@@ -60,7 +60,10 @@ export function validate(text: string, fileName: string): ValidationResult {
 
   const questProgress = Array.isArray(record.questProgress) ? record.questProgress : [];
   const skillLevels = (parseMaybeString(record.skillLevels) ?? {}) as Record<string, unknown>;
+  const skillXp = (parseMaybeString(record.skillXp) ?? {}) as Record<string, unknown>;
   const inventory = (parseMaybeString(record.inventory) ?? {}) as Record<string, unknown>;
+  const equipped = (parseMaybeString(record.equipped) ?? {}) as Record<string, unknown>;
+  const petsRaw = (parseMaybeString(record.pets) ?? []) as unknown[];
   const enemyKills = (flags.enemy_kills ?? {}) as Record<string, unknown>;
   const seenItems = (flags.seen_item_keys ?? []) as unknown[];
 
@@ -83,6 +86,22 @@ export function validate(text: string, fileName: string): ValidationResult {
     carnivalTickets: typeof inventory.carnival_ticket === 'number' ? inventory.carnival_ticket : null,
     slayerPoints: typeof flags.slayer_points === 'number' ? flags.slayer_points : null,
     flagsNote,
+    raw: {
+      skillLevels: numberRecord(skillLevels),
+      skillXp: numberRecord(skillXp),
+      inventory: numberRecord(inventory),
+      equipped: stringOrNullRecord(equipped),
+      pets: petsRaw
+        .filter((p): p is Record<string, unknown> => !!p && typeof p === 'object')
+        .map((p) => ({
+          id: String(p.id ?? ''),
+          boostPercent: typeof p.boost_percent === 'number' ? p.boost_percent : undefined,
+        })),
+      questProgress: questProgress
+        .filter((q): q is Record<string, unknown> => !!q && typeof q === 'object')
+        .map((q) => ({ ...q, questId: String(q.questId ?? ''), completed: !!q.completed })),
+      flags,
+    },
   };
 
   return {
@@ -99,6 +118,18 @@ function warnOnDrift<T extends string>(label: string, value: T | '' | undefined,
     console.warn(`[game-data-drift] unrecognized ${label}: "${value}" — the game may have added a new one.`);
   }
   return value;
+}
+
+function numberRecord(v: Record<string, unknown>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [k, val] of Object.entries(v)) if (typeof val === 'number') out[k] = val;
+  return out;
+}
+
+function stringOrNullRecord(v: Record<string, unknown>): Record<string, string | null> {
+  const out: Record<string, string | null> = {};
+  for (const [k, val] of Object.entries(v)) if (typeof val === 'string' || val === null) out[k] = val;
+  return out;
 }
 
 function parseMaybeString(v: unknown): unknown {

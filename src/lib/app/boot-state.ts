@@ -4,7 +4,6 @@ const SELECTED_SLOT_KEY = 'idlefantasy-dex:character';
 const EXPLORE_KEY = 'idlefantasy-dex:explore';
 
 export type BootState = 'none' | 'explore' | 'ok' | 'missing';
-export type ExploreKind = 'fresh' | 'mock';
 
 export function getSelectedSlot(): string | null {
   return localStorage.getItem(SELECTED_SLOT_KEY);
@@ -18,12 +17,12 @@ export function clearSelectedSlot(): void {
   localStorage.removeItem(SELECTED_SLOT_KEY);
 }
 
-export function getExploreKind(): ExploreKind | null {
-  return localStorage.getItem(EXPLORE_KEY) as ExploreKind | null;
+export function isExploring(): boolean {
+  return localStorage.getItem(EXPLORE_KEY) === '1';
 }
 
-export function setExplore(kind: ExploreKind): void {
-  localStorage.setItem(EXPLORE_KEY, kind);
+export function setExplore(): void {
+  localStorage.setItem(EXPLORE_KEY, '1');
 }
 
 export function clearExplore(): void {
@@ -36,5 +35,5 @@ export async function resolveBootState(): Promise<BootState> {
 
   if (selected) return slots[selected] ? 'ok' : 'missing';
   if (Object.keys(slots).length > 0) return 'missing';
-  return getExploreKind() ? 'explore' : 'none';
+  return isExploring() ? 'explore' : 'none';
 }

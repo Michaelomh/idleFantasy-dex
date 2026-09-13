@@ -31,6 +31,19 @@
   --color-input: var(--border-hairline);
   --color-ring: var(--accent);
 
+  --color-text-secondary: var(--text-secondary);
+  --color-bg-overlay: var(--bg-overlay);
+  --color-progress: var(--progress);
+  --color-fresh: var(--fresh);
+  --color-aging: var(--aging);
+  --color-stale: var(--stale);
+  --color-notice-bg: var(--notice-bg);
+  --color-notice-border: var(--notice-border);
+  --color-notice-text: var(--notice-text);
+
+  --ease-sheet: var(--ease-sheet);
+  --duration-sheet: var(--dur-sheet);
+
   /* fixed radius scale, not a base value scaled by multipliers */
   --radius-button: 12px;
   --radius-card: 16px;

@@ -11,7 +11,7 @@ import {
   supportsDirectoryHandle,
   type IngestOutcome,
 } from '@/lib/save-source';
-import { clearExplore, clearSelectedSlot, getSelectedSlot, setSelectedSlot } from '@/lib/boot-state.ts';
+import { clearExplore, clearSelectedSlot, getSelectedSlot, setSelectedSlot } from '@/lib/app/boot-state.ts';
 
 export function NoSavePage() {
   const navigate = useNavigate();
@@ -88,7 +88,7 @@ export function NoSavePage() {
   return (
     <div className="flex flex-col gap-3 p-4">
       <h1 className="h1">No save found</h1>
-      <p className="body text-(--text-secondary)">Your cached save data is gone. Reconnect below.</p>
+      <p className="body text-text-secondary">Your cached save data is gone. Reconnect below.</p>
 
       {error && <p className="body text-destructive">{error}</p>}
 

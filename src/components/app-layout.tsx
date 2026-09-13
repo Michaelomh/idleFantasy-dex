@@ -4,14 +4,14 @@ import { Calculator, House, Settings, Swords, TrendingUp } from 'lucide-react';
 import { PageHeader } from './page-header.tsx';
 import { FloatingNavBar } from './floating-nav-bar.tsx';
 import { ExploreBanner } from './explore-banner.tsx';
-import { DOCK_TABS, matchRoute } from '@/lib/routes.ts';
-import { resolveBootState, type BootState } from '@/lib/boot-state.ts';
+import { DOCK_TABS, matchRoute } from '@/lib/app/routes.ts';
+import { resolveBootState, type BootState } from '@/lib/app/boot-state.ts';
 
 const DOCK_ICONS = [
   <House key="overview" className="size-4" />,
   <TrendingUp key="progress" className="size-4" />,
-  <Swords key="simulator" className="size-4" />,
   <Calculator key="calculator" className="size-4" />,
+  <Swords key="simulator" className="size-4" />,
   <Settings key="settings" className="size-4" />,
 ];
 

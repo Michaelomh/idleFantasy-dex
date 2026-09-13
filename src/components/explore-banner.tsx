@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { Banner } from './banner.tsx';
 import { Button } from './ui/button.tsx';
-import { clearExplore } from '@/lib/boot-state.ts';
+import { clearExplore } from '@/lib/app/boot-state.ts';
 
 export function ExploreBanner() {
   const navigate = useNavigate();

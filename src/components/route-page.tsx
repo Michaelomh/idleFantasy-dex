@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button.tsx';
-import { getChildren, matchRoute } from '@/lib/routes.ts';
+import { getChildren, matchRoute } from '@/lib/app/routes.ts';
 
 export function RoutePage() {
   const location = useLocation();

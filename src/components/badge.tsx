@@ -26,7 +26,7 @@ export function Badge({
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       className={cn(
-        'label inline-flex w-fit items-center rounded-md border border-(--aging) px-2 py-1 text-(--aging)',
+        'label inline-flex w-fit items-center rounded-md border border-aging px-2 py-1 text-aging',
         className,
       )}
     >

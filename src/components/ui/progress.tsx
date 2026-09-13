@@ -19,7 +19,7 @@ function Progress({
     >
       {children}
       <ProgressTrack className={trackClassName}>
-        <ProgressIndicator className={cn(complete ? 'bg-primary' : 'bg-(--progress)', indicatorClassName)} />
+        <ProgressIndicator className={cn(complete ? 'bg-primary' : 'bg-progress', indicatorClassName)} />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   );
