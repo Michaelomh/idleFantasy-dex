@@ -4,6 +4,9 @@ import { resolveAllSkillBonuses, computeActiveBoosts, type SkillBonus } from '@/
 import { CATEGORY_ORDER } from '@/lib/game/skills';
 import { SkillBonusRow } from '@/components/skill-bonus-row';
 import { ActiveBoostsSection } from '@/components/active-boosts-section';
+import { formatNumber } from '@/lib/format-number';
+import { LoadingScreen } from '@/components/loading-screen';
+import { humanize } from '@/lib/humanize';
 
 export function DashboardPage() {
   const playerState = usePlayerState();
@@ -22,17 +25,22 @@ export function DashboardPage() {
 
   const activeBoosts = useMemo(() => (playerState ? computeActiveBoosts(playerState) : []), [playerState]);
 
-  if (!playerState) return null;
+  if (!playerState) return <LoadingScreen />;
 
   const stats: { label: string; value: string | number | null }[] = [
     { label: 'Combat level', value: playerState.combatLevel },
     { label: 'Total level', value: playerState.totalLevel },
-    { label: 'Coins', value: playerState.coins?.toLocaleString() ?? null },
-    { label: 'Carnival tickets', value: playerState.carnivalTickets },
-    { label: 'Slayer points', value: playerState.slayerPoints },
+    { label: 'Coins', value: playerState.coins != null ? formatNumber(playerState.coins) : null },
+    {
+      label: 'Carnival tickets',
+      value: playerState.carnivalTickets != null ? formatNumber(playerState.carnivalTickets) : null,
+    },
+    { label: 'Slayer points', value: playerState.slayerPoints != null ? formatNumber(playerState.slayerPoints) : null },
   ];
 
-  const identity = [playerState.title, playerState.race, playerState.gender].filter(Boolean).join(' · ');
+  const identity = [humanize(playerState.title), humanize(playerState.race), playerState.gender]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <div className="flex flex-col gap-4 p-4">
