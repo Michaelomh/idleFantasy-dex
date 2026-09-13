@@ -15,8 +15,8 @@ assignees: ''
 
 <!-- Run `pnpm sync-game-data --source <local IdleFantasy checkout>` against the new
 version and describe the diff — new enemies, quests, equipment, etc. A bare version bump
-with no diff isn't actionable; see the "accept drift, don't automate it" rule in
-.scratch/v1-spec/issues/09-stack-and-hosting.md. -->
+with no diff isn't actionable; refreshing the snapshot is always a deliberate, by-hand
+decision, never automated off of this report. -->
 
 ## Suggested action
 

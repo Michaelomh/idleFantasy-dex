@@ -1,0 +1,41 @@
+import type { PlayerState } from '@/lib/save-source';
+
+export const FRESH_PLAYER_STATE: PlayerState = {
+  exportedAt: null,
+  character: null,
+  title: null,
+  race: null,
+  gender: null,
+  combatLevel: 1,
+  totalLevel: 23,
+  skills: 23,
+  questsCompleted: 0,
+  questRows: 189,
+  enemiesKilled: 0,
+  seenItems: 0,
+  sessions: 0,
+  coins: 0,
+  carnivalTickets: 0,
+  slayerPoints: 0,
+  flagsNote: null,
+};
+
+export const MOCK_PLAYER_STATE: PlayerState = {
+  exportedAt: Date.now() - 6 * 60 * 60 * 1000,
+  character: 'Aragorn',
+  title: 'Ranger of the North',
+  race: 'Human',
+  gender: 'Male',
+  combatLevel: 115,
+  totalLevel: 2180,
+  skills: 23,
+  questsCompleted: 96,
+  questRows: 189,
+  enemiesKilled: 41,
+  seenItems: 120,
+  sessions: 1,
+  coins: 1204553,
+  carnivalTickets: 881,
+  slayerPoints: 59,
+  flagsNote: null,
+};

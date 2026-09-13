@@ -40,7 +40,7 @@ export function FloatingNavBar({
     <div className={cn('fixed bottom-4 left-1/2 z-40 -translate-x-1/2', className)}>
       <div
         ref={containerRef}
-        className="relative flex items-center gap-1 rounded-full border border-border bg-(--bg-overlay) p-1 shadow-lg backdrop-blur-md"
+        className="relative flex max-w-100 items-center gap-1 rounded-full border border-border bg-(--bg-overlay) p-1 shadow-lg backdrop-blur-md"
       >
         {items.map((item, index) => {
           const active = index === activeIndex;
@@ -52,12 +52,17 @@ export function FloatingNavBar({
               }}
               type="button"
               onClick={() => onChange(index)}
-              className="relative flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5"
+              className="relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-2 py-1.5"
             >
               <span className={cn('relative z-10', active ? 'text-primary' : 'text-muted-foreground')}>
                 {item.icon}
               </span>
-              <span className={cn('label relative z-10', active ? 'text-primary' : 'text-muted-foreground')}>
+              <span
+                className={cn(
+                  'relative z-10 truncate text-[9px] leading-none font-medium normal-case',
+                  active ? 'text-primary' : 'text-muted-foreground',
+                )}
+              >
                 {item.label}
               </span>
             </button>
