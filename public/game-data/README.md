@@ -23,4 +23,5 @@ sha256 for every file.
 Run `pnpm sync-game-data --source <local IdleFantasy checkout>` by hand, then review the
 diff before committing. `pnpm verify-game-data` re-hashes these files against the manifest
 (no checkout, no network) and is safe to run in CI. Tooling may *report* drift; it must
-never update this snapshot automatically (see `.scratch/v1-spec/spec.md` §5).
+never update this snapshot automatically — refreshing is always a deliberate, by-hand
+maintainer action.

@@ -30,12 +30,34 @@ pnpm build
 
 `pnpm format` will fix most formatting issues in place.
 
-## How work is tracked
+### Testing the PWA on Android
 
-This repo does **not** use GitHub Issues as its tracker. Specs and in-progress design
-decisions live as local markdown under [`.scratch/`](.scratch/) — see
-[`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md) for the conventions if
-you're curious how that's organized.
+Since this is mobile-only, use Chrome's USB port forwarding to test full PWA behavior
+(service worker, install prompt) on a real Android phone during dev — no HTTPS tunnel
+needed, since Chrome treats forwarded `localhost` as a secure context.
+
+1. On your phone: Settings → About phone → tap "Build number" 7 times to unlock Developer
+   Options.
+2. Settings → Developer Options → enable **USB debugging**.
+3. Plug the phone into your computer via USB, and tap "Allow" on the phone's prompt.
+4. On your computer, open Chrome and go to `chrome://inspect#devices`.
+5. Confirm the device shows up under "Devices" (accept any fingerprint prompt on the phone).
+6. Click **"Port forwarding..."**, add a rule mapping a local port (e.g. `3000`) to the
+   same port on the device, and enable it.
+7. Start the dev server (`pnpm dev`).
+8. On the phone, open Chrome and go to `http://localhost:3000`.
+
+Use "inspect" under the device's tab on `chrome://inspect#devices` for full remote
+DevTools (console, network, elements) on the phone's page.
+
+**If the phone doesn't show up under `chrome://inspect#devices`:**
+
+- Brave and Chrome each bundle their own DevTools/adb client, and only one can hold the
+  USB debugging session at a time. Fully quit Brave (`Cmd+Q`, not just close the window)
+  before debugging in Chrome.
+- Confirm "Discover USB devices" is checked at the top of `chrome://inspect#devices`.
+
+## How work is tracked
 
 If you want to work on something:
 
@@ -43,8 +65,8 @@ If you want to work on something:
   a PR directly.
 - **Anything bigger** (new behavior, a design decision, something that touches the Save
   Source or Ledger model) — open a GitHub issue first using the appropriate template so we
-  can agree on direction before code gets written. It'll get folded into `.scratch/` from
-  there if it needs a longer-lived spec.
+  can agree on direction before code gets written. It'll get folded into a longer-lived
+  spec from there if needed.
 
 ## Game Data
 

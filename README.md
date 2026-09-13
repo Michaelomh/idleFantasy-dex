@@ -4,7 +4,7 @@ Track your completion in **[Idle Fantasy](https://github.com/tristinbaker/IdleFa
 quests, guilds, drops, equipment, and prestige — and see how far every goal is from done.
 Projections (time to completion, items per session, XP rates) come later; see the roadmap.
 
-> **Status:** v1 spec is settled (`.scratch/v1-spec/spec.md`) and build has started. The
+> **Status:** v1 scope is settled and build has started. The
 > app shell, PWA/service worker setup, and GitHub Pages deploy are live at
 > [michaelomh.github.io/idleFantasy-dex](https://michaelomh.github.io/idleFantasy-dex/) —
 > there's no user-facing functionality yet. See [CONTRIBUTING.md](./CONTRIBUTING.md) if
@@ -44,9 +44,7 @@ is a companion tool to do that math from the game's own data.
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup, how work is tracked (local
-markdown under `.scratch/`, not GitHub Issues, for anything beyond a small fix), and PR
-expectations.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup, and PR expectations.
 
 ## License
 
