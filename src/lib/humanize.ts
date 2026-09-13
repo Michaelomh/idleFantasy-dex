@@ -1,4 +1,6 @@
-export function humanize(id: string): string {
+export function humanize(id: string | null | undefined): string {
+  if (!id) return '';
+
   return id
     .split('_')
     .filter(Boolean)

@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import { Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router';
 import { Calculator, House, Settings, Swords, TrendingUp } from 'lucide-react';
 import { PageHeader } from './page-header.tsx';
 import { FloatingNavBar } from './floating-nav-bar.tsx';
 import { ExploreBanner } from './explore-banner.tsx';
+import { DesktopNoticeBanner } from './desktop-notice-banner.tsx';
 import { DOCK_TABS, matchRoute } from '@/lib/app/routes.ts';
 import { resolveBootState, type BootState } from '@/lib/app/boot-state.ts';
 
 const DOCK_ICONS = [
-  <House key="overview" className="size-4" />,
-  <TrendingUp key="progress" className="size-4" />,
-  <Calculator key="calculator" className="size-4" />,
-  <Swords key="simulator" className="size-4" />,
-  <Settings key="settings" className="size-4" />,
+  <House key="overview" className="size-5" />,
+  <TrendingUp key="progress" className="size-5" />,
+  <Calculator key="calculator" className="size-5" />,
+  <Swords key="simulator" className="size-5" />,
+  <Settings key="settings" className="size-5" />,
 ];
 
 export function AppLayout() {
@@ -69,14 +70,20 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="flex min-h-screen flex-col pb-24">
       <PageHeader
         title={match?.title ?? 'Not Found'}
         showBack={!!match?.parent}
         onBack={() => match?.parent && navigate(match.parent)}
       />
+      <DesktopNoticeBanner />
       {bootState === 'explore' && <ExploreBanner />}
-      <Outlet />
+      {/* keyed by pathname, not location.key: our back button pushes a new entry rather than
+          popping history, so the default per-entry restoration key would never match */}
+      <ScrollRestoration getKey={(location) => location.pathname} />
+      <div className="flex flex-1 flex-col">
+        <Outlet />
+      </div>
       {showDock && (
         <FloatingNavBar
           items={DOCK_TABS.map((tab, index) => ({ label: tab.label, icon: DOCK_ICONS[index] }))}

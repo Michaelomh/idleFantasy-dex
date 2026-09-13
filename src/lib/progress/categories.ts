@@ -1,6 +1,7 @@
 import { CHARACTER_TITLES, type PlayerState } from '@/lib/save-source/types';
 import { ALL_GUILDS, GUILD_DAILIES_REQUIRED_PER_TIER, GUILD_MAX_LEVEL, guildLabel, SKILL_IDS } from '@/lib/game/skills';
 import { humanize } from '@/lib/humanize';
+import { formatNumber } from '@/lib/format-number';
 import { computeAchievements } from './achievements';
 import {
   getBones,
@@ -97,16 +98,16 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
   let points = 0;
   let max = 0;
   const items: ProgressItem[] = Object.values(bosses).map((boss) => {
-    const killed = (enemyKills[boss.id] ?? 0) > 0;
+    const kills = enemyKills[boss.id] ?? 0;
     const drops = boss.rare_drops ?? [];
     const dropsOwned = drops.filter((d) => seenItems.has(d.item)).length;
     max += 1 + drops.length;
-    points += (killed ? 1 : 0) + dropsOwned;
+    points += (kills > 0 ? 1 : 0) + dropsOwned;
     return {
       id: boss.id,
       label: boss.display_name,
-      done: killed && dropsOwned >= drops.length,
-      detail: `${boss.raid ? 'Raid' : 'Solo'} · ${killed ? 'Killed' : 'Not killed'} · ${dropsOwned}/${drops.length} drops`,
+      done: kills > 0 && dropsOwned >= drops.length,
+      detail: `${boss.raid ? 'Raid' : 'Solo'} · ${formatNumber(kills)} kills · ${dropsOwned}/${drops.length} drops`,
     };
   });
 

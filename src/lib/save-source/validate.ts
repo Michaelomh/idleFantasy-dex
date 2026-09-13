@@ -156,22 +156,22 @@ function totalLevel(skillLevels: Record<string, unknown>): number | null {
   return Object.values(skillLevels).reduce((sum: number, v) => sum + (typeof v === 'number' ? v : 0), 0);
 }
 
+// Ported from combatLevelFrom() in IdleFantasy's HomeViewModel.kt (tristinbaker/IdleFantasy,
+// app/src/main/kotlin/com/fantasyidler/ui/viewmodel/HomeViewModel.kt). Prayer is not a combat
+// input in the source game; a missing skill defaults to level 1, not 0.
 function combatLevel(skillLevels: Record<string, unknown>): number | null {
   if (Object.keys(skillLevels).length === 0) return null;
-  const attack = level(skillLevels, 'attack');
-  const strength = level(skillLevels, 'strength');
-  const defense = level(skillLevels, 'defense');
-  const ranged = level(skillLevels, 'ranged');
-  const magic = level(skillLevels, 'magic');
-  const hitpoints = level(skillLevels, 'hitpoints');
-  const prayer = level(skillLevels, 'prayer');
+  const skill = (name: string) => Math.max(level(skillLevels, name), 1);
+  const attack = skill('attack');
+  const strength = skill('strength');
+  const defense = skill('defense');
+  const ranged = skill('ranged');
+  const magic = skill('magic');
+  const hitpoints = skill('hitpoints');
 
-  const base = 0.25 * (defense + hitpoints + Math.floor(prayer / 2));
-  const melee = 0.325 * (attack + strength);
-  const rangedCombat = 0.325 * Math.floor(ranged * 1.5);
-  const magicCombat = 0.325 * Math.floor(magic * 1.5);
-
-  return Math.floor(base + Math.max(melee, rangedCombat, magicCombat));
+  const melee = (attack + strength) / 2;
+  const combat = Math.trunc(0.65 * Math.max(melee, ranged, magic) + 0.25 * (defense + hitpoints));
+  return Math.max(combat, 1);
 }
 
 function normaliseEpoch(v: unknown): number | null {

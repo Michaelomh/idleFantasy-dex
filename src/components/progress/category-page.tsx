@@ -5,6 +5,7 @@ import { cn } from 'cn';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeCategory, type ProgressCategory } from '@/lib/progress';
 import { matchRoute } from '@/lib/app/routes';
+import { LoadingScreen } from '@/components/loading-screen';
 
 type Filter = 'all' | 'done' | 'missing';
 
@@ -40,7 +41,7 @@ export function ProgressCategoryPage() {
   }, [category, filter, query]);
 
   if (!playerState || !category) {
-    return <div className="body p-4 text-text-secondary">Loading…</div>;
+    return <LoadingScreen />;
   }
 
   return (

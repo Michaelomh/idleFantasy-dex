@@ -4,6 +4,7 @@ import { GoalCard } from '@/components/goal-card';
 import { Progress } from '@/components/ui/progress';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeAllCategories, rollUp, PROGRESS_SECTIONS, type ProgressCategory } from '@/lib/progress';
+import { LoadingScreen } from '@/components/loading-screen';
 
 export function ProgressOverviewPage() {
   const playerState = usePlayerState();
@@ -21,8 +22,8 @@ export function ProgressOverviewPage() {
     };
   }, [playerState]);
 
-  if (!playerState || !categories) {
-    return <div className="body p-4 text-text-secondary">Loading progress…</div>;
+  if (playerState || !categories) {
+    return <LoadingScreen />;
   }
 
   const overall = Math.round(rollUp(categories) * 100);

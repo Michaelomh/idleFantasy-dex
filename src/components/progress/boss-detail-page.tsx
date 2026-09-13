@@ -5,6 +5,7 @@ import { cn } from 'cn';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { getBosses, type BossEntry } from '@/lib/progress/game-data';
 import { humanize } from '@/lib/humanize';
+import { LoadingScreen } from '@/components/loading-screen';
 
 export function BossDetailPage() {
   const { bossId } = useParams<{ bossId: string }>();
@@ -16,13 +17,25 @@ export function BossDetailPage() {
   }, [bossId]);
 
   if (!playerState || !boss || !bossId) {
-    return <div className="body p-4 text-text-secondary">Loading…</div>;
+    return <LoadingScreen />;
   }
 
-  const enemyKills = (playerState.raw.flags.enemy_kills ?? {}) as Record<string, number>;
   const seenItems = new Set((playerState.raw.flags.seen_item_keys as string[] | undefined) ?? []);
-  const kills = enemyKills[bossId] ?? 0;
   const drops = boss.rare_drops ?? [];
+
+  const defensiveStats = boss.defensive_stats ?? {};
+  const combatStyles: { label: string; defense: number }[] = [
+    {
+      label: 'Melee',
+      defense: Math.min(defensiveStats.attack_defense ?? Infinity, defensiveStats.strength_defense ?? Infinity),
+    },
+    { label: 'Ranged', defense: defensiveStats.ranged_defense ?? Infinity },
+    { label: 'Magic', defense: defensiveStats.magic_defense ?? Infinity },
+  ].filter((s) => Number.isFinite(s.defense));
+  const bestStyle = combatStyles.reduce<{ label: string; defense: number } | null>(
+    (best, s) => (!best || s.defense < best.defense ? s : best),
+    null,
+  );
 
   const statRows: { label: string; value: string | number }[] = [
     { label: 'HP', value: boss.hp ?? '—' },
@@ -41,10 +54,12 @@ export function BossDetailPage() {
           {boss.raid ? 'Raid' : 'Solo'}
         </span>
       </div>
-      <div className="rounded-md border border-border p-3">
-        <p className="label text-text-secondary">Kills</p>
-        <p className="data text-lg">{kills}</p>
-      </div>
+      {bestStyle && (
+        <div className="rounded-md border border-fresh/40 bg-fresh/10 p-3">
+          <p className="label text-text-secondary">Best combat style</p>
+          <p className="data text-lg text-fresh">{bestStyle.label}</p>
+        </div>
+      )}
 
       <div className="flex flex-col rounded-md border border-border">
         {statRows.map((s, i) => (
