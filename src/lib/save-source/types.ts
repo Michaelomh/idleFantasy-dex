@@ -62,6 +62,7 @@ export type PlayerState = {
   coins: number | null;
   carnivalTickets: number | null;
   slayerPoints: number | null;
+  ironman: boolean;
   flagsNote: string | null;
   raw: PlayerStateRaw;
 };

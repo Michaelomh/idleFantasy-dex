@@ -12,12 +12,15 @@ function load<T>(path: string): Promise<T> {
 
 export type EquipmentEntry = {
   id?: string;
+  name?: string;
   display_name?: string;
   slot?: string;
   description?: string;
   heirloom_skill?: string | null;
   two_handed?: boolean;
   requirements?: Record<string, number>;
+  cape_skill?: string;
+  cape_bonus?: number;
   [key: string]: unknown;
 };
 export const getEquipment = () => load<Record<string, EquipmentEntry>>('equipment.json');
@@ -57,7 +60,16 @@ export const getPrestigePaths = () => load<PrestigeSkillPaths[]>('prestige_paths
 export type GuildQuestEntry = { id: string; guild: string; guild_level_required: number; name: string };
 export const getGuildQuests = () => load<Record<string, GuildQuestEntry>>('guild_quests.json');
 
-export type PetEntry = { id: string; display_name: string; emoji?: string; source?: string; description?: string };
+export type PetEntry = {
+  id: string;
+  display_name: string;
+  emoji?: string;
+  source?: string;
+  description?: string;
+  effect_type?: string;
+  boosted_skill?: string;
+  boost_percent?: number;
+};
 export const getPets = () => load<Record<string, PetEntry>>('pets.json');
 
 export type BuildingTier = { construction_level_required?: number; coin_cost?: number };

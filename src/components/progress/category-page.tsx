@@ -90,12 +90,12 @@ export function ProgressCategoryPage() {
                 {item.detail && <span className="label shrink-0 text-text-secondary">{item.detail}</span>}
               </>
             ) : (
-              <div className="flex flex-col">
+              <div className="flex min-w-0 flex-1 flex-col">
                 <span className="body">{item.label}</span>
-                {item.detail && <span className="label text-text-secondary">{item.detail}</span>}
+                {item.detail && <span className="body text-sm text-text-secondary">{item.detail}</span>}
               </div>
             )}
-            {item.done && <Check className="size-4 shrink-0 text-fresh" />}
+            {item.done && <Check className="mt-1 size-4 shrink-0 text-fresh" />}
           </div>
         ))}
         {filteredItems.length === 0 && <p className="body text-text-secondary">Nothing matches.</p>}

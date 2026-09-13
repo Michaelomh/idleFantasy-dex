@@ -1,5 +1,4 @@
 export type RouteMeta = {
-  /** Absolute path, e.g. '/progress/bosses/:bossId'. */
   path: string;
   title: string;
   /** Absolute path to navigate back to, or null if this page has no back button. */
@@ -18,7 +17,6 @@ export const DOCK_TABS = [
 
 export const ROUTES: RouteMeta[] = [
   { path: '/', title: 'Overview', parent: null, dockTab: 0 },
-  { path: '/skill/:skillId', title: 'Skill', parent: '/' },
 
   { path: '/progress', title: 'Progress', parent: null, dockTab: 1 },
   { path: '/progress/quests', title: 'Quests', parent: '/progress', dockTab: 1 },

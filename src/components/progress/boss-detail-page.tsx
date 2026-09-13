@@ -68,13 +68,13 @@ export function BossDetailPage() {
           return (
             <div
               key={d.item}
-              className={cn('flex items-center justify-between rounded-md border border-border px-3 py-2')}
+              className={cn('flex items-start justify-between gap-2 rounded-md border border-border px-3 py-2')}
             >
-              <div className="flex flex-col">
+              <div className="flex min-w-0 flex-1 flex-col">
                 <span className="body">{humanize(d.item)}</span>
-                <span className="label text-text-secondary">{chance}</span>
+                <span className="body text-sm text-text-secondary">{chance}</span>
               </div>
-              {obtained && <Check className="size-4 text-fresh" />}
+              {obtained && <Check className="mt-1 size-4 shrink-0 text-fresh" />}
             </div>
           );
         })}
