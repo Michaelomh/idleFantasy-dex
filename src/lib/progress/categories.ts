@@ -3,14 +3,21 @@ import { ALL_GUILDS, GUILD_DAILIES_REQUIRED_PER_TIER, GUILD_MAX_LEVEL, guildLabe
 import { humanize } from '@/lib/humanize';
 import { computeAchievements } from './achievements';
 import {
+  getBones,
   getBosses,
   getBuildings,
+  getCrops,
   getEnemies,
   getEquipment,
+  getGems,
   getGuildQuests,
+  getLogs,
+  getMarketplace,
+  getOres,
   getPets,
   getPrestigePaths,
   getQuests,
+  getRunes,
   getSeasonalEvents,
 } from './game-data';
 import { EXPEDITION_KEYS } from './expeditions-data.generated';
@@ -99,7 +106,7 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
       id: boss.id,
       label: boss.display_name,
       done: killed && dropsOwned >= drops.length,
-      detail: `${killed ? 'Killed' : 'Not killed'} · ${dropsOwned}/${drops.length} drops`,
+      detail: `${boss.raid ? 'Raid' : 'Solo'} · ${killed ? 'Killed' : 'Not killed'} · ${dropsOwned}/${drops.length} drops`,
     };
   });
 
@@ -128,8 +135,9 @@ async function computeArmoury(ps: PlayerState): Promise<ProgressCategory> {
 async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCategory> {
   const paths = await getPrestigePaths();
   const prestige = (ps.raw.flags.skill_prestige ?? {}) as Record<string, number>;
+  const orderedPaths = [...paths].sort((a, b) => SKILL_IDS.indexOf(a.skill) - SKILL_IDS.indexOf(b.skill));
 
-  const items: ProgressItem[] = paths.map((skillPaths) => {
+  const items: ProgressItem[] = orderedPaths.map((skillPaths) => {
     const nonXpCost = skillPaths.paths
       .filter((p) => !p.auto)
       .flatMap((p) => p.nodes)
@@ -287,12 +295,25 @@ async function computeBestiary(ps: PlayerState): Promise<ProgressCategory> {
 }
 
 async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
-  const [equipment, enemies] = await Promise.all([getEquipment(), getEnemies()]);
+  const [equipment, enemies, marketplace, gems, ores, logs, crops, bones, runes] = await Promise.all([
+    getEquipment(),
+    getEnemies(),
+    getMarketplace(),
+    getGems(),
+    getOres(),
+    getLogs(),
+    getCrops(),
+    getBones(),
+    getRunes(),
+  ]);
   const universe = new Set<string>(Object.keys(equipment));
   for (const e of Object.values(enemies)) {
     for (const d of e.drop_table ?? []) universe.add(d.item);
     for (const d of e.always_drops ?? []) universe.add(d.item);
   }
+  for (const category of Object.values(marketplace)) for (const key of Object.keys(category.items)) universe.add(key);
+  for (const resource of [gems, ores, logs, crops, bones, runes])
+    for (const key of Object.keys(resource)) universe.add(key);
   const seen = new Set<string>([
     ...((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []),
     ...Object.keys(ps.raw.inventory),
@@ -415,5 +436,3 @@ export function rollUp(categories: ProgressCategory[]): number {
   if (categories.length === 0) return 0;
   return categories.reduce((sum, c) => sum + pct(c.points, c.max), 0) / categories.length;
 }
-
-export { SKILL_IDS };

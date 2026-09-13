@@ -37,6 +37,9 @@ export function BossDetailPage() {
       <div className="flex items-center gap-2">
         <span className="text-2xl">{boss.emoji}</span>
         <span className="h1">{boss.display_name}</span>
+        <span className="label rounded-full border border-border px-2 py-0.5 text-text-secondary">
+          {boss.raid ? 'Raid' : 'Solo'}
+        </span>
       </div>
       <div className="rounded-md border border-border p-3">
         <p className="label text-text-secondary">Kills</p>
