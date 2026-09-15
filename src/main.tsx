@@ -12,6 +12,8 @@ import { SavesPage } from './components/saves-page.tsx';
 import { ProgressOverviewPage } from './components/progress/progress-overview-page.tsx';
 import { ProgressCategoryPage } from './components/progress/category-page.tsx';
 import { BossDetailPage } from './components/progress/boss-detail-page.tsx';
+import { CalculatorOverviewPage } from './components/calculator/calculator-overview-page.tsx';
+import { CalculatorSkillPage } from './components/calculator/calculator-skill-page.tsx';
 import { NotFoundPage } from './components/not-found-page.tsx';
 import { ROUTES } from './lib/app/routes.ts';
 import { ReloadPrompt } from './components/reload-prompt.tsx';
@@ -32,12 +34,30 @@ const PROGRESS_CATEGORY_PATHS = new Set([
   '/progress/heirloom-tools',
 ]);
 
+const CALCULATOR_SKILL_PATHS = new Set([
+  '/calculator/mining',
+  '/calculator/fishing',
+  '/calculator/woodcutting',
+  '/calculator/farming',
+  '/calculator/agility',
+  '/calculator/thieving',
+  '/calculator/smithing',
+  '/calculator/cooking',
+  '/calculator/fletching',
+  '/calculator/crafting',
+  '/calculator/firemaking',
+  '/calculator/runecrafting',
+  '/calculator/herblore',
+  '/calculator/construction',
+]);
+
 const ROUTE_OVERRIDES: Record<string, RouteObject['element']> = {
   '/onboarding': <OnboardingPage />,
   '/no-save': <NoSavePage />,
   '/saves': <SavesPage />,
   '/progress': <ProgressOverviewPage />,
   '/progress/bosses/:bossId': <BossDetailPage />,
+  '/calculator': <CalculatorOverviewPage />,
 };
 
 const routes: RouteObject[] = [
@@ -48,7 +68,13 @@ const routes: RouteObject[] = [
       if (route.path === '/') return { index: true, element: <DashboardPage /> };
       const element =
         ROUTE_OVERRIDES[route.path] ??
-        (PROGRESS_CATEGORY_PATHS.has(route.path) ? <ProgressCategoryPage /> : <RoutePage />);
+        (PROGRESS_CATEGORY_PATHS.has(route.path) ? (
+          <ProgressCategoryPage />
+        ) : CALCULATOR_SKILL_PATHS.has(route.path) ? (
+          <CalculatorSkillPage />
+        ) : (
+          <RoutePage />
+        ));
       return { path: route.path.slice(1), element };
     }).concat({ path: '*', element: <NotFoundPage /> }),
   },
