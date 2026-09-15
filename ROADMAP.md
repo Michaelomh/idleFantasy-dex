@@ -55,14 +55,14 @@ Companion planner for [Idle Fantasy](https://github.com/tristinbaker/IdleFantasy
 
 ## Navigation
 
-- [ ] Floating dock/nav bar, five tabs, visible once a save is loaded: Overview (`/`),
+- [x] Floating dock/nav bar, five tabs, visible once a save is loaded: Overview (`/`),
       `/progress`, `/simulator`, `/calculator`, `/settings`
 - [ ] `/settings` — global app settings and future settings, plus an about section;
       links out to `/saves`
 - [x] `/saves` — standalone screen (outside the dock bar), reached from Settings; lists
       loaded characters/saves, lets you remove one, sync the save directory, upload a new
       save file, and shows every save-source state (loading, error, empty, synced, etc.)
-- [ ] 404 page — wildcard route (`path: '*'`) under `AppLayout` for unmatched URLs;
+- [x] 404 page — wildcard route (`path: '*'`) under `AppLayout` for unmatched URLs;
       currently unmatched paths fall through to React Router's default error, not an
       in-app page
 
@@ -70,37 +70,12 @@ Companion planner for [Idle Fantasy](https://github.com/tristinbaker/IdleFantasy
 
 Dock bar's Overview tab; default landing once a save is loaded, skipping onboarding.
 
-- [x] Character identity: name, title, race, gender
-- [x] Combat level, total level, coins
-- [ ] Quick-launch shortcuts to game locations (Shop, Inn, Guild Hall, Church, Builder's
-      Workshop, Slayer Master, Carnival, Grand Monument, My House) — read-only links out;
-      none of these locations are simulated or tracked by the app itself
+- [ ] Character identity: name, title, race, gender
+- [ ] Combat level, total level, coins
 - [ ] `/skill/<name>` — per-skill view reachable only from the dashboard; shows bonus XP
       and any other benefits tied to that skill. Distinct from `/progress/levels`, which
-      tracks prestige completion progress rather than skill bonuses. 23 skills total:
-  - [ ] `/skill/mining`
-  - [ ] `/skill/fishing`
-  - [ ] `/skill/woodcutting`
-  - [ ] `/skill/farming`
-  - [ ] `/skill/thieving`
-  - [ ] `/skill/firemaking`
-  - [ ] `/skill/smithing`
-  - [ ] `/skill/cooking`
-  - [ ] `/skill/fletching`
-  - [ ] `/skill/crafting`
-  - [ ] `/skill/runecrafting`
-  - [ ] `/skill/herblore`
-  - [ ] `/skill/construction`
-  - [ ] `/skill/agility`
-  - [ ] `/skill/mercantile`
-  - [ ] `/skill/prayer`
-  - [ ] `/skill/attack`
-  - [ ] `/skill/strength`
-  - [ ] `/skill/defense`
-  - [ ] `/skill/ranged`
-  - [ ] `/skill/magic`
-  - [ ] `/skill/hitpoints`
-  - [ ] `/skill/slayer`
+      tracks prestige completion progress rather than skill bonuses.
+- [ ] Add sync button if connected via folder and add the age of the save file
 
 ## Completion dashboard (`/progress`)
 
@@ -161,3 +136,10 @@ stats and whether that loadout survives a boss attack.
   - [ ] Raid bosses (`/simulator/raid`) - list all raid bosses
     - [ ] Drill down (`/simulator/raid/:bossId`) — drills down into each fight's win probability
   - [ ] Infinity Tower (`/simulator/infinity-tower`)
+
+## Settings
+
+- [ ] Add experimental features switches (mainly for things that are not done yet)
+- [ ] Credits to art and what not.
+- [ ] Should we have a /saves or just put everything in settings
+- [ ] Dark mode vs light mode switcher

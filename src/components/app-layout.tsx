@@ -5,7 +5,8 @@ import { PageHeader } from './page-header.tsx';
 import { FloatingNavBar } from './floating-nav-bar.tsx';
 import { ExploreBanner } from './explore-banner.tsx';
 import { DesktopNoticeBanner } from './desktop-notice-banner.tsx';
-import { DOCK_TABS, matchRoute } from '@/lib/app/routes.ts';
+import { NotFoundPage } from './not-found-page.tsx';
+import { DOCK_TABS, isRouteDisabled, matchRoute } from '@/lib/app/routes.ts';
 import { resolveBootState, type BootState } from '@/lib/app/boot-state.ts';
 
 const DOCK_ICONS = [
@@ -19,7 +20,9 @@ const DOCK_ICONS = [
 export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const match = matchRoute(location.pathname);
+  const rawMatch = matchRoute(location.pathname);
+  const disabled = !!rawMatch && isRouteDisabled(location.pathname);
+  const match = disabled ? undefined : rawMatch;
   const showDock = match?.dockTab !== undefined;
   const activeIndex = DOCK_TABS.findIndex((tab) =>
     tab.path === '/' ? location.pathname === '/' : location.pathname.startsWith(tab.path),
@@ -78,12 +81,8 @@ export function AppLayout() {
       />
       <DesktopNoticeBanner />
       {bootState === 'explore' && <ExploreBanner />}
-      {/* keyed by pathname, not location.key: our back button pushes a new entry rather than
-          popping history, so the default per-entry restoration key would never match */}
       <ScrollRestoration getKey={(location) => location.pathname} />
-      <div className="flex flex-1 flex-col">
-        <Outlet />
-      </div>
+      <div className="flex flex-1 flex-col">{disabled ? <NotFoundPage /> : <Outlet />}</div>
       {showDock && (
         <FloatingNavBar
           items={DOCK_TABS.map((tab, index) => ({ label: tab.label, icon: DOCK_ICONS[index] }))}

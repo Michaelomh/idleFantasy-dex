@@ -6,6 +6,9 @@ import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeCategory, type ProgressCategory } from '@/lib/progress';
 import { matchRoute } from '@/lib/app/routes';
 import { LoadingScreen } from '@/components/loading-screen';
+import { WipNotice } from '@/components/wip-notice.tsx';
+
+const WIP_CATEGORY_IDS = new Set(['heirloom-tools']);
 
 type Filter = 'all' | 'done' | 'missing';
 
@@ -46,6 +49,7 @@ export function ProgressCategoryPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
+      {WIP_CATEGORY_IDS.has(category.id) && <WipNotice />}
       <span className="data text-lg">
         {Math.floor(category.points)} / {category.max}
       </span>

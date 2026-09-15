@@ -5,6 +5,7 @@ export type RouteMeta = {
   parent: string | null;
   /** Index into DOCK_TABS if the floating dock bar should be visible on this page. */
   dockTab?: number;
+  disabled?: boolean;
 };
 
 export const DOCK_TABS = [
@@ -33,7 +34,7 @@ export const ROUTES: RouteMeta[] = [
   { path: '/progress/heirloom-tools', title: 'Heirloom Tools', parent: '/progress', dockTab: 1 },
   { path: '/progress/bosses/:bossId', title: 'Boss', parent: '/progress/bosses', dockTab: 1 },
 
-  { path: '/simulator', title: 'Simulator', parent: null, dockTab: 2 },
+  { path: '/simulator', title: 'Simulator', parent: null, dockTab: 2, disabled: true },
   { path: '/simulator/solo', title: 'Solo', parent: '/simulator', dockTab: 2 },
   { path: '/simulator/solo/:bossId', title: 'Solo Boss', parent: '/simulator/solo', dockTab: 2 },
   { path: '/simulator/raid', title: 'Raid', parent: '/simulator', dockTab: 2 },
@@ -57,7 +58,7 @@ export const ROUTES: RouteMeta[] = [
   { path: '/calculator/runecrafting', title: 'Runecrafting', parent: '/calculator', dockTab: 3 },
   { path: '/calculator/herblore', title: 'Herblore', parent: '/calculator', dockTab: 3 },
   { path: '/calculator/construction', title: 'Construction', parent: '/calculator', dockTab: 3 },
-  { path: '/calculator/workers', title: 'Workers', parent: '/calculator', dockTab: 3 },
+  { path: '/calculator/workers', title: 'Workers', parent: '/calculator', dockTab: 3, disabled: true },
   { path: '/calculator/workers/:skillId', title: 'Worker Skill', parent: '/calculator/workers', dockTab: 3 },
 
   { path: '/settings', title: 'Settings', parent: '/', dockTab: 4 },
@@ -75,4 +76,14 @@ export function matchRoute(pathname: string): RouteMeta | undefined {
 
 export function getChildren(path: string): RouteMeta[] {
   return ROUTES.filter((route) => route.parent === path && !route.path.includes(':'));
+}
+
+export function isRouteDisabled(path: string): boolean {
+  if (import.meta.env.DEV) return false;
+  let route = matchRoute(path);
+  while (route) {
+    if (route.disabled) return true;
+    route = route.parent ? ROUTES.find((r) => r.path === route!.parent) : undefined;
+  }
+  return false;
 }

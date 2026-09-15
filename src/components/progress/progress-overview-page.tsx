@@ -26,14 +26,14 @@ export function ProgressOverviewPage() {
     return <LoadingScreen />;
   }
 
-  const overall = Math.round(rollUp(categories) * 100);
+  const overall = rollUp(categories) * 100;
 
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
         <div className="flex items-baseline justify-between">
           <span className="h2">Overall Completion</span>
-          <span className="data text-2xl">{overall}%</span>
+          <span className="data text-2xl">{overall.toFixed(2)}%</span>
         </div>
         <Progress value={overall} max={100} className="w-full" complete={overall >= 100} />
       </div>
