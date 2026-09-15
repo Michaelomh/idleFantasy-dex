@@ -12,8 +12,10 @@ import { SavesPage } from './components/saves-page.tsx';
 import { ProgressOverviewPage } from './components/progress/progress-overview-page.tsx';
 import { ProgressCategoryPage } from './components/progress/category-page.tsx';
 import { BossDetailPage } from './components/progress/boss-detail-page.tsx';
+import { NotFoundPage } from './components/not-found-page.tsx';
 import { ROUTES } from './lib/app/routes.ts';
 import { ReloadPrompt } from './components/reload-prompt.tsx';
+import { Toaster } from './components/ui/sonner.tsx';
 
 const PROGRESS_CATEGORY_PATHS = new Set([
   '/progress/quests',
@@ -48,7 +50,7 @@ const routes: RouteObject[] = [
         ROUTE_OVERRIDES[route.path] ??
         (PROGRESS_CATEGORY_PATHS.has(route.path) ? <ProgressCategoryPage /> : <RoutePage />);
       return { path: route.path.slice(1), element };
-    }),
+    }).concat({ path: '*', element: <NotFoundPage /> }),
   },
   // only for dev - design system overview
   ...(import.meta.env.DEV
@@ -66,6 +68,7 @@ createRoot(document.getElementById('root')!).render(
     <TooltipProvider>
       <RouterProvider router={router} />
       <ReloadPrompt />
+      <Toaster />
     </TooltipProvider>
   </StrictMode>,
 );

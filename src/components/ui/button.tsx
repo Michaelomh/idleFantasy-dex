@@ -14,7 +14,9 @@ const buttonVariants = cva(
         ghost: 'bg-transparent text-foreground hover:bg-card',
       },
       size: {
+        sm: 'h-8 px-3',
         default: '',
+        lg: 'h-14 px-6',
         icon: 'size-12 px-0',
         'icon-sm': 'size-8 rounded-full px-0',
       },
