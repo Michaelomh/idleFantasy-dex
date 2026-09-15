@@ -47,6 +47,17 @@ const FILES = [
   'crops.json',
   'bones.json',
   'runes.json',
+  'trees.json',
+  'thieving_npcs.json',
+  'agility_courses.json',
+  'xp_table.json',
+  'blessings.json',
+  'recipes/smithing.json',
+  'recipes/cooking.json',
+  'recipes/fletching.json',
+  'recipes/crafting.json',
+  'recipes/herblore.json',
+  'recipes/construction.json',
 ];
 
 /**
