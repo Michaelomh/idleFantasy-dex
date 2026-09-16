@@ -1,4 +1,4 @@
-import { xpForLevel } from '@/lib/progress/xp-table';
+import { xpForLevel } from '@/lib/utils/xp-table';
 
 /** Inverse of xpForLevel — the level implied by a running XP total, clamped to [1, 99]. */
 export function levelForXp(xp: number): number {

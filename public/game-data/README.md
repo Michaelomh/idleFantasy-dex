@@ -1,4 +1,4 @@
-# Vendored Game Data — third-party, do not edit
+# Vendored Game Data - third-party, do not edit
 
 These JSON files are a pinned snapshot of Idle Fantasy's static game data, copied
 **unmodified** from [tristinbaker/IdleFantasy](https://github.com/tristinbaker/IdleFantasy)
@@ -23,5 +23,5 @@ sha256 for every file.
 Run `pnpm sync-game-data --source <local IdleFantasy checkout>` by hand, then review the
 diff before committing. `pnpm verify-game-data` re-hashes these files against the manifest
 (no checkout, no network) and is safe to run in CI. Tooling may *report* drift; it must
-never update this snapshot automatically — refreshing is always a deliberate, by-hand
+never update this snapshot automatically - refreshing is always a deliberate, by-hand
 maintainer action.

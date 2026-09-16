@@ -44,7 +44,7 @@ export function NoSavePage() {
     setError(null);
     const result = await scanBackupDir({ userGesture: true });
     if (result.kind !== 'scanned') {
-      setError('Could not reach that folder — check its permission and try again.');
+      setError('Could not reach that folder - check its permission and try again.');
       return;
     }
     const identity = result.outcomes.map(acceptedIdentity).find((id): id is string => !!id);

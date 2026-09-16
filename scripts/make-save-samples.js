@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Dev helper — writes throwaway sample Save Exports for manually testing Save Source
+// Dev helper - writes throwaway sample Save Exports for manually testing Save Source
 // ingestion (manual upload + directory handle), ported from the resolved
 // prototype/save-source ticket's make-samples.py. Output is gitignored (*.local).
 //

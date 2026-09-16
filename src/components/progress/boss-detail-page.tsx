@@ -4,7 +4,7 @@ import { Check } from 'lucide-react';
 import { cn } from 'cn';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { getBosses, type BossEntry } from '@/lib/progress/game-data';
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 import { LoadingScreen } from '@/components/loading-screen';
 
 export function BossDetailPage() {
@@ -38,7 +38,7 @@ export function BossDetailPage() {
   );
 
   const statRows: { label: string; value: string | number }[] = [
-    { label: 'HP', value: boss.hp ?? '—' },
+    { label: 'HP', value: boss.hp ?? '-' },
     ...Object.entries(boss.combat_stats ?? {})
       .filter(([k]) => k !== 'defense_level')
       .map(([k, v]) => ({ label: humanize(k), value: v })),
@@ -79,7 +79,7 @@ export function BossDetailPage() {
       <div className="flex flex-col gap-1">
         {drops.map((d) => {
           const obtained = seenItems.has(d.item);
-          const chance = d.comment ?? (d.chance !== undefined ? `${(d.chance * 100).toFixed(2)}%` : '—');
+          const chance = d.comment ?? (d.chance !== undefined ? `${(d.chance * 100).toFixed(2)}%` : '-');
           return (
             <div
               key={d.item}

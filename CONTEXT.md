@@ -13,7 +13,7 @@ _Avoid_: Target, objective, milestone
 
 **Completion**:
 How far a Goal has progressed toward finished, expressed as a fraction of that Goal.
-Measured against everything that exists in the game — including content no longer
+Measured against everything that exists in the game - including content no longer
 obtainable, and content added after the player's own game version. A missed seasonal item
 leaves a Goal permanently short, and a monster the player's install does not have yet counts
 as not-yet-killed. Both are correct: the denominator is the game, not the player's copy of it.
@@ -36,17 +36,17 @@ Identical for every player, and distinct from Player State.
 _Avoid_: Static data, assets, content
 
 **Projection**:
-A forward estimate for a Goal derived from Player State plus Game Data — time to
+A forward estimate for a Goal derived from Player State plus Game Data - time to
 completion, expected items per hour, XP rates.
 _Avoid_: Estimate, forecast, calculation, prediction
 
 **Ledger**:
-The set of things a player has not yet obtained or finished, in a category — Game Data
+The set of things a player has not yet obtained or finished, in a category - Game Data
 minus Player State. One engine, applied per category: monsters, quests, boss drops, items.
 _Avoid_: Checklist, backlog, missing list
 
 **Dashboard**:
-The single screen that renders Completion for every tracked Goal at once — one bar per
+The single screen that renders Completion for every tracked Goal at once - one bar per
 Goal, plus the overall roll-up as a header. The v1 product is the Dashboard and nothing
 else. Distinct from a Ledger: a Ledger is the set of unfinished things in one category, the
 Dashboard is how all of them are shown together.
@@ -79,17 +79,17 @@ Session, and named separately so the two never blur.
 _Avoid_: Session, playtime
 
 **Modifiers**:
-The values derived from Player State that scale a Projection's output — equipped tool
-efficiency, pet boost percentages, prestige nodes, active XP boosts. Scattered across the
+The values derived from Player State that scale a Projection's output - equipped tool
+efficiency, pet boost percentages, prestige nodes, active XP Boosts. Scattered across the
 Save Export by source; resolved into one set before any Projection runs.
 _Avoid_: Boosts (the game uses that for its timed XP purchase specifically), buffs, multipliers
 
 ## Skills
 
-23 skills, split across four categories. The category grouping matters beyond flavor — it's
+23 skills, split across four categories. The category grouping matters beyond flavor - it's
 why the V3 per-skill simulators cover only 13 skills (Gathering + Crafting): Support and
 Combat skills aren't session-based item production, so they don't get a skill simulator of
-their own — Combat is covered instead by the separate dungeon/boss simulators.
+their own - Combat is covered instead by the separate dungeon/boss simulators.
 
 | Skill        | Category  | Description                                                                                                                                                                 |
 | ------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

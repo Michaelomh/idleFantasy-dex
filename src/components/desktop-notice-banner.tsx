@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { Banner } from './banner.tsx';
-import { useLocalStorage } from '@/lib/use-local-storage';
+import { useLocalStorage } from '@/lib/hooks/use-local-storage';
 
 const DISMISSED_KEY = 'desktop-notice-dismissed';
 

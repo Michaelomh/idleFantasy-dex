@@ -2,4 +2,4 @@ export type { SessionResult, CalculatorInputs, TargetOption, BonusItem, Guarante
 export { SESSION_CALCULATORS, patchCountForLevel, totalPatchCount } from './skills';
 export { targetsForSkill, ashCatalystOptions } from './targets';
 export { skillInputConfig } from './skill-input-config';
-export { formatMinSec } from './session-duration';
+export { formatMinSec } from '@/lib/utils/duration';

@@ -31,8 +31,12 @@ export async function resolveAllSkillBonuses(playerState: PlayerState): Promise<
     const prestigeYieldPct = effectTotal(activeNodes, 'yield_pct');
     const combatStatFlat = effectTotal(activeNodes, 'combat_stat_flat');
     const capeScaling = effectTotal(activeNodes, 'cape_scaling') || 1;
-
-    const petXpPct = petXpPctForSkill(playerState, id, pets);
+    const basePetXpPct = petXpPctForSkill(playerState, id, pets);
+    const petBoostScalePct = effectTotal(activeNodes, 'pet_boost_pct');
+    const petXpPct =
+      basePetXpPct > 0 && petBoostScalePct > 0
+        ? Math.max(basePetXpPct, Math.floor(basePetXpPct * (1 + petBoostScalePct / 100)))
+        : basePetXpPct;
     const cape = resolveCapeBonus(playerState, id, category, equipment, capeScaling);
     const capePct = Math.round(cape.multiplier * 100);
 

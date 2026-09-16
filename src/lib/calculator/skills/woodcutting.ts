@@ -1,6 +1,6 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getTrees } from '../game-data';
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 import {
   resolveModifiers,
   applyXpMultipliers,
@@ -8,19 +8,21 @@ import {
   withBaseRow,
   toolEfficiencyRows,
 } from '../modifiers';
-import { SESSION_FRAMES } from '../frame-roll';
+import { gatheringFrameXpTotal, SESSION_FRAMES } from '../frame-roll';
 import type { CalculatorInputs, SessionResult } from '../types';
 
 export async function woodcutting(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
-  const [trees, mods] = await Promise.all([
-    getTrees(),
-    resolveModifiers(playerState, 'woodcutting', inputs.timedBoostsEnabled),
-  ]);
-
+  const trees = await getTrees();
   const tree = trees[inputs.targetKey];
+  const mods = await resolveModifiers(
+    playerState,
+    'woodcutting',
+    inputs.timedBoostsEnabled,
+    (tree?.level_required as number | undefined) ?? 0,
+  );
   const xpPerLog = tree?.xp_per_log ?? 0;
   const rawUnits = SESSION_FRAMES * mods.toolEff * mods.toolEffMultiplier;
-  const rawXp = rawUnits * xpPerLog;
+  const rawXp = gatheringFrameXpTotal(xpPerLog, mods.toolEff * mods.toolEffMultiplier, mods.petBoostPct);
   const guaranteedQty = applyYieldMultiplier(rawUnits, mods);
 
   return {
@@ -33,12 +35,21 @@ export async function woodcutting(playerState: PlayerState, inputs: CalculatorIn
       },
     ],
     bonusItems: [],
-    yieldBreakdown: withBaseRow('Base yield', SESSION_FRAMES, [
+    yieldBreakdown: withBaseRow('Base Yield', SESSION_FRAMES, [
       ...toolEfficiencyRows(mods, SESSION_FRAMES),
       ...mods.yieldModifiers,
     ]),
     xpBreakdown: withBaseRow('Base XP', SESSION_FRAMES * xpPerLog, [
       ...toolEfficiencyRows(mods, SESSION_FRAMES * xpPerLog),
+      ...(mods.petBoostPct > 0
+        ? [
+            {
+              label: 'Pet XP Boost',
+              value: `+${mods.petBoostPct}%`,
+              info: `This can be higher due to your prestige skill tree${mods.petBoostNodeLabel ? ` (${mods.petBoostNodeLabel})` : ''}.`,
+            },
+          ]
+        : []),
       ...mods.xpModifiers,
     ]),
     sessionMinutes: mods.sessionMinutes,

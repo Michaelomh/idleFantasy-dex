@@ -1,22 +1,10 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getBuildings, getPrestigePaths } from '@/lib/progress/game-data';
 import { activeNodesForSkill, effectTotal } from '@/lib/bonuses/prestige';
+import { formatMinSec } from '@/lib/utils/duration';
 import type { ModifierRow } from './types';
 
 export type SessionLength = { minutes: number; breakdown: ModifierRow[] };
-
-export function formatMinSec(totalMinutes: number): string {
-  const totalSeconds = Math.round(totalMinutes * 60);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (days > 0) return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
-  if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-  if (minutes > 0) return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
-  return `${seconds}s`;
-}
 
 async function chronosMultiplier(playerState: PlayerState): Promise<{ mult: number; tierCount: number }> {
   const buildings = await getBuildings();
@@ -48,12 +36,12 @@ export async function sessionLength(playerState: PlayerState): Promise<SessionLe
   const breakdown: ModifierRow[] = [{ label: 'Base session length', value: formatMinSec(baseMinutes) }];
   if (agilityReduction > 0) {
     breakdown.push({
-      label: `Agility level ${agilityLevel} + Endurance floor (${sessionFloorMin} min)`,
+      label: `Agility Level (${agilityLevel}) + Endurance Floor (${sessionFloorMin} min)`,
       value: `-${formatMinSec(agilityReduction)}`,
     });
   }
   if (chronosMult !== 1) {
-    breakdown.push({ label: `Chronos Spire (tier ${tierCount})`, value: `×${chronosMult.toFixed(2)}` });
+    breakdown.push({ label: `Chronos Spire (Tier ${tierCount})`, value: `x${chronosMult.toFixed(2)}` });
   }
 
   return { minutes, breakdown };
@@ -68,9 +56,9 @@ export function craftActionDuration(
   const baseMinutes = qty;
   const minutes = (baseMinutes * ratio) / toolEff;
 
-  const breakdown: ModifierRow[] = [{ label: `Base craft time (${qty} × 60s)`, value: formatMinSec(baseMinutes) }];
+  const breakdown: ModifierRow[] = [{ label: `Base craft time (${qty} x 60s)`, value: formatMinSec(baseMinutes) }];
   if (ratio !== 1) {
-    breakdown.push({ label: 'Agility + Chronos Spire', value: `×${ratio.toFixed(2)}` });
+    breakdown.push({ label: 'Agility + Chronos Spire', value: `x${ratio.toFixed(2)}` });
   }
   if (toolEff !== 1) {
     breakdown.push({ label: 'Tool efficiency', value: `÷${toolEff.toFixed(2)}` });

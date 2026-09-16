@@ -1,18 +1,18 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getRuneEntries } from '../game-data';
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier, withBaseRow } from '../modifiers';
 import { craftActionDuration } from '../session-duration';
 import type { CalculatorInputs, SessionResult } from '../types';
 
 const ASH_RC_BONUS: Record<string, number> = {
-  ashes: 4,
-  oak_ashes: 5,
-  willow_ashes: 6,
-  maple_ashes: 7,
-  yew_ashes: 8,
-  magic_ashes: 9,
-  redwood_ashes: 10,
+  ashes: 1,
+  oak_ashes: 2,
+  willow_ashes: 3,
+  maple_ashes: 4,
+  yew_ashes: 5,
+  magic_ashes: 6,
+  redwood_ashes: 7,
 };
 
 export async function runecrafting(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
@@ -26,7 +26,7 @@ export async function runecrafting(playerState: PlayerState, inputs: CalculatorI
   const runeMultiplier = mods.level >= 75 ? 3 : mods.level >= 50 ? 2 : 1;
   const ashBonus = inputs.ashCatalystKey ? (ASH_RC_BONUS[inputs.ashCatalystKey] ?? 0) : 0;
 
-  const rawXp = qty * ((rune?.xp_per_rune as number | undefined) ?? 0);
+  const rawXp = qty * ((rune?.xp_per_rune as number | undefined) ?? 0) * (runeMultiplier + ashBonus);
   const rawOutputQty = qty * (runeMultiplier + ashBonus);
   const outputQty = applyYieldMultiplier(rawOutputQty, mods);
   const { minutes: sessionMinutes, breakdown: sessionBreakdown } = craftActionDuration(
@@ -45,7 +45,7 @@ export async function runecrafting(playerState: PlayerState, inputs: CalculatorI
       },
     ],
     bonusItems: [],
-    yieldBreakdown: withBaseRow('Base yield', rawOutputQty, mods.yieldModifiers),
+    yieldBreakdown: withBaseRow('Base Yield', rawOutputQty, mods.yieldModifiers),
     xpBreakdown: withBaseRow('Base XP', rawXp, mods.xpModifiers),
     sessionMinutes,
     sessionBreakdown,

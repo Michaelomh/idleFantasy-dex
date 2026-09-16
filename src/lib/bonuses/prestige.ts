@@ -1,7 +1,7 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getPrestigePaths, type PrestigePathNode, type PrestigeSkillPaths } from '@/lib/progress/game-data';
 
-export type ActiveNode = { pathKey: string; node: PrestigePathNode };
+export type ActiveNode = { pathKey: string; node: PrestigePathNode; rank: number };
 
 export function activeNodesForSkill(playerState: PlayerState, tree: PrestigeSkillPaths | undefined): ActiveNode[] {
   if (!tree) return [];
@@ -15,7 +15,7 @@ export function activeNodesForSkill(playerState: PlayerState, tree: PrestigeSkil
     const nodes = path.auto
       ? path.nodes.slice(0, Math.min(prestige, path.nodes.length))
       : path.nodes.filter((n) => owned.has(n.id));
-    return nodes.map((node) => ({ pathKey: path.key, node }));
+    return nodes.map((node) => ({ pathKey: path.key, node, rank: path.nodes.indexOf(node) + 1 }));
   });
 }
 

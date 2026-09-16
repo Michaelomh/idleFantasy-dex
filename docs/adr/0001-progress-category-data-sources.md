@@ -6,9 +6,9 @@ The Dashboard renders Completion for every tracked Goal (see `CONTEXT.md`). Each
 computed by one function in `src/lib/progress/categories.ts`, and each draws its universe
 (denominator) and its owned/done count (numerator) from different places:
 
-- **Game Data** — static JSON fetched from `public/game-data/` via `src/lib/progress/game-data.ts`.
-- **Save file** — fields read off `ps.raw.*`, the parsed Save Export.
-- **Hard-coded** — a constant or threshold list in the app's own source, not derived from
+- **Game Data** - static JSON fetched from `public/game-data/` via `src/lib/progress/game-data.ts`.
+- **Save file** - fields read off `ps.raw.*`, the parsed Save Export.
+- **Hard-coded** - a constant or threshold list in the app's own source, not derived from
   either of the above per-save or per-sync.
 
 This mapping isn't obvious from reading the Dashboard UI, and previous per-category
@@ -27,7 +27,7 @@ source" is the data that defines what full completion means.
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Levels & Prestige  | `flags.skill_prestige`, `skillLevels`                                                                                                                                                                                                   | `prestige_paths.json`                                                                                                                                                                              |
 | Guilds             | `flags.guild_daily_tier_counts`, `questProgress`                                                                                                                                                                                        | `guild_quests.json` + `ALL_GUILDS`/`GUILD_MAX_LEVEL`, hard-coded in `game/skills.ts`                                                                                                               |
-| Bosses             | `flags.enemy_kills`, `flags.seen_item_keys`                                                                                                                                                                                             | `raid_bosses.json` — 8 solo bosses plus 3 raid bosses (`obsidian_colossus`, `brood_empress`, `the_world_ender`, each flagged `"raid": true`) in the same file                                      |
+| Bosses             | `flags.enemy_kills`, `flags.seen_item_keys`                                                                                                                                                                                             | `raid_bosses.json` - 8 solo bosses plus 3 raid bosses (`obsidian_colossus`, `brood_empress`, `the_world_ender`, each flagged `"raid": true`) in the same file                                      |
 | Bestiary           | `flags.enemy_kills`                                                                                                                                                                                                                     | `enemies.json`                                                                                                                                                                                     |
 | Infinity Tower     | `flags.tower_best_floor`                                                                                                                                                                                                                | fixed cap of 250, hard-coded                                                                                                                                                                       |
 | Armoury            | `flags.seen_item_keys`                                                                                                                                                                                                                  | `equipment.json`                                                                                                                                                                                   |
@@ -49,7 +49,7 @@ Two categories intentionally deviate from "denominator strictly from Game Data":
   `equipment.json`, `enemies.json`'s drop tables, `marketplace.json`, or the raw resource
   catalogues (`gems.json`, `ores.json`, `logs.json`, `crops.json`, `bones.json`,
   `runes.json`). This exists because even that combined catalogue is known to be
-  incomplete — without the save-derived extension, an item a player owns could be
+  incomplete - without the save-derived extension, an item a player owns could be
   impossible to reach 100% on, since it would never appear in the denominator (see the
   category's `info` string in the UI).
 - **Seasonal Events** takes the max of the catalogue and the earned count, since a player
@@ -58,6 +58,6 @@ Two categories intentionally deviate from "denominator strictly from Game Data":
 
 One further category intentionally deviates from a plain save-file count:
 
-- **Titles** excludes seasonal titles (`seasonal_*`) from the count — shown for
+- **Titles** excludes seasonal titles (`seasonal_*`) from the count - shown for
   visibility, but not counted, since they're a new unbounded value per event and not in
   the hand-copied `CHARACTER_TITLES` catalogue.

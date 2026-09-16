@@ -6,9 +6,9 @@ import { CATEGORY_ORDER } from '@/lib/game/skills';
 import { SkillBonusRow } from '@/components/skill-bonus-row';
 import { ActiveBoostsSection } from '@/components/active-boosts-section';
 import { Button } from '@/components/ui/button.tsx';
-import { formatNumber } from '@/lib/format-number';
+import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 import {
   getCachedSave,
   getDirectoryHandle,
@@ -56,7 +56,7 @@ export function DashboardPage() {
       const identity = getSelectedSlot();
       const result = await scanBackupDir({ userGesture: true });
       if (result.kind !== 'scanned') {
-        setSyncError('Could not reach the backup folder — check its permission and try again.');
+        setSyncError('Could not reach the backup folder - check its permission and try again.');
         return;
       }
       if (identity) {
@@ -130,7 +130,7 @@ export function DashboardPage() {
         {stats.map(({ label, value }) => (
           <div key={label} className="rounded-md border border-border p-3">
             <p className="label text-text-secondary">{label}</p>
-            <p className="data text-lg">{value ?? '—'}</p>
+            <p className="data text-lg">{value ?? '-'}</p>
           </div>
         ))}
       </div>

@@ -1,4 +1,4 @@
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 
 const XP_BLESSING_MAGNITUDE: Record<string, number> = {
   blessed_focus: 1.05,
@@ -24,9 +24,14 @@ export function resolveActiveXpBlessing(
   activeBlessingKey: string,
   expiresAt: number,
   now: number,
+  prayerCapeMult = 1,
 ): ActiveXpBlessing | null {
   if (!activeBlessingKey || expiresAt <= now) return null;
   const magnitude = XP_BLESSING_MAGNITUDE[activeBlessingKey];
   if (magnitude === undefined) return null;
-  return { key: activeBlessingKey, label: humanize(activeBlessingKey), xpPct: Math.round((magnitude - 1) * 100) };
+  return {
+    key: activeBlessingKey,
+    label: humanize(activeBlessingKey),
+    xpPct: Math.round((magnitude - 1) * prayerCapeMult * 1000) / 10,
+  };
 }
