@@ -16,7 +16,7 @@ import {
   type CalculatorInputs,
   type ModifierRow,
 } from '@/lib/calculator';
-import { formatNumber } from '@/lib/format-number';
+import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
 import { WipNotice } from '@/components/wip-notice';
 import { Separator } from '@/components/ui/separator';
@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { StatusNotice } from '@/components/status-notice';
 
 function defaultTarget(targets: TargetOption[]): string {
   const unlocked = targets.filter((t) => !t.locked);
@@ -48,15 +49,26 @@ function BreakdownSection({ title, rows, defaultOpen }: { title: string; rows: M
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent className="flex flex-col gap-2">
-        {rows.map((row, i) => (
-          <div key={row.label}>
-            {i > 0 && <Separator className="my-1.5" />}
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="body min-w-0 truncate text-text-secondary">{row.label}</span>
-              <span className="data shrink-0">{row.value}</span>
+        {rows.map((row, i) =>
+          row.heading ? (
+            <div key={row.label}>
+              {i > 0 && <Separator className="my-1.5" />}
+              <span className="label text-text-secondary uppercase">{row.label}</span>
             </div>
-          </div>
-        ))}
+          ) : (
+            <div key={row.label}>
+              {i > 0 && !rows[i - 1]?.heading && <Separator className="my-1.5" />}
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="body flex min-w-0 items-center gap-1.5 text-text-secondary">
+                  <span className="min-w-0 truncate">{row.label}</span>
+                  {row.warning && <StatusNotice variant="unvalidated" message={row.warning} />}
+                  {row.info && <StatusNotice variant="info" message={row.info} />}
+                </span>
+                <span className="data shrink-0">{row.value}</span>
+              </div>
+            </div>
+          ),
+        )}
       </CollapsibleContent>
     </Collapsible>
   );
@@ -67,10 +79,9 @@ export function CalculatorSkillPage() {
   const match = matchRoute(location.pathname);
   const skillId = match?.path.replace('/calculator/', '') ?? '';
   const playerState = usePlayerState();
-
   const [targets, setTargets] = useState<TargetOption[] | null>(null);
   const [targetKey, setTargetKey] = useState('');
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState('1');
   const [cropCount, setCropCount] = useState<number | null>(null);
   const [defaultCropCount, setDefaultCropCount] = useState(3);
   const [ashCatalystKey, setAshCatalystKey] = useState<string | null>(null);
@@ -115,16 +126,19 @@ export function CalculatorSkillPage() {
     };
   }, [skillId, playerState]);
 
+  const qtyValid = /^\d+$/.test(qty) && Number(qty) > 0;
+
   const inputs: CalculatorInputs | null = useMemo(() => {
     if (!targetKey || !playerState) return null;
+    if (config.showQty && !qtyValid) return null;
     return {
       targetKey,
-      qty: config.showQty ? qty : undefined,
+      qty: config.showQty ? Number(qty) : undefined,
       cropCount: config.showCropCount ? (cropCount ?? defaultCropCount) : undefined,
       ashCatalystKey: config.showAshCatalyst ? ashCatalystKey : null,
       timedBoostsEnabled,
     };
-  }, [targetKey, qty, cropCount, defaultCropCount, ashCatalystKey, timedBoostsEnabled, config, playerState, skillId]);
+  }, [targetKey, qty, qtyValid, cropCount, defaultCropCount, ashCatalystKey, timedBoostsEnabled, config, playerState]);
 
   useEffect(() => {
     if (!playerState || !inputs) return;
@@ -179,9 +193,9 @@ export function CalculatorSkillPage() {
               id="qty"
               type="number"
               min={1}
-              className="w-20"
+              className={`w-20 ${qtyValid ? '' : 'border-destructive'}`}
               value={qty}
-              onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
+              onChange={(e) => setQty(e.target.value)}
             />
           </div>
         )}
@@ -189,7 +203,7 @@ export function CalculatorSkillPage() {
         {config.showCropCount && (
           <div className="flex items-center justify-between gap-2">
             <Label htmlFor="crop-count" className="min-w-0 truncate">
-              Crop count
+              Farming Patches
             </Label>
             <Input
               id="crop-count"
@@ -225,7 +239,7 @@ export function CalculatorSkillPage() {
 
         <div className="flex items-center justify-between gap-2">
           <Label htmlFor="timed-boosts" className="min-w-0 truncate">
-            Timed boosts
+            Timed Boosts
           </Label>
           <Switch id="timed-boosts" checked={timedBoostsEnabled} onCheckedChange={setTimedBoostsEnabled} />
         </div>
@@ -285,7 +299,11 @@ export function CalculatorSkillPage() {
                         {item.label}
                       </span>
                       <span className="data shrink-0">
-                        {item.rangeMin} - {item.rangeMax}
+                        {item.expected.toFixed(2)}
+                        <span className="body text-text-secondary">
+                          {' '}
+                          ({item.rangeMin} - {item.rangeMax})
+                        </span>
                       </span>
                     </div>
                   ))}
@@ -322,7 +340,7 @@ export function CalculatorSkillPage() {
           </div>
 
           {result.successBreakdown && result.successBreakdown.length > 0 && (
-            <BreakdownSection title="Probability breakdown" rows={result.successBreakdown} defaultOpen={true} />
+            <BreakdownSection title="Probability Breakdown" rows={result.successBreakdown} defaultOpen={true} />
           )}
 
           {(() => {
@@ -330,15 +348,15 @@ export function CalculatorSkillPage() {
               {
                 yield:
                   result.yieldBreakdown.length > 0
-                    ? { title: 'Yield breakdown', rows: result.yieldBreakdown, defaultOpen: isGathering }
+                    ? { title: 'Yield Breakdown', rows: result.yieldBreakdown, defaultOpen: isGathering }
                     : null,
                 xp:
                   result.xpBreakdown.length > 0
-                    ? { title: 'XP breakdown', rows: result.xpBreakdown, defaultOpen: false }
+                    ? { title: 'XP Breakdown', rows: result.xpBreakdown, defaultOpen: false }
                     : null,
                 session:
                   result.sessionBreakdown.length > 0
-                    ? { title: 'Session length breakdown', rows: result.sessionBreakdown, defaultOpen: false }
+                    ? { title: 'Session length Breakdown', rows: result.sessionBreakdown, defaultOpen: false }
                     : null,
               };
             const visible = sectionOrder.filter((id): id is SectionId => sectionDefs[id] !== null);

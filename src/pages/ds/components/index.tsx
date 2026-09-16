@@ -38,7 +38,7 @@ export function Component() {
         </Link>
         <h1 className="h1 mt-2">Design system components</h1>
         <p className="body mt-1">
-          Every component from the design-system build, rendered with fixture props — not screenshots, not real save
+          Every component from the design-system build, rendered with fixture props - not screenshots, not real save
           data.
         </p>
       </header>
@@ -115,11 +115,11 @@ export function Component() {
       <Section title="Headers">
         <div className="flex max-w-sm flex-col gap-3">
           <div>
-            <div className="label mb-2 text-muted-foreground">Top status bar — single slot</div>
+            <div className="label mb-2 text-muted-foreground">Top status bar - single slot</div>
             <TopStatusBar characterName="Kyrasoar" onRefresh={() => {}} onSettings={() => {}} />
           </div>
           <div>
-            <div className="label mb-2 text-muted-foreground">Top status bar — multiple slots</div>
+            <div className="label mb-2 text-muted-foreground">Top status bar - multiple slots</div>
             <TopStatusBar
               characterName="Kyrasoar"
               hasMultipleSlots
@@ -129,7 +129,7 @@ export function Component() {
             />
           </div>
           <div>
-            <div className="label mb-2 text-muted-foreground">Top status bar — manual-upload-only</div>
+            <div className="label mb-2 text-muted-foreground">Top status bar - manual-upload-only</div>
             <TopStatusBar characterName="Kyrasoar" manualUploadOnly onLoad={() => {}} onSettings={() => {}} />
           </div>
           <div>
@@ -158,7 +158,7 @@ export function Component() {
 
       <Section title="Floating nav bar">
         <p className="body mb-4">
-          Not part of v1 — reserves the roadmap's future V2/V3 tab bar ({'Progress / Forecast / Simulate'}). Fixed to
+          Not part of v1 - reserves the roadmap's future V2/V3 tab bar ({'Progress / Forecast / Simulate'}). Fixed to
           the viewport, so it renders at the bottom of this whole page rather than inline.
         </p>
         <FloatingNavBar items={NAV_ITEMS} activeIndex={activeTab} onChange={setActiveTab} />

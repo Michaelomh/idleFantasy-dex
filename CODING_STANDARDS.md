@@ -2,7 +2,7 @@
 
 Conventions for this repo that aren't already enforced by ESLint, Prettier, or
 `tsconfig.json`. Read alongside `CLAUDE.md` (project rules) and `CONTEXT.md` (domain
-language) — this file only covers code style and structure.
+language) - this file only covers code style and structure.
 
 ## TypeScript
 
@@ -15,7 +15,7 @@ language) — this file only covers code style and structure.
 ## Styling
 
 - Don't reach for arbitrary-value syntax on a CSS custom property (`text-(--text-secondary)`,
-  `bg-(--bg-elevated)`) when a real Tailwind utility already maps to it — use the semantic
+  `bg-(--bg-elevated)`) when a real Tailwind utility already maps to it - use the semantic
   utility class instead (`text-secondary`, `bg-card`). Check the `@theme inline` block in
   `src/index.css` for the `--color-*` → custom-property mapping.
 - If no utility maps to a CSS variable yet, add the `--color-*` mapping in `src/index.css`
@@ -29,15 +29,15 @@ Some TS union types (e.g. `CharacterRace`, `CharacterTitle` in `src/lib/save-sou
 are hand-copied from Idle Fantasy's Kotlin source, not derived from the vendored JSON. The
 game can add new values in any update, so:
 
-- Always add an escape hatch (`| (string & {})`) instead of a closed literal type — a save
+- Always add an escape hatch (`| (string & {})`) instead of a closed literal type - a save
   with an unrecognized value must not fail to parse.
-- Derive literal values from a real save export, not the game's UI source — they can
+- Derive literal values from a real save export, not the game's UI source - they can
   disagree (e.g. `"Halfling"` in the character-creation UI vs `"halfling"` in
   `flags.character_race`).
 - Export known values as a runtime array (`KNOWN_CHARACTER_RACES`, etc.) and derive the
   union from it with `(typeof ARRAY)[number] | (string & {})`, instead of writing the
   literals twice.
-- Pass the parsed value through `warnOnDrift()` in `validate.ts` — a dev-only warning
+- Pass the parsed value through `warnOnDrift()` in `validate.ts` - a dev-only warning
   tagged `[game-data-drift]` that never fails the save, just surfaces drift.
 
 See `CLAUDE.md` for the full list of closed sets likely to drift this way (quest IDs, boss
@@ -45,7 +45,7 @@ IDs, skill IDs, equipment slots, etc.).
 
 ## Comments
 
-Default to no comments. Only write one when the WHY is non-obvious — a hidden constraint, a
+Default to no comments. Only write one when the WHY is non-obvious - a hidden constraint, a
 workaround for a specific bug, or behavior that would surprise a reader. Don't explain WHAT
 the code does; a well-named function or variable already does that.
 
@@ -54,7 +54,7 @@ the code does; a well-named function or variable already does that.
 Async UI actions (button clicks, syncs) follow the pattern in `handleSync`
 (`dashboard-page.tsx`): `try { ... } finally { setLoading(false) }`, with a local error
 `useState` surfaced inline in the UI. There's no error boundary, no global error store, and
-no toast-on-error — an error is handled at the call site that produced it, not bubbled up.
+no toast-on-error - an error is handled at the call site that produced it, not bubbled up.
 
 ## State & data fetching
 
@@ -67,14 +67,14 @@ no toast-on-error — an error is handled at the call site that produced it, not
 ## Performance
 
 Lazy-load rarely-used or dev-only routes with `lazy: () => import(...)` (see the `/ds/*`
-routes in `main.tsx`) rather than bundling them into the main chunk — this is a PWA where
+routes in `main.tsx`) rather than bundling them into the main chunk - this is a PWA where
 install size matters.
 
 ## Architecture
 
 - Each Dashboard Goal is computed by one function in `src/lib/progress/categories.ts`. When
   adding or changing a Goal, record its numerator/denominator data sources in
-  `docs/adr/0001-progress-category-data-sources.md` — see that ADR for the existing mapping
+  `docs/adr/0001-progress-category-data-sources.md` - see that ADR for the existing mapping
   and rationale.
 - Domain terms (Goal, Completion, Player State, Save Export, Projection, Ledger, etc.) are
   defined in `CONTEXT.md`. Use them consistently; the "Avoid" list per term calls out the
@@ -95,7 +95,7 @@ install size matters.
 - `src/lib/` is organized by domain area (`bonuses/`, `progress/`, `save-source/`, `game/`,
   `player/`, `app/`), not by technical layer. A subfolder with more than one internal file
   gets an `index.ts` barrel that re-exports its public surface explicitly (named, not
-  `export *`, except `save-source/index.ts` re-exporting `types.ts` wholesale) — see
+  `export *`, except `save-source/index.ts` re-exporting `types.ts` wholesale) - see
   `lib/bonuses/index.ts`. Import from the folder (`@/lib/bonuses`), never from an internal
   file inside it (`@/lib/bonuses/resolve-skill-bonuses`); nothing in the repo does the latter
   today, so a new import reaching past a barrel is a regression, not a precedent.
@@ -107,5 +107,5 @@ install size matters.
 There is no test suite and no test framework installed in this repo (`package.json` has no
 `vitest`/`jest`/`playwright` dependency, and `src/` has no `*.test.*`/`*.spec.*` files).
 Correctness currently rests on `pnpm typecheck`, `pnpm lint`, and manual verification. Don't
-assume a testing convention that isn't here — if you introduce a framework, add its
+assume a testing convention that isn't here - if you introduce a framework, add its
 conventions to this section rather than guessing at them in advance.

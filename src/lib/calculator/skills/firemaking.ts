@@ -1,6 +1,6 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getLogEntries } from '../game-data';
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 import {
   resolveModifiers,
   applyXpMultipliers,
@@ -22,12 +22,14 @@ const ASH_FOR_LOG: Record<string, string> = {
 };
 
 export async function firemaking(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
-  const [logs, mods] = await Promise.all([
-    getLogEntries(),
-    resolveModifiers(playerState, 'firemaking', inputs.timedBoostsEnabled),
-  ]);
-
+  const logs = await getLogEntries();
   const log = logs[inputs.targetKey];
+  const mods = await resolveModifiers(
+    playerState,
+    'firemaking',
+    inputs.timedBoostsEnabled,
+    (log?.level_required as number | undefined) ?? 0,
+  );
   const qty = inputs.qty ?? 1;
   const xpPerLog = (log?.xp_per_log as number | undefined) ?? 0;
   const rawXp = xpPerLog * qty * mods.toolEff;
@@ -43,7 +45,7 @@ export async function firemaking(playerState: PlayerState, inputs: CalculatorInp
     xp: { value: applyXpMultipliers(rawXp, mods) },
     guaranteedItems: [{ key: ashKey, label: humanize(ashKey), qty: outputQty }],
     bonusItems: [],
-    yieldBreakdown: withBaseRow('Base yield', qty, mods.yieldModifiers),
+    yieldBreakdown: withBaseRow('Base Yield', qty, mods.yieldModifiers),
     xpBreakdown: withBaseRow('Base XP', xpPerLog * qty, [
       ...toolEfficiencyRows(mods, xpPerLog * qty),
       ...mods.xpModifiers,

@@ -40,6 +40,7 @@
   --color-notice-bg: var(--notice-bg);
   --color-notice-border: var(--notice-border);
   --color-notice-text: var(--notice-text);
+  --color-neutral-invert: var(--neutral-invert);
 
   --ease-sheet: var(--ease-sheet);
   --duration-sheet: var(--dur-sheet);
@@ -102,6 +103,7 @@
   --aging: #e0a63e;
   --stale: #d9705f;
   --error: #ef4444;
+  --neutral-invert: #ffffff;
 
   --glow: radial-gradient(120% 45% at 50% 0%, rgba(227, 179, 65, 0.05), rgba(15, 20, 32, 0) 60%);
   --grain-opacity: 0.03;
@@ -124,6 +126,7 @@
   --aging: #c08a2e;
   --stale: #b4453b;
   --error: #c6362b;
+  --neutral-invert: #000000;
 
   --glow: none;
   --grain-opacity: 0.035;
@@ -148,6 +151,7 @@
     --aging: #c08a2e;
     --stale: #b4453b;
     --error: #c6362b;
+    --neutral-invert: #000000;
     --glow: none;
     --grain-opacity: 0.035;
     --hex-stroke: transparent;

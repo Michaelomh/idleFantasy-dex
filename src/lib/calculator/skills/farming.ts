@@ -1,7 +1,7 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getEquipment, getBuildings } from '@/lib/progress/game-data';
 import { getCropEntries } from '../game-data';
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 import { resolveModifiers, applyXpMultipliers, withBaseRow } from '../modifiers';
 import type { ModifierRow } from '../types';
 import { toolEfficiency } from '../tool-efficiency';
@@ -39,17 +39,14 @@ export async function totalPatchCount(playerState: PlayerState, level: number): 
 }
 
 export async function farming(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
-  const [crops, equipment, mods] = await Promise.all([
-    getCropEntries(),
-    getEquipment(),
-    resolveModifiers(playerState, 'farming', inputs.timedBoostsEnabled),
-  ]);
+  const [crops, equipment] = await Promise.all([getCropEntries(), getEquipment()]);
 
   const crop = crops[inputs.targetKey];
+  const mods = await resolveModifiers(playerState, 'farming', inputs.timedBoostsEnabled);
   const patchCount = inputs.cropCount ?? (await totalPatchCount(playerState, mods.level));
-  const hoeMult = toolEfficiency('farming', mods.level, playerState, equipment);
+  const hoeMult = toolEfficiency('farming', playerState, equipment);
   const ashMult = inputs.ashCatalystKey ? (ASH_FARMING_MULT[inputs.ashCatalystKey] ?? 1) : 1;
-  const yieldMult = hoeMult * ashMult * (1 + mods.yieldPct / 100);
+  const yieldMult = hoeMult * ashMult * mods.yieldMultiplier;
 
   const [yieldMin, yieldMax] = uniformSumRange(crop?.yield_min ?? 0, crop?.yield_max ?? 0, yieldMult, patchCount);
   const yieldExpected = Math.round((((crop?.yield_min ?? 0) + (crop?.yield_max ?? 0)) / 2) * yieldMult) * patchCount;
@@ -59,19 +56,19 @@ export async function farming(playerState: PlayerState, inputs: CalculatorInputs
 
   const baseYield = (((crop?.yield_min ?? 0) + (crop?.yield_max ?? 0)) / 2) * patchCount;
   const yieldRows: ModifierRow[] = [];
-  if (hoeMult !== 1) yieldRows.push({ label: 'Hoe efficiency', value: `×${hoeMult.toFixed(2)}` });
+  if (hoeMult !== 1) yieldRows.push({ label: 'Hoe efficiency', value: `x${hoeMult.toFixed(2)}` });
   if (ashMult !== 1)
     yieldRows.push({
       label: `Ash catalyst (${humanize(inputs.ashCatalystKey ?? '')})`,
-      value: `×${ashMult.toFixed(2)}`,
+      value: `x${ashMult.toFixed(2)}`,
     });
   yieldRows.push(...mods.yieldModifiers);
 
   return {
     xp: {
-      value: applyXpMultipliers(plantXp + harvestXpPerYield * yieldExpected, mods),
-      min: applyXpMultipliers(plantXp + harvestXpPerYield * yieldMin, mods),
-      max: applyXpMultipliers(plantXp + harvestXpPerYield * yieldMax, mods),
+      value: plantXp + applyXpMultipliers(harvestXpPerYield * yieldExpected, mods),
+      min: plantXp + applyXpMultipliers(harvestXpPerYield * yieldMin, mods),
+      max: plantXp + applyXpMultipliers(harvestXpPerYield * yieldMax, mods),
     },
     guaranteedItems: [
       {
@@ -83,7 +80,7 @@ export async function farming(playerState: PlayerState, inputs: CalculatorInputs
       },
     ],
     bonusItems: [],
-    yieldBreakdown: withBaseRow('Base yield', baseYield, yieldRows),
+    yieldBreakdown: withBaseRow('Base Yield', baseYield, yieldRows),
     xpBreakdown: withBaseRow('Base XP', plantXp + harvestXpPerYield * baseYield, [...yieldRows, ...mods.xpModifiers]),
     sessionMinutes: (crop?.growth_time_hours ?? 0) * 60,
     sessionBreakdown: [],

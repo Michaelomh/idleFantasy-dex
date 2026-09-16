@@ -1,14 +1,15 @@
-import { ChevronRight, CircleHelp } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { cn } from 'cn';
 
 import { Progress } from '@/components/ui/progress';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { StatusNotice } from '@/components/status-notice';
 
 export function GoalCard({
   name,
   current,
   total,
   info,
+  status,
   onClick,
   className,
 }: {
@@ -16,6 +17,7 @@ export function GoalCard({
   current: number;
   total: number;
   info?: string;
+  status?: 'wip' | 'unvalidated' | 'unconfident' | 'info';
   onClick?: () => void;
   className?: string;
 }) {
@@ -35,14 +37,9 @@ export function GoalCard({
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
           <span className="h3 truncate">{name}</span>
-          {info && (
+          {status && (
             <span onClick={(e) => e.stopPropagation()}>
-              <Popover>
-                <PopoverTrigger>
-                  <CircleHelp className="size-3.5 shrink-0 text-muted-foreground" />
-                </PopoverTrigger>
-                <PopoverContent>{info}</PopoverContent>
-              </Popover>
+              <StatusNotice variant={status} message={info} className="size-3.5" />
             </span>
           )}
         </div>

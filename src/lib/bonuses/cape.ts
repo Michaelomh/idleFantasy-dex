@@ -2,9 +2,6 @@ import type { PlayerState } from '@/lib/save-source/types';
 import type { EquipmentEntry } from '@/lib/progress/game-data';
 import type { SkillCategory } from '@/lib/game/skills';
 
-// Ported from PlayerRepository.kt's resolveCapeMultiplier/isGuildCapeForSkill/
-// resolveOwnedCapeKeysForSkill (game version 1.14.11).
-
 export const COMBAT_STAT_SKILLS = ['attack', 'strength', 'defense', 'ranged', 'magic', 'hitpoints'] as const;
 const XP_CAPE_SKILLS = new Set<string>([...COMBAT_STAT_SKILLS, 'slayer', 'agility']);
 const UNSCALED_CAPE_SKILLS = new Set<string>([...COMBAT_STAT_SKILLS, 'slayer']);
@@ -33,6 +30,11 @@ function ownedCapeKeysForSkill(skillId: string): string[] {
       return ['magic_cape', 'mages_guild_cape'];
     case 'hitpoints':
       return ['hp_cape'];
+    case 'farming':
+      // Farming guild cape has no yield effect in the real game (FarmingRepository.kt's
+      // capedDouble only ever checks farming_cape) - its flavor text is dead.
+      // TODO: check this out
+      return ['farming_cape'];
     default:
       return [`${skillId}_cape`, `${skillId}_guild_cape`];
   }
@@ -93,8 +95,14 @@ export function resolveCapeBonus(
   const totalBonus = bestSkillCapeBonus + bestGuildCapeBonus;
   if (totalBonus <= 0) return none;
 
+  // Farming cape is a hard 2x yield doubling in the real game (FarmingRepository.kt's
+  // capedDouble), not the 10% implied by equipment.json's stale flavor text - override the
+  // vendored cape_bonus value for this one skill rather than trusting it.
+  // TODO: check this
+  const effectiveBonus = skillId === 'farming' ? 1 : totalBonus;
+
   const scaling = UNSCALED_CAPE_SKILLS.has(skillId) ? 1 : capeScaling || 1;
-  const multiplier = totalBonus * scaling;
+  const multiplier = effectiveBonus * scaling;
   const winningKey = bestGuildCapeKey || bestSkillCapeKey;
   const capeName = winningKey ? (equipment[winningKey]?.display_name ?? winningKey) : null;
 

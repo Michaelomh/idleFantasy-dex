@@ -1,6 +1,7 @@
 export * from './types';
-export { validate, warnOnDrift } from './validate';
-export { staleness, humanAge } from './staleness';
+export { validate } from './validate';
+export { warnOnDrift } from '@/lib/utils/warn-on-drift';
+export { staleness, humanAge } from '@/lib/utils/staleness';
 export { slotIdentity, isEmptySlot } from './slot-identity';
 export { ingest, isNewerOrEqual } from './ingest';
 export { ingestManualUpload } from './manual-source';

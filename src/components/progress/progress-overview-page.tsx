@@ -6,6 +6,15 @@ import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeAllCategories, rollUp, PROGRESS_SECTIONS, type ProgressCategory } from '@/lib/progress';
 import { LoadingScreen } from '@/components/loading-screen';
 
+// TEMP: would feature as more is validated.
+const CATEGORY_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfident' | 'info'>> = {
+  'heirloom-tools': 'wip',
+  achievements: 'unvalidated',
+  titles: 'unvalidated',
+  inventory: 'info',
+  'grand-monument': 'wip',
+};
+
 export function ProgressOverviewPage() {
   const playerState = usePlayerState();
   const [categories, setCategories] = useState<ProgressCategory[] | null>(null);
@@ -64,6 +73,7 @@ export function ProgressOverviewPage() {
                   current={Math.floor(c.points)}
                   total={c.max}
                   info={c.info}
+                  status={CATEGORY_STATUS[c.id]}
                   onClick={c.hasDrilldown ? () => navigate(`/progress/${c.id}`) : undefined}
                 />
               ))}

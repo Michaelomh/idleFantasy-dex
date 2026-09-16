@@ -1,6 +1,6 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { SKILL_IDS, SKILLS } from '@/lib/game/skills';
-import { formatDurationMs } from './format';
+import { formatDurationMs } from '@/lib/utils/duration';
 import { resolveActiveXpBlessing } from './blessings';
 
 export type ActiveBoostRow = { id: string; name: string; pct: string; scope: string; detail: string };

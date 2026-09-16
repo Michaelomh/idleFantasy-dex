@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for taking a look at idleFantasy-dex. This is a small, early-stage project — the
+Thanks for taking a look at idleFantasy-dex. This is a small, early-stage project - the
 notes below are here so a first contribution doesn't have to start with a round of
 back-and-forth questions.
 
@@ -19,7 +19,7 @@ pnpm install
 pnpm dev
 ```
 
-Before opening a PR, all of these must pass — they're also what CI runs:
+Before opening a PR, all of these must pass - they're also what CI runs:
 
 ```sh
 pnpm typecheck
@@ -33,7 +33,7 @@ pnpm build
 ### Testing the PWA on Android
 
 Since this is mobile-only, use Chrome's USB port forwarding to test full PWA behavior
-(service worker, install prompt) on a real Android phone during dev — no HTTPS tunnel
+(service worker, install prompt) on a real Android phone during dev - no HTTPS tunnel
 needed, since Chrome treats forwarded `localhost` as a secure context.
 
 1. On your phone: Settings → About phone → tap "Build number" 7 times to unlock Developer
@@ -61,17 +61,17 @@ DevTools (console, network, elements) on the phone's page.
 
 If you want to work on something:
 
-- **Small, obvious fixes** (typos, a broken link, a clear bug with a clear fix) — just open
+- **Small, obvious fixes** (typos, a broken link, a clear bug with a clear fix) - just open
   a PR directly.
 - **Anything bigger** (new behavior, a design decision, something that touches the Save
-  Source or Ledger model) — open a GitHub issue first using the appropriate template so we
+  Source or Ledger model) - open a GitHub issue first using the appropriate template so we
   can agree on direction before code gets written. It'll get folded into a longer-lived
   spec from there if needed.
 
 ## Game Data
 
 `public/game-data/` is a vendored, unmodified snapshot of Idle Fantasy's own data files,
-pinned to a specific game version — see `public/game-data/README.md`. Don't hand-edit
+pinned to a specific game version - see `public/game-data/README.md`. Don't hand-edit
 these files. If you think the snapshot is stale, open an issue rather than refreshing it
 yourself; refreshing is a deliberate, by-hand maintainer action (see
 `scripts/sync-game-data.js`).
@@ -79,7 +79,7 @@ yourself; refreshing is a deliberate, by-hand maintainer action (see
 ## Pull requests
 
 - `main` is branch-protected: PRs require the CI `check` status to pass before merging.
-- Fill out the PR template's checklist honestly — it just restates the commands above.
+- Fill out the PR template's checklist honestly - it just restates the commands above.
 - Keep PRs scoped to one change. If a fix reveals unrelated cleanup, mention it in the PR
   description instead of bundling it in.
 

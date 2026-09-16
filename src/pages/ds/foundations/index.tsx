@@ -81,22 +81,22 @@ function Swatch({ name, scopeRef }: { name: string; scopeRef: RefObject<HTMLElem
       <div className="h-10 w-10 shrink-0 rounded-lg border border-border" style={{ background: `var(--${name})` }} />
       <div className="min-w-0">
         <div className="data">{name}</div>
-        <div className="label truncate normal-case">{value || '—'}</div>
+        <div className="label truncate normal-case">{value || '-'}</div>
       </div>
     </div>
   );
 }
 
 const TYPE_ROLES: { cls: string; label: string; sample: string }[] = [
-  { cls: 'num-xl', label: '.num-xl — 72/700 mono, roll-up numeral', sample: '87%' },
-  { cls: 'h1', label: '.h1 — 32/800, wordmark / screen title', sample: 'idleFantasy-dex' },
-  { cls: 'h2', label: '.h2 — 20/700, sub-header / sheet title', sample: 'Quests' },
-  { cls: 'h3', label: '.h3 — 18/700, Goal card name', sample: 'Raid boss drops' },
-  { cls: 'button-label', label: '.button-label — 15/700', sample: 'Upload save export' },
-  { cls: 'body', label: '.body — 15/400', sample: 'See how far every goal is from done.' },
-  { cls: 'data', label: '.data — 15/500 mono', sample: '142 / 189' },
-  { cls: 'list-row', label: '.list-row — 14/400 mono', sample: 'Ardougne Elite Diary' },
-  { cls: 'label', label: '.label — 12/500 mono uppercase', sample: '47 LEFT' },
+  { cls: 'num-xl', label: '.num-xl - 72/700 mono, roll-up numeral', sample: '87%' },
+  { cls: 'h1', label: '.h1 - 32/800, wordmark / screen title', sample: 'idleFantasy-dex' },
+  { cls: 'h2', label: '.h2 - 20/700, sub-header / sheet title', sample: 'Quests' },
+  { cls: 'h3', label: '.h3 - 18/700, Goal card name', sample: 'Raid boss drops' },
+  { cls: 'button-label', label: '.button-label - 15/700', sample: 'Upload save export' },
+  { cls: 'body', label: '.body - 15/400', sample: 'See how far every goal is from done.' },
+  { cls: 'data', label: '.data - 15/500 mono', sample: '142 / 189' },
+  { cls: 'list-row', label: '.list-row - 14/400 mono', sample: 'Ardougne Elite Diary' },
+  { cls: 'label', label: '.label - 12/500 mono uppercase', sample: '47 LEFT' },
 ];
 
 function TypeSection() {
@@ -134,9 +134,9 @@ function SpacingSection() {
 }
 
 const RADIUS_TOKENS = [
-  { name: 'radius-button', label: 'button — 12px' },
-  { name: 'radius-card', label: 'card — 16px' },
-  { name: 'radius-sheet', label: 'sheet — 22px' },
+  { name: 'radius-button', label: 'button - 12px' },
+  { name: 'radius-card', label: 'card - 16px' },
+  { name: 'radius-sheet', label: 'sheet - 22px' },
   { name: 'radius-full', label: 'full / pill' },
 ];
 
@@ -190,7 +190,7 @@ function MotionRow({ name }: { name: string }) {
   return (
     <tr className="border-b border-border">
       <td className="py-2 pr-4 text-muted-foreground">--{name}</td>
-      <td className="py-2">{value || '—'}</td>
+      <td className="py-2">{value || '-'}</td>
     </tr>
   );
 }

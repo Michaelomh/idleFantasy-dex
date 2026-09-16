@@ -6,6 +6,7 @@ import {
   type PlayerState,
   type ValidationResult,
 } from './types';
+import { warnOnDrift } from '@/lib/utils/warn-on-drift';
 
 const ENVELOPE_KEYS = [
   'skillLevels',
@@ -30,7 +31,7 @@ export function validate(text: string, fileName: string): ValidationResult {
   try {
     doc = JSON.parse(text);
   } catch (err) {
-    return { ok: false, reason: 'Not JSON at all — ' + (err as Error).message };
+    return { ok: false, reason: 'Not JSON at all - ' + (err as Error).message };
   }
   if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
     return { ok: false, reason: 'JSON, but not an object' };
@@ -42,7 +43,7 @@ export function validate(text: string, fileName: string): ValidationResult {
   if (missing.length) {
     return {
       ok: false,
-      reason: 'JSON object, but not an Idle Fantasy save — missing ' + missing.join(', '),
+      reason: 'JSON object, but not an Idle Fantasy save - missing ' + missing.join(', '),
       presentKeys: present,
     };
   }
@@ -111,18 +112,6 @@ export function validate(text: string, fileName: string): ValidationResult {
     filenameHint: FILENAME_HINT_RE.test(fileName || '') ? fileName : null,
     playerState,
   };
-}
-
-export function warnOnDrift<T extends string>(
-  label: string,
-  value: T | '' | undefined,
-  known: readonly string[],
-): T | null {
-  if (!value) return null;
-  if (import.meta.env.DEV && !known.includes(value)) {
-    console.warn(`[game-data-drift] unrecognized ${label}: "${value}" — the game may have added a new one.`);
-  }
-  return value;
 }
 
 function numberRecord(v: Record<string, unknown>): Record<string, number> {

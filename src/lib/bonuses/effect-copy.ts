@@ -43,7 +43,7 @@ const EFFECT_DESCRIPTIONS: Partial<Record<string, (value: number) => string>> = 
   flow_rate: (v) => `Flow-state: +${v}% yield per interval of continuous activity, up to +100%.`,
   flow_interval_reduction: (v) => `Flow-state interval shortened by ${v} minutes.`,
   session_floor_min: (v) => `Sessions up to ${v} minutes shorter at level 99.`,
-  cape_scaling: (v) => `Cape bonuses for this skill multiplied ×${v}.`,
+  cape_scaling: (v) => `Cape bonuses for this skill multiplied x${v}.`,
   bonus_roll_pct: (v) => `+${v}% gem find chance while mining.`,
   coin_pct: (v) => `+${v}% coins from this skill.`,
   crop_rotation_pct: (v) => `+${v}% yield when planting a different crop than the last harvest.`,

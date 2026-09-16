@@ -1,7 +1,7 @@
 import { CHARACTER_TITLES, type PlayerState } from '@/lib/save-source/types';
 import { ALL_GUILDS, GUILD_DAILIES_REQUIRED_PER_TIER, GUILD_MAX_LEVEL, guildLabel, SKILL_IDS } from '@/lib/game/skills';
-import { humanize } from '@/lib/humanize';
-import { formatNumber } from '@/lib/format-number';
+import { humanize } from '@/lib/utils/humanize';
+import { formatNumber } from '@/lib/utils/format-number';
 import { computeAchievements } from './achievements';
 import {
   getBones,
@@ -23,7 +23,7 @@ import {
 } from './game-data';
 import { EXPEDITION_KEYS } from './expeditions-data.generated';
 import type { ProgressCategory, ProgressItem } from './types';
-import { MAX_ITEM_LEVEL_XP } from './xp-table';
+import { MAX_ITEM_LEVEL_XP } from '@/lib/utils/xp-table';
 
 function pct(points: number, max: number) {
   return max > 0 ? Math.min(1, points / max) : 0;
@@ -197,7 +197,7 @@ function computeTitles(ps: PlayerState): ProgressCategory {
   // excluded from both numerator and denominator rather than silently dropped or miscounted.
   const seasonalTitles = unlocked.filter((id) => id.startsWith('seasonal_'));
   for (const id of seasonalTitles) {
-    items.push({ id, label: humanize(id), done: true, detail: 'Seasonal — not counted' });
+    items.push({ id, label: humanize(id), done: true, detail: 'Seasonal - not counted' });
   }
 
   return {
@@ -252,7 +252,7 @@ function computeGrandMonument(ps: PlayerState): ProgressCategory {
   };
 }
 
-/** Every expedition completes at 5 notes — enforced at sync time, see scripts/sync-game-data.js. */
+/** Every expedition completes at 5 notes - enforced at sync time, see scripts/sync-game-data.js. */
 const EXPEDITION_NOTE_THRESHOLD = 5;
 
 function computeExpeditions(ps: PlayerState): ProgressCategory {
@@ -326,7 +326,7 @@ async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
     label: 'Inventory',
     points: owned.length,
     max: universe.size,
-    info: 'Built from armoury items, monster drops, and your own save — not an official item list, and not fully accurate.',
+    info: 'Built from armoury items, monster drops, and your own save - not an official item list, and not fully accurate.',
     hasDrilldown: true,
     items: [...universe].map((k) => ({ id: k, label: humanize(k), done: seen.has(k) })),
   };

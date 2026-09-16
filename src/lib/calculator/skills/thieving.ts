@@ -1,7 +1,7 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getEquipment } from '@/lib/progress/game-data';
 import { getThievingNpcs } from '../game-data';
-import { humanize } from '@/lib/humanize';
+import { humanize } from '@/lib/utils/humanize';
 import { resolveModifiers, applyXpMultipliers, withBaseRow } from '../modifiers';
 import { toolEfficiency } from '../tool-efficiency';
 import { SESSION_FRAMES, expectedAndChance, binomialRange } from '../frame-roll';
@@ -11,15 +11,12 @@ const SUCCESS_MIN = 0.1;
 const SUCCESS_MAX = 0.98;
 
 export async function thieving(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
-  const [npcs, equipment, mods] = await Promise.all([
-    getThievingNpcs(),
-    getEquipment(),
-    resolveModifiers(playerState, 'thieving', inputs.timedBoostsEnabled),
-  ]);
+  const [npcs, equipment] = await Promise.all([getThievingNpcs(), getEquipment()]);
 
   const npc = npcs.find((n) => n.key === inputs.targetKey);
-  const lockpickEff = toolEfficiency('thieving', mods.level, playerState, equipment);
   const npcLevel = npc?.level_required ?? 1;
+  const mods = await resolveModifiers(playerState, 'thieving', inputs.timedBoostsEnabled, npcLevel);
+  const lockpickEff = toolEfficiency('thieving', playerState, equipment, npcLevel);
 
   const success = Math.min(
     SUCCESS_MAX,
@@ -31,7 +28,7 @@ export async function thieving(playerState: PlayerState, inputs: CalculatorInput
   const attempts = SESSION_FRAMES / (2 - success);
   const baseXp = npc?.base_xp ?? 0;
   const yieldMult = 1 + mods.yieldPct / 100;
-  const coinMult = yieldMult * (1 + mods.thievingCoinPct / 100);
+  const coinMult = 1 + mods.thievingCoinPct / 100;
 
   const bonusItems = (npc?.loot_table ?? []).map((row) => {
     const avgQty =

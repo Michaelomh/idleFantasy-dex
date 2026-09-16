@@ -14,7 +14,7 @@ assignees: ''
 ## What changed upstream
 
 <!-- Run `pnpm sync-game-data --source <local IdleFantasy checkout>` against the new
-version and describe the diff — new enemies, quests, equipment, etc. A bare version bump
+version and describe the diff - new enemies, quests, equipment, etc. A bare version bump
 with no diff isn't actionable; refreshing the snapshot is always a deliberate, by-hand
 decision, never automated off of this report. -->
 

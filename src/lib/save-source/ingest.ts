@@ -35,7 +35,7 @@ export async function ingest(input: IngestInput): Promise<IngestOutcome> {
     return {
       kind: 'rejected',
       reason:
-        'Looks like an empty save slot (no character name, near-zero progress) — refusing to replace the cached save',
+        'Looks like an empty save slot (no character name, near-zero progress) - refusing to replace the cached save',
       arrival,
     };
   }
@@ -44,7 +44,7 @@ export async function ingest(input: IngestInput): Promise<IngestOutcome> {
     return {
       kind: 'kept-cached',
       identity,
-      reason: 'Incoming export is older than the cached one for this character — kept cached',
+      reason: 'Incoming export is older than the cached one for this character - kept cached',
       arrival,
     };
   }

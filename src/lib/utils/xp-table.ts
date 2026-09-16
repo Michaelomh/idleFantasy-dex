@@ -15,3 +15,12 @@ export function xpForLevel(level: number): number {
 }
 
 export const MAX_ITEM_LEVEL_XP = xpForLevel(99);
+
+export function levelForXp(xp: number): number {
+  let level = 1;
+  for (let l = 2; l <= 99; l++) {
+    if (xp < xpForLevel(l)) break;
+    level = l;
+  }
+  return level;
+}

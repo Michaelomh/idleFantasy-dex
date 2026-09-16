@@ -31,7 +31,7 @@ export default defineConfig(({ command }) => ({
       manifest: {
         name: 'idleFantasy-dex',
         short_name: 'IF-dex',
-        description: 'A completion dashboard for Idle Fantasy — how far every goal is from done.',
+        description: 'A completion dashboard for Idle Fantasy - how far every goal is from done.',
         theme_color: '#0D0E10',
         background_color: '#0D0E10',
         display: 'standalone',

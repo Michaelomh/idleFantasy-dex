@@ -104,7 +104,7 @@ export function SavesPage() {
     try {
       const result = await scanBackupDir({ userGesture: true });
       if (result.kind !== 'scanned') {
-        setError('Could not reach that folder — check its permission and try again.');
+        setError('Could not reach that folder - check its permission and try again.');
         return;
       }
       const identity = result.outcomes.map(acceptedIdentity).find((id): id is string => !!id);
@@ -248,7 +248,7 @@ export function SavesPage() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {Object.keys(slots).length === 1
-                ? "It's your last character — you'll be sent to reconnect a save."
+                ? "It's your last character - you'll be sent to reconnect a save."
                 : "This can't be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>

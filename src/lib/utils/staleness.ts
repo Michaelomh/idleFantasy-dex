@@ -1,4 +1,4 @@
-import type { Staleness } from './types';
+import type { Staleness } from '@/lib/save-source/types';
 
 const HOUR = 60 * 60 * 1000;
 
@@ -12,7 +12,7 @@ export function staleness(exportedAt: number | null, now = Date.now()): Stalenes
 }
 
 export function humanAge(ms: number | null): string {
-  if (ms == null) return '—';
+  if (ms == null) return '-';
   const abs = Math.abs(ms);
   const mins = Math.round(abs / 60000);
   if (mins < 60) return mins + 'm';

@@ -1,14 +1,4 @@
-const base = import.meta.env.BASE_URL + 'game-data/';
-const cache = new Map<string, Promise<unknown>>();
-
-function load<T>(path: string): Promise<T> {
-  let p = cache.get(path) as Promise<T> | undefined;
-  if (!p) {
-    p = fetch(base + path).then((r) => r.json() as Promise<T>);
-    cache.set(path, p);
-  }
-  return p;
-}
+import { loadJson as load } from '@/lib/utils/fetch-json-cache';
 
 export type EquipmentEntry = {
   id?: string;
