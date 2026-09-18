@@ -69,13 +69,7 @@ export function uniformIntVariance(min: number, max: number): number {
  *  x `qtyMean` only captures variance in hit *count*, understating the true spread whenever
  *  qtyVar > 0. Normal approximation is used here (rather than the exact convolution) since these
  *  sessions run 30-60+ trials, well past where the two agree closely. */
-export function compoundRollRange(
-  n: number,
-  p: number,
-  qtyMean: number,
-  qtyVar: number,
-  z = 1.645,
-): [number, number] {
+export function compoundRollRange(n: number, p: number, qtyMean: number, qtyVar: number, z = 1.645): [number, number] {
   if (n <= 0 || p <= 0) return [0, 0];
   const hitMean = n * p;
   const hitVar = n * p * (1 - p);

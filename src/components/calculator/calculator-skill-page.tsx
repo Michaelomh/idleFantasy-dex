@@ -20,7 +20,6 @@ import {
 import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
-import { WipNotice } from '@/components/wip-notice';
 import { Separator } from '@/components/ui/separator';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Input } from '@/components/ui/input';
@@ -147,6 +146,7 @@ export function CalculatorSkillPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skillId, playerState]);
 
   useEffect(() => {
