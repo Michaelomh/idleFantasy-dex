@@ -187,7 +187,9 @@ export async function resolveModifiers(
   const petBoostNodeLabel = petBoostNode ? prestigeNodeLabel(skillId, petBoostNode.pathKey, petBoostNode.rank) : null;
   const isAgility = skillId === 'agility';
   const isFarming = skillId === 'farming';
-  const excludePetFromXpPct = isGatheringTool || isCraftFamily || skillId === 'firemaking' || isAgility || isFarming;
+  const isThieving = skillId === 'thieving';
+  const excludePetFromXpPct =
+    isGatheringTool || isCraftFamily || skillId === 'firemaking' || isAgility || isFarming || isThieving;
 
   const capeXpSource = isAgility
     ? bonus.xpSources.find((s) => s.label !== 'Pets' && s.label !== 'Prestige')
@@ -236,7 +238,7 @@ export async function resolveModifiers(
     xpBoostFactor,
     blessingMultiplier,
     xpPct,
-    petBoostPct: isGatheringTool || isCraftFamily || isAgility ? petBoostPct : 0,
+    petBoostPct: isGatheringTool || isCraftFamily || isAgility || isThieving ? petBoostPct : 0,
     xpCapeMultiplier,
     yieldPct: bonus.yieldPct,
     yieldMultiplier,
@@ -248,7 +250,7 @@ export async function resolveModifiers(
     xpModifiers,
     secondaryMaterialSaveChance,
     inputSavePct,
-    petBoostNodeLabel: isGatheringTool || isCraftFamily || isAgility ? petBoostNodeLabel : null,
+    petBoostNodeLabel: isGatheringTool || isCraftFamily || isAgility || isThieving ? petBoostNodeLabel : null,
   };
 }
 

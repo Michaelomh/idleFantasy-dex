@@ -43,10 +43,10 @@ export async function resolveAllSkillBonuses(playerState: PlayerState): Promise<
     const xpSources: BonusSource[] = [];
     if (petXpPct > 0) xpSources.push({ label: 'Pets', pct: petXpPct });
     if (prestigeXpPct > 0) xpSources.push({ label: 'Prestige', pct: prestigeXpPct });
-    if (cape.appliesToXp && capePct > 0) xpSources.push({ label: cape.capeName ?? 'Cape', pct: capePct });
+    if (cape.appliesToXp && capePct > 0) xpSources.push({ label: 'Cape', pct: capePct });
 
     const yieldSources: BonusSource[] = [];
-    if (!cape.appliesToXp && capePct > 0) yieldSources.push({ label: cape.capeName ?? 'Cape', pct: capePct });
+    if (!cape.appliesToXp && capePct > 0) yieldSources.push({ label: 'Cape', pct: capePct });
     if (prestigeYieldPct > 0) yieldSources.push({ label: 'Prestige', pct: prestigeYieldPct });
 
     const otherBonuses: OtherBonus[] = allEffectTotals(activeNodes)

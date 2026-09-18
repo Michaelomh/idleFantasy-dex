@@ -54,3 +54,33 @@ export function expectedAndChance(
   const [rangeMin, rangeMax] = binomialRange(frames, p);
   return { expected: frames * p, chanceAtLeastOne: 1 - Math.pow(1 - p, frames), rangeMin, rangeMax };
 }
+
+/** Discrete-uniform variance for an inclusive integer range [min, max] - 0 for a fixed qty. */
+export function uniformIntVariance(min: number, max: number): number {
+  if (max <= min) return 0;
+  const outcomes = max - min + 1;
+  return (outcomes * outcomes - 1) / 12;
+}
+
+/** 5th-95th percentile range (normal approximation) for the *total* quantity earned over
+ *  `n` independent Bernoulli(p) hits, where each hit additionally rolls its own quantity with
+ *  mean `qtyMean` and variance `qtyVar` (0 for a fixed per-hit quantity) - e.g. a thieving loot
+ *  row that both has a drop chance AND a min/max quantity roll per drop. Plain `binomialRange`
+ *  x `qtyMean` only captures variance in hit *count*, understating the true spread whenever
+ *  qtyVar > 0. Normal approximation is used here (rather than the exact convolution) since these
+ *  sessions run 30-60+ trials, well past where the two agree closely. */
+export function compoundRollRange(
+  n: number,
+  p: number,
+  qtyMean: number,
+  qtyVar: number,
+  z = 1.645,
+): [number, number] {
+  if (n <= 0 || p <= 0) return [0, 0];
+  const hitMean = n * p;
+  const hitVar = n * p * (1 - p);
+  const mean = hitMean * qtyMean;
+  const variance = hitMean * qtyVar + hitVar * qtyMean * qtyMean;
+  const std = Math.sqrt(Math.max(variance, 0));
+  return [Math.max(0, Math.round(mean - z * std)), Math.round(mean + z * std)];
+}

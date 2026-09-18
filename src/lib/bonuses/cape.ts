@@ -39,7 +39,7 @@ function ownedCapeKeysForSkill(skillId: string): string[] {
   }
 }
 
-const RACK_TIER_1_SKILLS = new Set(['mining', 'fishing', 'woodcutting', 'farming', 'agility', 'thieving']);
+const RACK_TIER_1_SKILLS = new Set(['mining', 'fishing', 'woodcutting', 'farming', 'agility']);
 const RACK_TIER_2_SKILLS = new Set([
   'smithing',
   'cooking',
@@ -57,7 +57,7 @@ function rackTierRequiredFor(skillId: string): number {
   return 3;
 }
 
-export type CapeResolution = { multiplier: number; appliesToXp: boolean; capeName: string | null };
+export type CapeResolution = { multiplier: number; appliesToXp: boolean };
 
 export function resolveCapeBonus(
   playerState: PlayerState,
@@ -65,7 +65,7 @@ export function resolveCapeBonus(
   equipment: Record<string, EquipmentEntry>,
   capeScaling: number,
 ): CapeResolution {
-  const none: CapeResolution = { multiplier: 0, appliesToXp: XP_CAPE_SKILLS.has(skillId), capeName: null };
+  const none: CapeResolution = { multiplier: 0, appliesToXp: XP_CAPE_SKILLS.has(skillId) };
   if (playerState.ironman) return none;
 
   const rackTier =
@@ -73,9 +73,7 @@ export function resolveCapeBonus(
   const categoryUnlocked = rackTier >= rackTierRequiredFor(skillId);
 
   let bestSkillCapeBonus = 0;
-  let bestSkillCapeKey = '';
   let bestGuildCapeBonus = 0;
-  let bestGuildCapeKey = '';
 
   const consider = (key: string, def: EquipmentEntry | undefined) => {
     if (!def || !def.cape_skill || !def.cape_bonus || def.cape_bonus <= 0) return;
@@ -83,13 +81,9 @@ export function resolveCapeBonus(
     if (!matches) return;
     const isGuild = key.endsWith('_guild_cape') || ['warriors', 'archers', 'mages'].includes(def.cape_skill);
     if (isGuild) {
-      if (def.cape_bonus > bestGuildCapeBonus) {
-        bestGuildCapeBonus = def.cape_bonus;
-        bestGuildCapeKey = key;
-      }
-    } else if (def.cape_bonus > bestSkillCapeBonus) {
-      bestSkillCapeBonus = def.cape_bonus;
-      bestSkillCapeKey = key;
+      bestGuildCapeBonus = Math.max(bestGuildCapeBonus, def.cape_bonus);
+    } else {
+      bestSkillCapeBonus = Math.max(bestSkillCapeBonus, def.cape_bonus);
     }
   };
 
@@ -113,8 +107,6 @@ export function resolveCapeBonus(
 
   const scaling = UNSCALED_CAPE_SKILLS.has(skillId) ? 1 : capeScaling || 1;
   const multiplier = effectiveBonus * scaling;
-  const winningKey = bestGuildCapeKey || bestSkillCapeKey;
-  const capeName = winningKey ? (equipment[winningKey]?.display_name ?? winningKey) : null;
 
-  return { multiplier, appliesToXp: XP_CAPE_SKILLS.has(skillId), capeName };
+  return { multiplier, appliesToXp: XP_CAPE_SKILLS.has(skillId) };
 }

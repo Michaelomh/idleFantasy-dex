@@ -101,7 +101,7 @@ export async function farming(playerState: PlayerState, inputs: CalculatorInputs
     });
   if (capeActive)
     yieldRows.push({
-      label: `Farming Cape (${cape.capeName ?? 'Cape Rack'})`,
+      label: 'Farming Cape',
       value: 'x2',
       info: 'Applied as a flat doubling after the base roll is rounded, not folded into the multipliers above.',
     });

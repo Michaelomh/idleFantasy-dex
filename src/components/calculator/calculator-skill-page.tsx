@@ -318,8 +318,6 @@ export function CalculatorSkillPage() {
         )}
       </div>
 
-      {skillId === 'thieving' && <WipNotice />}
-
       {error && (
         <div className="rounded-card border border-destructive bg-card p-3">
           <span className="body text-destructive">Couldn't compute this session: {error}</span>
