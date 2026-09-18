@@ -10,11 +10,7 @@ const CALCULATOR_SKILL_IDS = new Set(
 
 // TEMP: would feature as more is validated.
 const SKILL_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfident'>> = {
-  mining: undefined,
   fishing: 'unconfident',
-  woodcutting: undefined,
-  farming: 'unvalidated',
-  thieving: 'wip',
   smithing: 'unvalidated',
   cooking: 'unvalidated',
   fletching: 'unvalidated',
@@ -23,7 +19,6 @@ const SKILL_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfident'
   runecrafting: 'unvalidated',
   herblore: 'unvalidated',
   construction: 'unvalidated',
-  agility: 'unvalidated',
 };
 
 export function CalculatorOverviewPage() {

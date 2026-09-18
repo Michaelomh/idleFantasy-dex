@@ -42,6 +42,7 @@ export type CalculatorInputs = {
   cropCount?: number;
   ashCatalystKey?: string | null;
   timedBoostsEnabled: boolean;
+  cropRotated?: boolean;
 };
 
 export type TargetOption = {

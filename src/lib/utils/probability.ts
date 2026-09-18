@@ -5,13 +5,14 @@ export function binomialRange(n: number, p: number, lowerPct = 0.05, upperPct = 
   if (p <= 0 || n <= 0) return [0, 0];
   if (p >= 1) return [n, n];
 
-  let pmf = Math.pow(1 - p, n);
+  const logRatio = Math.log(p / (1 - p));
+  let logPmf = n * Math.log(1 - p);
   let cumulative = 0;
   let low = 0;
   let high = n;
   let foundLow = false;
   for (let k = 0; k <= n; k++) {
-    cumulative += pmf;
+    cumulative += Math.exp(logPmf);
     if (!foundLow && cumulative >= lowerPct) {
       low = k;
       foundLow = true;
@@ -20,62 +21,27 @@ export function binomialRange(n: number, p: number, lowerPct = 0.05, upperPct = 
       high = k;
       break;
     }
-    pmf *= ((n - k) / (k + 1)) * (p / (1 - p));
+    logPmf += Math.log((n - k) / (k + 1)) + logRatio;
   }
   return [low, high];
 }
 
-/** `lowerPct`-`upperPct` percentile range for the sum of `count` independent discrete-uniform
- *  draws over `[min, max]`, each individually scaled by `mult` and rounded before summing
- *  (e.g. farming: each patch rolls its own yield, then hoe/ash/prestige scale that patch's
- *  result). Computed via exact convolution of the per-draw distribution - never sampled. All
- *  patches simultaneously rolling the same extreme is a near-impossible tail case, same as
- *  binomialRange's [0, n] problem, so this isn't just `[min, max] x count x mult`. */
-export function uniformSumRange(
-  min: number,
-  max: number,
-  mult: number,
-  count: number,
-  lowerPct = 0.1,
-  upperPct = 0.9,
-): [number, number] {
+export function binomialPmf(n: number, k: number, p: number): number {
+  if (k < 0 || k > n) return 0;
+  if (p <= 0) return k === 0 ? 1 : 0;
+  if (p >= 1) return k === n ? 1 : 0;
+  let logCoeff = 0;
+  for (let i = 0; i < k; i++) logCoeff += Math.log(n - i) - Math.log(i + 1);
+  return Math.exp(logCoeff + k * Math.log(p) + (n - k) * Math.log(1 - p));
+}
+
+/** True min/max for `count` independent direct rolls in [min,max], each scaled and rounded
+ *  individually then summed - unlike the binomial-based ranges above, farming harvests aren't
+ *  a success/fail chain to take a percentile window of, they're a flat uniform roll every time,
+ *  so the absolute extremes *are* the meaningful range. */
+export function rollSumRange(min: number, max: number, mult: number, count: number): [number, number] {
   if (count <= 0 || max < min) return [0, 0];
-
-  const perDraw = new Map<number, number>();
-  const outcomes = max - min + 1;
-  for (let v = min; v <= max; v++) {
-    const scaled = Math.round(v * mult);
-    perDraw.set(scaled, (perDraw.get(scaled) ?? 0) + 1 / outcomes);
-  }
-
-  let dist = new Map<number, number>([[0, 1]]);
-  for (let i = 0; i < count; i++) {
-    const next = new Map<number, number>();
-    for (const [sum, p1] of dist) {
-      for (const [v, p2] of perDraw) {
-        next.set(sum + v, (next.get(sum + v) ?? 0) + p1 * p2);
-      }
-    }
-    dist = next;
-  }
-
-  const sorted = [...dist.entries()].sort((a, b) => a[0] - b[0]);
-  let cumulative = 0;
-  let low = sorted[0][0];
-  let high = sorted[sorted.length - 1][0];
-  let foundLow = false;
-  for (const [value, p] of sorted) {
-    cumulative += p;
-    if (!foundLow && cumulative >= lowerPct) {
-      low = value;
-      foundLow = true;
-    }
-    if (cumulative >= upperPct) {
-      high = value;
-      break;
-    }
-  }
-  return [low, high];
+  return [Math.round(min * mult) * count, Math.round(max * mult) * count];
 }
 
 /** Expectation, P(≥1), and typical (5th-95th percentile) count range for `frames` independent
@@ -87,4 +53,28 @@ export function expectedAndChance(
   if (p <= 0) return { expected: 0, chanceAtLeastOne: 0, rangeMin: 0, rangeMax: 0 };
   const [rangeMin, rangeMax] = binomialRange(frames, p);
   return { expected: frames * p, chanceAtLeastOne: 1 - Math.pow(1 - p, frames), rangeMin, rangeMax };
+}
+
+/** Discrete-uniform variance for an inclusive integer range [min, max] - 0 for a fixed qty. */
+export function uniformIntVariance(min: number, max: number): number {
+  if (max <= min) return 0;
+  const outcomes = max - min + 1;
+  return (outcomes * outcomes - 1) / 12;
+}
+
+/** 5th-95th percentile range (normal approximation) for the *total* quantity earned over
+ *  `n` independent Bernoulli(p) hits, where each hit additionally rolls its own quantity with
+ *  mean `qtyMean` and variance `qtyVar` (0 for a fixed per-hit quantity) - e.g. a thieving loot
+ *  row that both has a drop chance AND a min/max quantity roll per drop. Plain `binomialRange`
+ *  x `qtyMean` only captures variance in hit *count*, understating the true spread whenever
+ *  qtyVar > 0. Normal approximation is used here (rather than the exact convolution) since these
+ *  sessions run 30-60+ trials, well past where the two agree closely. */
+export function compoundRollRange(n: number, p: number, qtyMean: number, qtyVar: number, z = 1.645): [number, number] {
+  if (n <= 0 || p <= 0) return [0, 0];
+  const hitMean = n * p;
+  const hitVar = n * p * (1 - p);
+  const mean = hitMean * qtyMean;
+  const variance = hitMean * qtyVar + hitVar * qtyMean * qtyMean;
+  const std = Math.sqrt(Math.max(variance, 0));
+  return [Math.max(0, Math.round(mean - z * std)), Math.round(mean + z * std)];
 }

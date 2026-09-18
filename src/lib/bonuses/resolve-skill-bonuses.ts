@@ -37,16 +37,16 @@ export async function resolveAllSkillBonuses(playerState: PlayerState): Promise<
       basePetXpPct > 0 && petBoostScalePct > 0
         ? Math.max(basePetXpPct, Math.floor(basePetXpPct * (1 + petBoostScalePct / 100)))
         : basePetXpPct;
-    const cape = resolveCapeBonus(playerState, id, category, equipment, capeScaling);
+    const cape = resolveCapeBonus(playerState, id, equipment, capeScaling);
     const capePct = Math.round(cape.multiplier * 100);
 
     const xpSources: BonusSource[] = [];
     if (petXpPct > 0) xpSources.push({ label: 'Pets', pct: petXpPct });
     if (prestigeXpPct > 0) xpSources.push({ label: 'Prestige', pct: prestigeXpPct });
-    if (cape.appliesToXp && capePct > 0) xpSources.push({ label: cape.capeName ?? 'Cape', pct: capePct });
+    if (cape.appliesToXp && capePct > 0) xpSources.push({ label: 'Cape', pct: capePct });
 
     const yieldSources: BonusSource[] = [];
-    if (!cape.appliesToXp && capePct > 0) yieldSources.push({ label: cape.capeName ?? 'Cape', pct: capePct });
+    if (!cape.appliesToXp && capePct > 0) yieldSources.push({ label: 'Cape', pct: capePct });
     if (prestigeYieldPct > 0) yieldSources.push({ label: 'Prestige', pct: prestigeYieldPct });
 
     const otherBonuses: OtherBonus[] = allEffectTotals(activeNodes)

@@ -21,6 +21,7 @@ export type ResolvedModifiers = {
   blessingMultiplier: number;
   xpPct: number;
   petBoostPct: number;
+  xpCapeMultiplier: number;
   yieldPct: number;
   yieldMultiplier: number;
   ironman: boolean;
@@ -117,7 +118,7 @@ export async function resolveModifiers(
   const prestigeBoosts = (flags.prestige_xp_boosts as Record<string, number> | undefined) ?? {};
   const prestigeBoostActive = timedBoostsEnabled && !ironman && (prestigeBoosts[skillId] ?? 0) > now;
   const xpBoostFactor = (purchasedBoostActive ? 2 : 1) * (prestigeBoostActive ? 2 : 1);
-  const prayerCape = resolveCapeBonus(playerState, 'prayer', 'Support', equipment, 1);
+  const prayerCape = resolveCapeBonus(playerState, 'prayer', equipment, 1);
   const prayerCapeMult = 1 + prayerCape.multiplier;
 
   const blessing =
@@ -184,13 +185,41 @@ export async function resolveModifiers(
       undefined,
     );
   const petBoostNodeLabel = petBoostNode ? prestigeNodeLabel(skillId, petBoostNode.pathKey, petBoostNode.rank) : null;
-  const excludePetFromXpPct = isGatheringTool || isCraftFamily || skillId === 'firemaking';
-  const xpPct = excludePetFromXpPct ? bonus.xpPct - petBoostPct : bonus.xpPct;
+  const isAgility = skillId === 'agility';
+  const isFarming = skillId === 'farming';
+  const isThieving = skillId === 'thieving';
+  const excludePetFromXpPct =
+    isGatheringTool || isCraftFamily || skillId === 'firemaking' || isAgility || isFarming || isThieving;
+
+  const capeXpSource = isAgility
+    ? bonus.xpSources.find((s) => s.label !== 'Pets' && s.label !== 'Prestige')
+    : undefined;
+  const xpCapeMultiplier = 1;
+
+  const xpPct = excludePetFromXpPct ? bonus.xpPct - petBoostPct - (capeXpSource?.pct ?? 0) : bonus.xpPct;
 
   const xpModifiers: ModifierRow[] = [];
   for (const source of bonus.xpSources) {
+    if (source.label === 'Pets' && isFarming) {
+      xpModifiers.push({
+        label: `XP bonus (${source.label})`,
+        value: pct(source.pct),
+        warning:
+          'Farming pets are documented as an XP boost, but the game never actually applies it on harvest - not counted in the total shown.',
+      });
+      continue;
+    }
     if (excludePetFromXpPct && source.label === 'Pets') continue;
+    if (capeXpSource && source === capeXpSource) continue;
     xpModifiers.push({ label: `XP bonus (${source.label})`, value: pct(source.pct) });
+  }
+  if (capeXpSource) {
+    xpModifiers.push({
+      label: `XP bonus (${capeXpSource.label})`,
+      value: pct(capeXpSource.pct),
+      warning:
+        'Live testing shows this doesn’t currently add XP for Agility, even though it’s implemented in the game files - not counted in the total shown.',
+    });
   }
   if (purchasedBoostActive) xpModifiers.push({ label: 'XP Boost (Purchased)', value: 'x2' });
   if (prestigeBoostActive) xpModifiers.push({ label: 'XP Boost (Temporary)', value: 'x2' });
@@ -209,7 +238,8 @@ export async function resolveModifiers(
     xpBoostFactor,
     blessingMultiplier,
     xpPct,
-    petBoostPct: isGatheringTool || isCraftFamily ? petBoostPct : 0,
+    petBoostPct: isGatheringTool || isCraftFamily || isAgility || isThieving ? petBoostPct : 0,
+    xpCapeMultiplier,
     yieldPct: bonus.yieldPct,
     yieldMultiplier,
     ironman,
@@ -220,12 +250,12 @@ export async function resolveModifiers(
     xpModifiers,
     secondaryMaterialSaveChance,
     inputSavePct,
-    petBoostNodeLabel: isGatheringTool || isCraftFamily ? petBoostNodeLabel : null,
+    petBoostNodeLabel: isGatheringTool || isCraftFamily || isAgility || isThieving ? petBoostNodeLabel : null,
   };
 }
 
 export function applyXpMultipliers(rawXp: number, mods: ResolvedModifiers): number {
-  return rawXp * (1 + mods.xpPct / 100) * mods.xpBoostFactor * mods.blessingMultiplier;
+  return rawXp * (1 + mods.xpPct / 100) * mods.xpBoostFactor * mods.blessingMultiplier * mods.xpCapeMultiplier;
 }
 
 export function applyYieldMultiplier(rawQty: number, mods: ResolvedModifiers): number {

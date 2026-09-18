@@ -2,13 +2,15 @@ import type { PlayerState } from '@/lib/save-source/types';
 import { getEquipment } from '@/lib/progress/game-data';
 import { getThievingNpcs } from '../game-data';
 import { humanize } from '@/lib/utils/humanize';
-import { resolveModifiers, applyXpMultipliers, withBaseRow } from '../modifiers';
+import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier } from '../modifiers';
 import { toolEfficiency } from '../tool-efficiency';
-import { SESSION_FRAMES, expectedAndChance, binomialRange } from '../frame-roll';
-import type { CalculatorInputs, SessionResult } from '../types';
+import { SESSION_FRAMES, binomialRange, uniformIntVariance, compoundRollRange } from '../frame-roll';
+import type { CalculatorInputs, ModifierRow, SessionResult } from '../types';
 
 const SUCCESS_MIN = 0.1;
 const SUCCESS_MAX = 0.98;
+
+const RANGE_INFO = 'This is a 5th-95th percentile range, not the absolute min/max - real sessions can land outside it.';
 
 export async function thieving(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
   const [npcs, equipment] = await Promise.all([getThievingNpcs(), getEquipment()]);
@@ -18,58 +20,101 @@ export async function thieving(playerState: PlayerState, inputs: CalculatorInput
   const mods = await resolveModifiers(playerState, 'thieving', inputs.timedBoostsEnabled, npcLevel);
   const lockpickEff = toolEfficiency('thieving', playerState, equipment, npcLevel);
 
-  const success = Math.min(
-    SUCCESS_MAX,
-    Math.max(SUCCESS_MIN, 0.4 + (mods.level - npcLevel) * 0.02 * lockpickEff + mods.thievingSuccessBonus),
-  );
+  const levelDiff = mods.level - npcLevel;
+  const levelBonus = levelDiff * 0.02 * lockpickEff;
+  const uncappedSuccess = 0.4 + levelBonus + mods.thievingSuccessBonus;
+  const success = Math.min(SUCCESS_MAX, Math.max(SUCCESS_MIN, uncappedSuccess));
 
   // A failed attempt stuns the next frame, so a run of frames alternates attempt/stun on
   // failure: expected frames consumed per attempt is 1 + (1 − success).
   const attempts = SESSION_FRAMES / (2 - success);
-  const baseXp = npc?.base_xp ?? 0;
-  const yieldMult = 1 + mods.yieldPct / 100;
+  const expectedSuccesses = attempts * success;
+  const petMult = 1 + mods.petBoostPct / 100;
+  const baseXp = (npc?.base_xp ?? 0) * petMult;
   const coinMult = 1 + mods.thievingCoinPct / 100;
 
+  const roundedAttempts = Math.round(attempts);
+
   const bonusItems = (npc?.loot_table ?? []).map((row) => {
-    const avgQty =
-      (row.min_qty !== undefined && row.max_qty !== undefined ? (row.min_qty + row.max_qty) / 2 : 1) * yieldMult;
-    const { chanceAtLeastOne, rangeMin, rangeMax } = expectedAndChance(Math.round(attempts), success * row.chance);
+    const rawMinQty = row.min_qty ?? 1;
+    const rawMaxQty = row.max_qty ?? 1;
+    const rawAvgQty = (rawMinQty + rawMaxQty) / 2;
+    const avgQty = applyYieldMultiplier(rawAvgQty, mods);
+    const qtyVar = uniformIntVariance(rawMinQty, rawMaxQty) * mods.yieldMultiplier ** 2;
+    const hitChance = success * row.chance;
+    const chanceAtLeastOne = 1 - Math.pow(1 - hitChance, roundedAttempts);
+    const [rangeMin, rangeMax] = compoundRollRange(roundedAttempts, hitChance, avgQty, qtyVar);
     const expected = attempts * success * row.chance * avgQty;
     return {
       key: row.item,
       label: humanize(row.item),
       expected,
       chanceAtLeastOne,
-      rangeMin: Math.round(rangeMin * avgQty),
-      rangeMax: Math.round(rangeMax * avgQty),
+      rangeMin,
+      rangeMax,
     };
   });
 
   if (npc) {
     const avgCoins = ((npc.coins_min + npc.coins_max) / 2) * coinMult;
-    const { chanceAtLeastOne, rangeMin, rangeMax } = expectedAndChance(Math.round(attempts), success);
+    const coinsVar = uniformIntVariance(npc.coins_min, npc.coins_max) * coinMult ** 2;
+    const chanceAtLeastOne = 1 - Math.pow(1 - success, roundedAttempts);
+    const [rangeMin, rangeMax] = compoundRollRange(roundedAttempts, success, avgCoins, coinsVar);
     bonusItems.push({
       key: 'coins',
       label: 'Coins',
       expected: attempts * success * avgCoins,
       chanceAtLeastOne,
-      rangeMin: Math.round(rangeMin * avgCoins),
-      rangeMax: Math.round(rangeMax * avgCoins),
+      rangeMin,
+      rangeMax,
     });
   }
 
-  const yieldBreakdown = [
-    { label: 'Attempts per Session', value: Math.round(attempts).toLocaleString() },
-    { label: 'Success chance', value: `${(success * 100).toFixed(1)}%` },
+  const [successesLow, successesHigh] = binomialRange(roundedAttempts, success);
+
+  const successBreakdown: ModifierRow[] = [
+    ...(mods.thievingSuccessBonus > 0
+      ? [{ label: 'Shadow Step (prestige)', value: `+${(mods.thievingSuccessBonus * 100).toFixed(1)}%` }]
+      : []),
+    {
+      label: 'Final probability',
+      value:
+        uncappedSuccess !== success
+          ? `${(success * 100).toFixed(1)}% (${(uncappedSuccess * 100).toFixed(1)}%)`
+          : `${(uncappedSuccess * 100).toFixed(1)}%`,
+      info: `Based on your Thieving level vs. the target's level requirement, tool efficiency and Shadow Step. Clamped to a ${(SUCCESS_MIN * 100).toFixed(0)}%-${(SUCCESS_MAX * 100).toFixed(0)}% range.`,
+    },
+    {
+      label: 'Expected successes this session',
+      value: `${Math.round(expectedSuccesses).toLocaleString()} (${successesLow} - ${successesHigh})`,
+      info: RANGE_INFO,
+    },
+  ];
+
+  const yieldBreakdown: ModifierRow[] = [
     ...mods.yieldModifiers,
     ...(mods.thievingCoinPct > 0
-      ? [{ label: 'Coin bonus (prestige)', value: `+${mods.thievingCoinPct}% (coins only)` }]
+      ? [
+          {
+            label: 'Yield Bonus (Silver Tongue)',
+            value: `+${mods.thievingCoinPct}% (coins)`,
+          },
+        ]
       : []),
   ];
 
-  const rawXp = attempts * success * baseXp;
+  const rawXp = expectedSuccesses * baseXp;
+  const rawBaseXp = npc?.base_xp ?? 0;
+  const baseXpFormulaParts = [rawBaseXp.toLocaleString()];
+  if (mods.petBoostPct > 0) baseXpFormulaParts.push(`${mods.petBoostPct}%`);
+  baseXpFormulaParts.push(Math.round(expectedSuccesses).toLocaleString());
 
-  const [successesLow, successesHigh] = binomialRange(Math.round(attempts), success, 0.1, 0.9);
+  const xpBreakdown: ModifierRow[] = [
+    { label: 'Target base XP', value: rawBaseXp.toLocaleString() },
+    ...(mods.petBoostPct > 0 ? [{ label: 'Pet XP Boost', value: `+${mods.petBoostPct}%` }] : []),
+    { label: 'Base XP', value: `${Math.round(rawXp).toLocaleString()} (${baseXpFormulaParts.join(' x ')})` },
+    ...mods.xpModifiers,
+  ];
 
   return {
     xp: {
@@ -80,8 +125,10 @@ export async function thieving(playerState: PlayerState, inputs: CalculatorInput
     guaranteedItems: [],
     bonusItems,
     yieldBreakdown,
-    xpBreakdown: withBaseRow('Base XP', rawXp, mods.xpModifiers),
+    xpBreakdown,
     sessionMinutes: mods.sessionMinutes,
     sessionBreakdown: mods.sessionBreakdown,
+    successBreakdown,
+    successRate: success,
   };
 }
