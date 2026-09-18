@@ -12,6 +12,7 @@ export function GoalCard({
   status,
   onClick,
   className,
+  progressLabel,
 }: {
   name: string;
   current: number;
@@ -20,6 +21,7 @@ export function GoalCard({
   status?: 'wip' | 'unvalidated' | 'unconfident' | 'info';
   onClick?: () => void;
   className?: string;
+  progressLabel?: string;
 }) {
   const complete = total > 0 && current >= total;
   const percent = total > 0 ? Math.min(100, (current / total) * 100) : 0;
@@ -47,9 +49,7 @@ export function GoalCard({
       </div>
 
       <div className="flex items-baseline justify-between gap-1.5">
-        <span className={cn('data', complete && 'text-primary')}>
-          {current} / {total}
-        </span>
+        <span className={cn('data', complete && 'text-primary')}>{progressLabel ?? `${current} / ${total}`}</span>
         <span className={cn('label', complete && 'text-primary')}>
           {complete ? 'COMPLETE' : `· ${total - current} LEFT`}
         </span>

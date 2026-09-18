@@ -10,6 +10,7 @@ const DB_NAME = 'idlefantasy-dex';
 const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<SaveSourceSchema>> | null = null;
+const memoryCache = new Map<string, CachedSave>();
 
 function getDb() {
   if (!dbPromise) {
@@ -27,8 +28,14 @@ function getDb() {
   return dbPromise;
 }
 
+export function peekCachedSave(identity: string): CachedSave | undefined {
+  return memoryCache.get(identity);
+}
+
 export async function getCachedSave(identity: string): Promise<CachedSave | undefined> {
-  return (await getDb()).get('playerState', identity);
+  const value = await (await getDb()).get('playerState', identity);
+  if (value) memoryCache.set(identity, value);
+  return value;
 }
 
 export async function getAllCachedSaves(): Promise<Record<string, CachedSave>> {
@@ -40,10 +47,12 @@ export async function getAllCachedSaves(): Promise<Record<string, CachedSave>> {
 
 export async function putCachedSave(identity: string, value: CachedSave): Promise<void> {
   await (await getDb()).put('playerState', value, identity);
+  memoryCache.set(identity, value);
 }
 
 export async function deleteCachedSave(identity: string): Promise<void> {
   await (await getDb()).delete('playerState', identity);
+  memoryCache.delete(identity);
 }
 
 export async function getDirectoryHandle(): Promise<FileSystemDirectoryHandle | undefined> {

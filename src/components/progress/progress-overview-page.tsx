@@ -4,26 +4,30 @@ import { GoalCard } from '@/components/goal-card';
 import { Progress } from '@/components/ui/progress';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeAllCategories, rollUp, PROGRESS_SECTIONS, type ProgressCategory } from '@/lib/progress';
+import type { PlayerState } from '@/lib/save-source';
 import { LoadingScreen } from '@/components/loading-screen';
 
 // TEMP: would feature as more is validated.
 const CATEGORY_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfident' | 'info'>> = {
   'heirloom-tools': 'wip',
-  achievements: 'unvalidated',
   titles: 'unvalidated',
   inventory: 'info',
-  'grand-monument': 'wip',
 };
+
+let categoriesCache: { playerState: PlayerState; categories: ProgressCategory[] } | null = null;
 
 export function ProgressOverviewPage() {
   const playerState = usePlayerState();
-  const [categories, setCategories] = useState<ProgressCategory[] | null>(null);
+  const [categories, setCategories] = useState<ProgressCategory[] | null>(() =>
+    playerState && categoriesCache?.playerState === playerState ? categoriesCache.categories : null,
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!playerState) return;
     let cancelled = false;
     void computeAllCategories(playerState).then((result) => {
+      categoriesCache = { playerState, categories: result };
       if (!cancelled) setCategories(result);
     });
     return () => {
@@ -74,6 +78,7 @@ export function ProgressOverviewPage() {
                   total={c.max}
                   info={c.info}
                   status={CATEGORY_STATUS[c.id]}
+                  progressLabel={c.progressLabel}
                   onClick={c.hasDrilldown ? () => navigate(`/progress/${c.id}`) : undefined}
                 />
               ))}
