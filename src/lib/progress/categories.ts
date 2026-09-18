@@ -2,6 +2,7 @@ import { CHARACTER_TITLES, type PlayerState } from '@/lib/save-source/types';
 import { ALL_GUILDS, GUILD_DAILIES_REQUIRED_PER_TIER, GUILD_MAX_LEVEL, guildLabel, SKILL_IDS } from '@/lib/game/skills';
 import { humanize } from '@/lib/utils/humanize';
 import { formatNumber } from '@/lib/utils/format-number';
+import { warnOnDrift } from '@/lib/utils/warn-on-drift';
 import { computeAchievements } from './achievements';
 import {
   getBones,
@@ -185,6 +186,9 @@ async function computePets(ps: PlayerState): Promise<ProgressCategory> {
 
 function computeTitles(ps: PlayerState): ProgressCategory {
   const unlocked = (ps.raw.flags.unlocked_titles as string[] | undefined) ?? [];
+  for (const id of unlocked) {
+    if (!id.startsWith('seasonal_')) warnOnDrift('unlocked title', id, CHARACTER_TITLES);
+  }
   const unlockedSet = new Set(unlocked);
   const items: ProgressItem[] = CHARACTER_TITLES.map((id) => ({
     id,
@@ -207,6 +211,7 @@ function computeTitles(ps: PlayerState): ProgressCategory {
     max: CHARACTER_TITLES.length,
     hasDrilldown: true,
     items,
+    info: 'Might not work properly with seasonal titles',
   };
 }
 
@@ -240,15 +245,16 @@ function computeGrandMonument(ps: PlayerState): ProgressCategory {
   const tier = Number(ps.raw.flags.monument_tier ?? 0);
   const fund = Number(ps.raw.flags.monument_fund ?? 0);
   const FLAME_GOAL = 1_000_000_000;
-  const discreteStages = Math.min(tier, 4);
-  const flameProgress = Math.min(fund / FLAME_GOAL, 1);
+  const points = tier <= 3 ? tier : tier === 4 ? 4 + Math.min(fund / FLAME_GOAL, 1) : 5;
   return {
     id: 'grand-monument',
     label: 'Grand Monument',
-    points: discreteStages + flameProgress,
+    points,
     max: 5,
     hasDrilldown: false,
     items: [],
+    progressLabel:
+      tier === 4 ? `${formatNumber(fund)} / 1,000M (${((fund / FLAME_GOAL) * 100).toFixed(1)}%)` : undefined,
   };
 }
 
@@ -419,7 +425,7 @@ export async function computeAllCategories(ps: PlayerState): Promise<ProgressCat
     computeBuilderWorkshop(ps),
     Promise.resolve(computeGrandMonument(ps)),
     Promise.resolve(computeExpeditions(ps)),
-    Promise.resolve(computeAchievements(ps, totalQuests, totalPets)),
+    computeAchievements(ps, totalQuests, totalPets),
     computeBestiary(ps),
     Promise.resolve(computeInfinityTower(ps)),
     computeInventory(ps),

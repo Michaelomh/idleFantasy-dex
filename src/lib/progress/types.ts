@@ -14,4 +14,5 @@ export type ProgressCategory = {
   info?: string;
   hasDrilldown: boolean;
   items: ProgressItem[];
+  progressLabel?: string;
 };

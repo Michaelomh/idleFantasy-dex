@@ -4,12 +4,14 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 
 type StatusVariant = 'wip' | 'unvalidated' | 'unconfident' | 'info';
 
+export const WIP_MESSAGE =
+  'Work in progress. Feature is not ready, might contain bugs, unvalidated or all of the above.';
+
 const VARIANTS: Record<StatusVariant, { icon: typeof Info; color: string; defaultMessage?: string }> = {
   wip: {
     icon: OctagonX,
     color: 'text-destructive',
-    defaultMessage:
-      "Work in progress — some of this has been built, but it's unvalidated and the numbers may be wrong.",
+    defaultMessage: WIP_MESSAGE,
   },
   unvalidated: {
     icon: ShieldAlert,

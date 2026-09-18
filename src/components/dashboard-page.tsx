@@ -135,28 +135,29 @@ export function DashboardPage() {
         ))}
       </div>
 
-      <ActiveBoostsSection boosts={activeBoosts} />
+      {import.meta.env.DEV && <ActiveBoostsSection boosts={activeBoosts} />}
 
-      {!skillBonuses ? (
-        <p className="body text-text-secondary">Loading bonuses…</p>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {CATEGORY_ORDER.map((category) => {
-            const skillsInCategory = skillBonuses.filter((s) => s.category === category);
-            if (skillsInCategory.length === 0) return null;
-            return (
-              <div key={category} className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
-                <span className="h3">{category}</span>
-                <div className="flex flex-col">
-                  {skillsInCategory.map((skill) => (
-                    <SkillBonusRow key={skill.id} skill={skill} />
-                  ))}
+      {import.meta.env.DEV &&
+        (!skillBonuses ? (
+          <p className="body text-text-secondary">Loading bonuses…</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {CATEGORY_ORDER.map((category) => {
+              const skillsInCategory = skillBonuses.filter((s) => s.category === category);
+              if (skillsInCategory.length === 0) return null;
+              return (
+                <div key={category} className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
+                  <span className="h3">{category}</span>
+                  <div className="flex flex-col">
+                    {skillsInCategory.map((skill) => (
+                      <SkillBonusRow key={skill.id} skill={skill} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        ))}
     </div>
   );
 }

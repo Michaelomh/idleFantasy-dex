@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { getCachedSave, type PlayerState } from '@/lib/save-source';
+import { getCachedSave, peekCachedSave, type PlayerState } from '@/lib/save-source';
 import { isExploring, getSelectedSlot } from '@/lib/app/boot-state.ts';
 import { MOCK_PLAYER_STATE } from '@/lib/player/explore-fixtures.ts';
 
 export function usePlayerState(): PlayerState | null {
-  const [playerState, setPlayerState] = useState<PlayerState | null>(() => (isExploring() ? MOCK_PLAYER_STATE : null));
+  const [playerState, setPlayerState] = useState<PlayerState | null>(() => {
+    if (isExploring()) return MOCK_PLAYER_STATE;
+    const identity = getSelectedSlot();
+    return identity ? (peekCachedSave(identity)?.playerState ?? null) : null;
+  });
 
   useEffect(() => {
     if (isExploring()) return;

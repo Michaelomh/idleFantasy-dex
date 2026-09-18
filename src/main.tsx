@@ -14,6 +14,7 @@ import { ProgressCategoryPage } from './components/progress/category-page.tsx';
 import { BossDetailPage } from './components/progress/boss-detail-page.tsx';
 import { CalculatorOverviewPage } from './components/calculator/calculator-overview-page.tsx';
 import { CalculatorSkillPage } from './components/calculator/calculator-skill-page.tsx';
+import { SimulatorOverviewPage } from './components/simulator/simulator-overview-page.tsx';
 import { NotFoundPage } from './components/not-found-page.tsx';
 import { ROUTES } from './lib/app/routes.ts';
 import { ReloadPrompt } from './components/reload-prompt.tsx';
@@ -58,6 +59,7 @@ const ROUTE_OVERRIDES: Record<string, RouteObject['element']> = {
   '/progress': <ProgressOverviewPage />,
   '/progress/bosses/:bossId': <BossDetailPage />,
   '/calculator': <CalculatorOverviewPage />,
+  '/simulator': <SimulatorOverviewPage />,
 };
 
 const routes: RouteObject[] = [

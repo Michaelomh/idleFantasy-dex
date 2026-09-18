@@ -86,7 +86,7 @@ combat-focused screen at `/simulator/infinity-tower`).
 
 - [ ] Quests (`/progress/quests`) - one point per completed quest, excludes daily and weekly quests; drill-down lists completed/uncompleted with filter, sort, search (`quests.json`, 189)
 - [ ] Guilds (`/progress/guilds`) - drill-down shows every guild hall's queue and current level
-- [ ] Bosses (`/progress/bosses`, drill-down `/progress/bosses/:bossId`) - solo and raid combined; one point per boss killed at least once, plus one point per unique drop; drill-down lists all bosses and remaining drops, with stats and unique drops per boss
+- [ ] Bosses (`/progress/bosses`, drill-down `/progress/bosses/:bossId`) - solo and combined; one point per boss killed at least once, plus one point per unique drop; drill-down lists all bosses and remaining drops, with stats and unique drops per boss
 - [ ] Armoury (`/progress/armoury`) - one point per armour piece owned; drill-down filters/sorts/searches, shows where to obtain each piece and its stats (`equipment.json` 358 ∩ `seen_item_keys`)
 - [ ] Levels (`/progress/levels`) - one point per prestige; drill-down shows every skill's current level/XP and how much more prestige is needed to reach the next point
 - [ ] Pets (`/progress/pets`) - one point per pet owned; drill-down shows how to obtain each and its stat bonus (25 pets)
@@ -131,10 +131,8 @@ stats and whether that loadout survives a boss attack.
 
 - [ ] Combat simulators
   - [ ] Dungeons (`/simulator/dungeon/:dungeonId`) - per-dungeon simulation, floor by floor up to the boss
-  - [ ] Solo bosses (`/simulator/solo`) - list all solo bosses
-    - [ ] Drill down (`/simulator/solo/:bossId`) - drills down into each fight's win probability
-  - [ ] Raid bosses (`/simulator/raid`) - list all raid bosses
-    - [ ] Drill down (`/simulator/raid/:bossId`) - drills down into each fight's win probability
+  - [ ] Bosses (`/simulator/boss`) - list all bosses
+    - [ ] Drill down (`/simulator/boss/:bossId`) - drills down into each fight's win probability
   - [ ] Infinity Tower (`/simulator/infinity-tower`)
 
 ## Settings

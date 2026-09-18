@@ -1,12 +1,14 @@
 import type { PlayerState } from '@/lib/save-source';
 import { SKILL_IDS } from '@/lib/game/skills';
+import { activeNodesForSkill } from '@/lib/bonuses/prestige';
+import { getPrestigePaths } from './game-data';
 import type { ProgressCategory } from './types';
 
-export function computeAchievements(
+export async function computeAchievements(
   playerState: PlayerState,
   totalQuests: number,
   totalPets: number,
-): ProgressCategory {
+): Promise<ProgressCategory> {
   const { raw, totalLevel, combatLevel, questsCompleted } = playerState;
   const levels = raw.skillLevels;
   const prestige = (raw.flags.skill_prestige ?? {}) as Record<string, number>;
@@ -35,6 +37,27 @@ export function computeAchievements(
   const nodesOwned = Object.values(prestigeNodes).reduce((sum, v) => sum + v.length, 0);
   const townsUpgraded = townKeys.filter((k) => (townTiers[k] ?? 0) >= 1).length;
   const townsMaxed = townKeys.filter((k) => (townTiers[k] ?? 0) >= 3).length;
+
+  const prestigeTrees = await getPrestigePaths();
+  const isEligiblePath = (pathKey: string) => !pathKey.startsWith('race_') || pathKey === `race_${playerState.race}`;
+  const treeProgress = prestigeTrees.map((tree) => {
+    const owned = activeNodesForSkill(playerState, tree);
+    const ownedByPath = new Map<string, number>();
+    for (const { pathKey } of owned) ownedByPath.set(pathKey, (ownedByPath.get(pathKey) ?? 0) + 1);
+    const eligiblePaths = tree.paths.filter((p) => isEligiblePath(p.key) && p.nodes.length > 0);
+    const pathsCompleted = eligiblePaths.filter((p) => (ownedByPath.get(p.key) ?? 0) >= p.nodes.length).length;
+    const totalNodes = eligiblePaths.reduce((sum, p) => sum + p.nodes.length, 0);
+    const ownedNodes = eligiblePaths.reduce((sum, p) => sum + (ownedByPath.get(p.key) ?? 0), 0);
+    return {
+      skill: tree.skill,
+      pathsCompleted,
+      totalNodes,
+      ownedNodes,
+      treeMaxed: totalNodes > 0 && ownedNodes >= totalNodes,
+    };
+  });
+  const pathsCompletedTotal = treeProgress.reduce((sum, t) => sum + t.pathsCompleted, 0);
+  const treesMaxed = treeProgress.filter((t) => t.treeMaxed).length;
 
   const achievements: { id: string; label: string; done: boolean; detail?: string }[] = [
     { id: 'total_50', label: 'Reach total level 50', done: (totalLevel ?? 0) >= 50, detail: `${totalLevel ?? 0} / 50` },
@@ -154,8 +177,8 @@ export function computeAchievements(
     {
       id: 'prestige_path_complete',
       label: 'Complete a prestige path',
-      done: false,
-      detail: 'Not yet tracked',
+      done: pathsCompletedTotal >= 1,
+      detail: `${pathsCompletedTotal} path(s) completed`,
     },
     {
       id: 'prestige_all_1',
@@ -163,7 +186,12 @@ export function computeAchievements(
       done: skillsPrestigedOnce >= SKILL_IDS.length,
       detail: `${skillsPrestigedOnce} / ${SKILL_IDS.length}`,
     },
-    { id: 'prestige_tree_one', label: 'Max a skill’s prestige tree', done: false, detail: 'Not yet tracked' },
+    {
+      id: 'prestige_tree_one',
+      label: 'Max a skill’s prestige tree',
+      done: treesMaxed >= 1,
+      detail: `${treesMaxed} / ${SKILL_IDS.length} tree(s) maxed`,
+    },
     {
       id: 'prestige_all_3',
       label: 'Prestige every skill 3 times',
