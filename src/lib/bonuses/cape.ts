@@ -1,6 +1,5 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import type { EquipmentEntry } from '@/lib/progress/game-data';
-import type { SkillCategory } from '@/lib/game/skills';
 
 export const COMBAT_STAT_SKILLS = ['attack', 'strength', 'defense', 'ranged', 'magic', 'hitpoints'] as const;
 const XP_CAPE_SKILLS = new Set<string>([...COMBAT_STAT_SKILLS, 'slayer', 'agility']);
@@ -40,9 +39,21 @@ function ownedCapeKeysForSkill(skillId: string): string[] {
   }
 }
 
-function rackTierRequiredFor(category: SkillCategory): number {
-  if (category === 'Gathering') return 1;
-  if (category === 'Crafting') return 2;
+const RACK_TIER_1_SKILLS = new Set(['mining', 'fishing', 'woodcutting', 'farming', 'agility', 'thieving']);
+const RACK_TIER_2_SKILLS = new Set([
+  'smithing',
+  'cooking',
+  'fletching',
+  'crafting',
+  'firemaking',
+  'runecrafting',
+  'herblore',
+  'construction',
+]);
+
+function rackTierRequiredFor(skillId: string): number {
+  if (RACK_TIER_1_SKILLS.has(skillId)) return 1;
+  if (RACK_TIER_2_SKILLS.has(skillId)) return 2;
   return 3;
 }
 
@@ -51,7 +62,6 @@ export type CapeResolution = { multiplier: number; appliesToXp: boolean; capeNam
 export function resolveCapeBonus(
   playerState: PlayerState,
   skillId: string,
-  category: SkillCategory,
   equipment: Record<string, EquipmentEntry>,
   capeScaling: number,
 ): CapeResolution {
@@ -60,7 +70,7 @@ export function resolveCapeBonus(
 
   const rackTier =
     ((playerState.raw.flags.town_building_tiers as Record<string, number> | undefined) ?? {}).cape_rack ?? 0;
-  const categoryUnlocked = rackTier >= rackTierRequiredFor(category);
+  const categoryUnlocked = rackTier >= rackTierRequiredFor(skillId);
 
   let bestSkillCapeBonus = 0;
   let bestSkillCapeKey = '';

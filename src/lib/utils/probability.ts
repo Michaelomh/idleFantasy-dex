@@ -5,13 +5,14 @@ export function binomialRange(n: number, p: number, lowerPct = 0.05, upperPct = 
   if (p <= 0 || n <= 0) return [0, 0];
   if (p >= 1) return [n, n];
 
-  let pmf = Math.pow(1 - p, n);
+  const logRatio = Math.log(p / (1 - p));
+  let logPmf = n * Math.log(1 - p);
   let cumulative = 0;
   let low = 0;
   let high = n;
   let foundLow = false;
   for (let k = 0; k <= n; k++) {
-    cumulative += pmf;
+    cumulative += Math.exp(logPmf);
     if (!foundLow && cumulative >= lowerPct) {
       low = k;
       foundLow = true;
@@ -20,17 +21,20 @@ export function binomialRange(n: number, p: number, lowerPct = 0.05, upperPct = 
       high = k;
       break;
     }
-    pmf *= ((n - k) / (k + 1)) * (p / (1 - p));
+    logPmf += Math.log((n - k) / (k + 1)) + logRatio;
   }
   return [low, high];
 }
 
-/** `lowerPct`-`upperPct` percentile range for the sum of `count` independent discrete-uniform
- *  draws over `[min, max]`, each individually scaled by `mult` and rounded before summing
- *  (e.g. farming: each patch rolls its own yield, then hoe/ash/prestige scale that patch's
- *  result). Computed via exact convolution of the per-draw distribution - never sampled. All
- *  patches simultaneously rolling the same extreme is a near-impossible tail case, same as
- *  binomialRange's [0, n] problem, so this isn't just `[min, max] x count x mult`. */
+export function binomialPmf(n: number, k: number, p: number): number {
+  if (k < 0 || k > n) return 0;
+  if (p <= 0) return k === 0 ? 1 : 0;
+  if (p >= 1) return k === n ? 1 : 0;
+  let logCoeff = 0;
+  for (let i = 0; i < k; i++) logCoeff += Math.log(n - i) - Math.log(i + 1);
+  return Math.exp(logCoeff + k * Math.log(p) + (n - k) * Math.log(1 - p));
+}
+
 export function uniformSumRange(
   min: number,
   max: number,

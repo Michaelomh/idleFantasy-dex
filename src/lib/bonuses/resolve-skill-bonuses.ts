@@ -37,7 +37,7 @@ export async function resolveAllSkillBonuses(playerState: PlayerState): Promise<
       basePetXpPct > 0 && petBoostScalePct > 0
         ? Math.max(basePetXpPct, Math.floor(basePetXpPct * (1 + petBoostScalePct / 100)))
         : basePetXpPct;
-    const cape = resolveCapeBonus(playerState, id, category, equipment, capeScaling);
+    const cape = resolveCapeBonus(playerState, id, equipment, capeScaling);
     const capePct = Math.round(cape.multiplier * 100);
 
     const xpSources: BonusSource[] = [];

@@ -23,7 +23,6 @@ const SKILL_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfident'
   runecrafting: 'unvalidated',
   herblore: 'unvalidated',
   construction: 'unvalidated',
-  agility: 'unvalidated',
 };
 
 export function CalculatorOverviewPage() {
