@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import { ChevronDown } from 'lucide-react';
 import { usePlayerState } from '@/lib/player/use-player-state';
@@ -10,12 +10,14 @@ import {
   ashCatalystOptions,
   skillInputConfig,
   totalPatchCount,
+  hasCropRotationBonus,
   formatMinSec,
   type SessionResult,
   type TargetOption,
   type CalculatorInputs,
   type ModifierRow,
 } from '@/lib/calculator';
+import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
 import { WipNotice } from '@/components/wip-notice';
@@ -35,6 +37,15 @@ function defaultTarget(targets: TargetOption[]): string {
 
 type SectionId = 'yield' | 'xp' | 'session';
 const DEFAULT_SECTION_ORDER: SectionId[] = ['yield', 'xp', 'session'];
+
+type PersistedCalculatorInputs = {
+  targetKey?: string;
+  qty?: string;
+  cropCount?: number;
+  ashCatalystKey?: string | null;
+  cropRotated?: boolean;
+  timedBoostsEnabled?: boolean;
+};
 
 function BreakdownSection({ title, rows, defaultOpen }: { title: string; rows: ModifierRow[]; defaultOpen: boolean }) {
   return (
@@ -85,33 +96,42 @@ export function CalculatorSkillPage() {
   const [cropCount, setCropCount] = useState<number | null>(null);
   const [defaultCropCount, setDefaultCropCount] = useState(3);
   const [ashCatalystKey, setAshCatalystKey] = useState<string | null>(null);
+  const [cropRotated, setCropRotated] = useState(false);
   const [timedBoostsEnabled, setTimedBoostsEnabled] = useState(true);
   const [result, setResult] = useState<SessionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sectionOrder, setSectionOrder] = useState<SectionId[]>(DEFAULT_SECTION_ORDER);
+  const [persistedInputs, setPersistedInputs] = useSessionStorage<PersistedCalculatorInputs>(
+    `calculator:${skillId}`,
+    {},
+  );
+  const hydrating = useRef(true);
 
   const config = useMemo(() => skillInputConfig(skillId), [skillId]);
   const isGathering = SKILLS.find((s) => s.id === skillId)?.category === 'Gathering';
 
   useEffect(() => {
-    if (!playerState || skillId !== 'farming') return;
+    if (!playerState || !skillId) return;
+    hydrating.current = true;
     let cancelled = false;
-    totalPatchCount(playerState, playerState.raw.skillLevels.farming ?? 1).then((count) => {
-      if (!cancelled) setDefaultCropCount(count);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [skillId, playerState]);
 
-  useEffect(() => {
-    if (!playerState) return;
-    let cancelled = false;
-    targetsForSkill(skillId, playerState)
-      .then((options) => {
+    Promise.all([
+      targetsForSkill(skillId, playerState),
+      totalPatchCount(playerState, playerState.raw.skillLevels.farming ?? 1),
+      hasCropRotationBonus(playerState),
+    ])
+      .then(([options, patchCount, cropRotationDefault]) => {
         if (cancelled) return;
+        const persistedTargetValid =
+          persistedInputs.targetKey && options.some((o) => o.key === persistedInputs.targetKey);
         setTargets(options);
-        setTargetKey(defaultTarget(options));
+        setTargetKey(persistedTargetValid ? persistedInputs.targetKey! : defaultTarget(options));
+        setQty(persistedInputs.qty ?? '1');
+        setCropCount(persistedInputs.cropCount ?? null);
+        setDefaultCropCount(patchCount);
+        setAshCatalystKey(persistedInputs.ashCatalystKey ?? null);
+        setCropRotated(persistedInputs.cropRotated ?? cropRotationDefault);
+        setTimedBoostsEnabled(persistedInputs.timedBoostsEnabled ?? true);
         setResult(null);
         setError(null);
         setSectionOrder(DEFAULT_SECTION_ORDER);
@@ -120,11 +140,27 @@ export function CalculatorSkillPage() {
         if (cancelled) return;
         console.error(`[calculator] failed to load targets for ${skillId}`, e);
         setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!cancelled) hydrating.current = false;
       });
     return () => {
       cancelled = true;
     };
   }, [skillId, playerState]);
+
+  useEffect(() => {
+    if (!skillId || hydrating.current) return;
+    setPersistedInputs({
+      targetKey,
+      qty,
+      ...(cropCount !== null ? { cropCount } : {}),
+      ashCatalystKey,
+      cropRotated,
+      timedBoostsEnabled,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skillId, targetKey, qty, cropCount, ashCatalystKey, cropRotated, timedBoostsEnabled]);
 
   const qtyValid = /^\d+$/.test(qty) && Number(qty) > 0;
 
@@ -137,8 +173,20 @@ export function CalculatorSkillPage() {
       cropCount: config.showCropCount ? (cropCount ?? defaultCropCount) : undefined,
       ashCatalystKey: config.showAshCatalyst ? ashCatalystKey : null,
       timedBoostsEnabled,
+      cropRotated: config.showCropRotation ? cropRotated : undefined,
     };
-  }, [targetKey, qty, qtyValid, cropCount, defaultCropCount, ashCatalystKey, timedBoostsEnabled, config, playerState]);
+  }, [
+    targetKey,
+    qty,
+    qtyValid,
+    cropCount,
+    defaultCropCount,
+    ashCatalystKey,
+    cropRotated,
+    timedBoostsEnabled,
+    config,
+    playerState,
+  ]);
 
   useEffect(() => {
     if (!playerState || !inputs) return;
@@ -234,6 +282,20 @@ export function CalculatorSkillPage() {
                 </NativeSelectOption>
               ))}
             </NativeSelect>
+          </div>
+        )}
+
+        {config.showCropRotation && (
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor="crop-rotation" className="flex min-w-0 items-center gap-1.5 truncate">
+              <span className="truncate">Crop Rotation</span>
+              <StatusNotice
+                variant="info"
+                className="size-3.5"
+                message="Unlocked via Farming's Rotation prestige path - each tier boosts yield when the newly planted crop differs from the last one harvested on that patch. The final tier makes the bonus always active."
+              />
+            </Label>
+            <Switch id="crop-rotation" checked={cropRotated} onCheckedChange={setCropRotated} />
           </div>
         )}
 

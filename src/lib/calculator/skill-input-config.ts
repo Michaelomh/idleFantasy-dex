@@ -2,6 +2,7 @@ export type SkillInputConfig = {
   showQty: boolean;
   showCropCount: boolean;
   showAshCatalyst: boolean;
+  showCropRotation: boolean;
 };
 
 const QTY_SKILLS = new Set([
@@ -20,5 +21,6 @@ export function skillInputConfig(skillId: string): SkillInputConfig {
     showQty: QTY_SKILLS.has(skillId),
     showCropCount: skillId === 'farming',
     showAshCatalyst: skillId === 'runecrafting' || skillId === 'herblore' || skillId === 'farming',
+    showCropRotation: skillId === 'farming',
   };
 }

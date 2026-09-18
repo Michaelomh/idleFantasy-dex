@@ -35,51 +35,13 @@ export function binomialPmf(n: number, k: number, p: number): number {
   return Math.exp(logCoeff + k * Math.log(p) + (n - k) * Math.log(1 - p));
 }
 
-export function uniformSumRange(
-  min: number,
-  max: number,
-  mult: number,
-  count: number,
-  lowerPct = 0.1,
-  upperPct = 0.9,
-): [number, number] {
+/** True min/max for `count` independent direct rolls in [min,max], each scaled and rounded
+ *  individually then summed - unlike the binomial-based ranges above, farming harvests aren't
+ *  a success/fail chain to take a percentile window of, they're a flat uniform roll every time,
+ *  so the absolute extremes *are* the meaningful range. */
+export function rollSumRange(min: number, max: number, mult: number, count: number): [number, number] {
   if (count <= 0 || max < min) return [0, 0];
-
-  const perDraw = new Map<number, number>();
-  const outcomes = max - min + 1;
-  for (let v = min; v <= max; v++) {
-    const scaled = Math.round(v * mult);
-    perDraw.set(scaled, (perDraw.get(scaled) ?? 0) + 1 / outcomes);
-  }
-
-  let dist = new Map<number, number>([[0, 1]]);
-  for (let i = 0; i < count; i++) {
-    const next = new Map<number, number>();
-    for (const [sum, p1] of dist) {
-      for (const [v, p2] of perDraw) {
-        next.set(sum + v, (next.get(sum + v) ?? 0) + p1 * p2);
-      }
-    }
-    dist = next;
-  }
-
-  const sorted = [...dist.entries()].sort((a, b) => a[0] - b[0]);
-  let cumulative = 0;
-  let low = sorted[0][0];
-  let high = sorted[sorted.length - 1][0];
-  let foundLow = false;
-  for (const [value, p] of sorted) {
-    cumulative += p;
-    if (!foundLow && cumulative >= lowerPct) {
-      low = value;
-      foundLow = true;
-    }
-    if (cumulative >= upperPct) {
-      high = value;
-      break;
-    }
-  }
-  return [low, high];
+  return [Math.round(min * mult) * count, Math.round(max * mult) * count];
 }
 
 /** Expectation, P(≥1), and typical (5th-95th percentile) count range for `frames` independent

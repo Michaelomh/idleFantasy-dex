@@ -1,4 +1,4 @@
-export { binomialRange, binomialPmf, uniformSumRange, expectedAndChance } from '@/lib/utils/probability';
+export { binomialRange, binomialPmf, rollSumRange, expectedAndChance } from '@/lib/utils/probability';
 
 export const SESSION_FRAMES = 60;
 

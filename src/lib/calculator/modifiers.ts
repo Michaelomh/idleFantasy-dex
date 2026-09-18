@@ -21,8 +21,6 @@ export type ResolvedModifiers = {
   blessingMultiplier: number;
   xpPct: number;
   petBoostPct: number;
-  /** Cape's own XP bonus for XP-cape skills (e.g. Agility) - applied as its own factor
-   * separate from prestige xp_pct, not summed with it (HomeViewModel.kt's effectiveXp). */
   xpCapeMultiplier: number;
   yieldPct: number;
   yieldMultiplier: number;
@@ -188,7 +186,8 @@ export async function resolveModifiers(
     );
   const petBoostNodeLabel = petBoostNode ? prestigeNodeLabel(skillId, petBoostNode.pathKey, petBoostNode.rank) : null;
   const isAgility = skillId === 'agility';
-  const excludePetFromXpPct = isGatheringTool || isCraftFamily || skillId === 'firemaking' || isAgility;
+  const isFarming = skillId === 'farming';
+  const excludePetFromXpPct = isGatheringTool || isCraftFamily || skillId === 'firemaking' || isAgility || isFarming;
 
   const capeXpSource = isAgility
     ? bonus.xpSources.find((s) => s.label !== 'Pets' && s.label !== 'Prestige')
@@ -199,6 +198,15 @@ export async function resolveModifiers(
 
   const xpModifiers: ModifierRow[] = [];
   for (const source of bonus.xpSources) {
+    if (source.label === 'Pets' && isFarming) {
+      xpModifiers.push({
+        label: `XP bonus (${source.label})`,
+        value: pct(source.pct),
+        warning:
+          'Farming pets are documented as an XP boost, but the game never actually applies it on harvest - not counted in the total shown.',
+      });
+      continue;
+    }
     if (excludePetFromXpPct && source.label === 'Pets') continue;
     if (capeXpSource && source === capeXpSource) continue;
     xpModifiers.push({ label: `XP bonus (${source.label})`, value: pct(source.pct) });

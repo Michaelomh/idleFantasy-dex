@@ -31,7 +31,7 @@ export {
   runecrafting,
   farming,
 };
-export { patchCountForLevel, totalPatchCount } from './farming';
+export { patchCountForLevel, totalPatchCount, hasCropRotationBonus } from './farming';
 
 type SessionCalculator = (playerState: PlayerState, inputs: CalculatorInputs) => Promise<SessionResult>;
 
