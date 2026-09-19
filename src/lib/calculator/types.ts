@@ -1,4 +1,11 @@
-export type ModifierRow = { label: string; value: string; heading?: boolean; warning?: string; info?: string };
+export type ModifierRow = {
+  label: string;
+  value: string;
+  heading?: boolean;
+  warning?: string;
+  info?: string;
+  disabled?: boolean;
+};
 
 export type BonusItem = {
   key: string;
@@ -33,7 +40,7 @@ export type SessionResult = {
   sessionBreakdown: ModifierRow[];
   successBreakdown?: ModifierRow[];
   successRate?: number;
-  materialsRequired?: { key: string; label: string; qty: number; owned: number }[];
+  materialsRequired?: { key: string; label: string; qty: number }[];
 };
 
 export type CalculatorInputs = {

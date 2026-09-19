@@ -1,17 +1,45 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getRecipes, type RecipeEntry } from '../game-data';
 import { humanize } from '@/lib/utils/humanize';
-import {
-  resolveModifiers,
-  applyXpMultipliers,
-  applyYieldMultiplier,
-  withBaseRow,
-  toolEfficiencyRows,
-} from '../modifiers';
+import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier, withBaseRow, bucketedCraftXp } from '../modifiers';
 import { craftActionDuration } from '../session-duration';
 import type { CalculatorInputs, SessionResult } from '../types';
 
 type RecipeFamily = 'smithing' | 'cooking' | 'fletching' | 'crafting' | 'herblore' | 'construction';
+
+const SECONDARY_MATERIALS: Partial<Record<RecipeFamily, ReadonlySet<string>>> = {
+  smithing: new Set(['coal', 'tin_ore']),
+  fletching: new Set([
+    'bronze_arrow_tip',
+    'iron_arrow_tip',
+    'steel_arrow_tip',
+    'mithril_arrow_tip',
+    'adamantite_arrow_tip',
+    'runite_arrow_tip',
+    'air_rune',
+    'water_rune',
+    'earth_rune',
+    'fire_rune',
+    'mind_rune',
+    'chaos_rune',
+    'death_rune',
+    'blood_rune',
+  ]),
+  herblore: new Set([
+    'rotten_flesh',
+    'spider_silk',
+    'spider_fang',
+    'imp_hide',
+    'goblin_mail',
+    'troll_bone',
+    'demon_horn',
+    'hellhound_fang',
+    'dragon_scale',
+    'magic_bean',
+  ]),
+  construction: new Set(['iron_nail', 'mithril_nail', 'runite_nail', 'steel_nail']),
+  crafting: new Set(['sapphire', 'emerald', 'ruby', 'diamond']),
+};
 
 export async function craftSession(
   playerState: PlayerState,
@@ -29,7 +57,8 @@ export async function craftSession(
   );
   const qty = inputs.qty ?? 1;
   const xpPerItem = recipe?.xp_per_item ?? 0;
-  const rawXp = xpPerItem * qty * mods.toolEff * (1 + mods.petBoostPct / 100);
+  const toolOnlyXp = bucketedCraftXp(qty, xpPerItem, mods.toolEff, 0);
+  const rawXp = bucketedCraftXp(qty, xpPerItem, mods.toolEff, mods.petBoostPct);
   const rawOutputQty = (recipe?.output_quantity ?? 1) * qty;
   const outputQty = applyYieldMultiplier(rawOutputQty, mods);
 
@@ -47,14 +76,14 @@ export async function craftSession(
     mods.toolEff,
   );
 
-  const materialsRequired = Object.entries(recipe?.materials ?? {}).map(([key, perItem], index) => {
-    const secondarySaveChance = index === 0 ? 0 : mods.secondaryMaterialSaveChance;
+  const secondaryMaterials = SECONDARY_MATERIALS[family];
+  const materialsRequired = Object.entries(recipe?.materials ?? {}).map(([key, perItem]) => {
+    const secondarySaveChance = secondaryMaterials?.has(key) ? mods.secondaryMaterialSaveChance : 0;
     const remainingFraction = (1 - secondarySaveChance) * (1 - mods.inputSavePct / 100);
     return {
       key,
       label: humanize(key),
       qty: Math.round(perItem * qty * remainingFraction),
-      owned: playerState.raw.inventory[key] ?? 0,
     };
   });
   if (enhanced && inputs.ashCatalystKey) {
@@ -63,7 +92,6 @@ export async function craftSession(
       key: inputs.ashCatalystKey,
       label: humanize(inputs.ashCatalystKey),
       qty: Math.round(qty * ashRemainingFraction),
-      owned: playerState.raw.inventory[inputs.ashCatalystKey] ?? 0,
     });
   }
 
@@ -73,12 +101,20 @@ export async function craftSession(
     bonusItems: [],
     yieldBreakdown: withBaseRow('Base Yield', rawOutputQty, mods.yieldModifiers),
     xpBreakdown: withBaseRow('Base XP', xpPerItem * qty, [
-      ...toolEfficiencyRows(mods, xpPerItem * qty),
+      ...(mods.toolEff !== 1
+        ? [
+            {
+              label: 'Tool Efficiency',
+              value: `x${mods.toolEff.toFixed(3)} (${toolOnlyXp.toLocaleString()})`,
+              info: 'The higher your equipped tool is compared to the target, the higher the efficiency bonus.',
+            },
+          ]
+        : []),
       ...(mods.petBoostPct > 0
         ? [
             {
               label: 'Pet XP Boost',
-              value: `+${mods.petBoostPct}%`,
+              value: `+${mods.petBoostPct}% (${rawXp.toLocaleString()})`,
               info: `This can be higher due to your prestige skill tree${mods.petBoostNodeLabel ? ` (${mods.petBoostNodeLabel})` : ''}.`,
             },
           ]
