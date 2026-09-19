@@ -61,7 +61,11 @@ export function craftActionDuration(
     breakdown.push({ label: 'Agility + Chronos Spire', value: `x${ratio.toFixed(2)}` });
   }
   if (toolEff !== 1) {
-    breakdown.push({ label: 'Tool efficiency', value: `÷${toolEff.toFixed(2)}` });
+    breakdown.push({
+      label: 'Tool efficiency',
+      value: `÷${toolEff.toFixed(3)}`,
+      info: 'The higher your equipped tool is compared to the target, the higher the efficiency bonus.',
+    });
   }
 
   return { minutes, breakdown };

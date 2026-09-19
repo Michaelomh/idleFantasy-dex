@@ -68,7 +68,7 @@ function BreakdownSection({ title, rows, defaultOpen }: { title: string; rows: M
           ) : (
             <div key={row.label}>
               {i > 0 && !rows[i - 1]?.heading && <Separator className="my-1.5" />}
-              <div className="flex items-baseline justify-between gap-2">
+              <div className={`flex items-baseline justify-between gap-2 ${row.disabled ? 'opacity-50' : ''}`}>
                 <span className="body flex min-w-0 items-center gap-1.5 text-text-secondary">
                   <span className="min-w-0 truncate">{row.label}</span>
                   {row.warning && <StatusNotice variant="unvalidated" message={row.warning} />}
@@ -310,9 +310,7 @@ export function CalculatorSkillPage() {
           <div className="flex flex-col items-baseline justify-between gap-2">
             <Label className="body text-white">Materials required</Label>
             <p className="data">
-              {result.materialsRequired
-                .map((m) => `${m.label} x${formatNumber(m.qty)} (${formatNumber(m.owned)})`)
-                .join(', ')}
+              {result.materialsRequired.map((m) => `${m.label} x${formatNumber(m.qty)}`).join(', ')}
             </p>
           </div>
         )}
