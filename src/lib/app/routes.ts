@@ -60,7 +60,6 @@ export const ROUTES: RouteMeta[] = [
   { path: '/calculator/workers/:skillId', title: 'Worker Skill', parent: '/calculator/workers', dockTab: 3 },
 
   { path: '/settings', title: 'Settings', parent: '/', dockTab: 4 },
-  { path: '/saves', title: 'Saves', parent: '/settings' },
   { path: '/onboarding', title: 'Onboarding', parent: null },
   { path: '/no-save', title: 'No Save Found', parent: null },
 ];

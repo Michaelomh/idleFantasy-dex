@@ -1,13 +1,14 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { SKILL_IDS, SKILLS } from '@/lib/game/skills';
 import { formatDurationMs } from '@/lib/utils/duration';
-import { resolveActiveXpBlessing } from './blessings';
+import { getBlessings } from '@/lib/progress/game-data';
+import { resolveActiveBlessing } from './blessings';
 
 export type ActiveBoostRow = { id: string; name: string; pct: string; scope: string; detail: string };
 
 const skillLabel = (id: string) => SKILLS.find((s) => s.id === id)?.label ?? id;
 
-export function computeActiveBoosts(playerState: PlayerState, now = Date.now()): ActiveBoostRow[] {
+export async function computeActiveBoosts(playerState: PlayerState, now = Date.now()): Promise<ActiveBoostRow[]> {
   const rows: ActiveBoostRow[] = [];
   const flags = playerState.raw.flags;
 
@@ -22,16 +23,20 @@ export function computeActiveBoosts(playerState: PlayerState, now = Date.now()):
     });
   }
 
-  const blessing = resolveActiveXpBlessing(
+  const blessings = await getBlessings();
+  const blessing = resolveActiveBlessing(
+    'XP',
     (flags.active_blessing_key as string | undefined) ?? '',
     Number(flags.active_blessing_expires_at ?? 0),
+    blessings,
     now,
   );
   if (blessing) {
+    const xpPct = Math.round((blessing.magnitude - 1) * 1000) / 10;
     rows.push({
       id: `blessing_${blessing.key}`,
       name: blessing.label,
-      pct: `+${blessing.xpPct}%`,
+      pct: `+${xpPct}%`,
       scope: 'All skills',
       detail: `Expires in ${formatDurationMs(Number(flags.active_blessing_expires_at) - now)}`,
     });

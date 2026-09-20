@@ -8,13 +8,15 @@ import { RoutePage } from './components/route-page.tsx';
 import { DashboardPage } from './components/dashboard-page.tsx';
 import { OnboardingPage } from './components/onboarding-page.tsx';
 import { NoSavePage } from './components/no-save-page.tsx';
-import { SavesPage } from './components/saves-page.tsx';
+import { SettingsPage } from './components/settings-page.tsx';
 import { ProgressOverviewPage } from './components/progress/progress-overview-page.tsx';
 import { ProgressCategoryPage } from './components/progress/category-page.tsx';
 import { BossDetailPage } from './components/progress/boss-detail-page.tsx';
 import { CalculatorOverviewPage } from './components/calculator/calculator-overview-page.tsx';
 import { CalculatorSkillPage } from './components/calculator/calculator-skill-page.tsx';
 import { SimulatorOverviewPage } from './components/simulator/simulator-overview-page.tsx';
+import { SimulatorBossListPage } from './components/simulator/simulator-boss-list-page.tsx';
+import { SimulatorBossDetailPage } from './components/simulator/simulator-boss-detail-page.tsx';
 import { NotFoundPage } from './components/not-found-page.tsx';
 import { ROUTES } from './lib/app/routes.ts';
 import { ReloadPrompt } from './components/reload-prompt.tsx';
@@ -55,11 +57,13 @@ const CALCULATOR_SKILL_PATHS = new Set([
 const ROUTE_OVERRIDES: Record<string, RouteObject['element']> = {
   '/onboarding': <OnboardingPage />,
   '/no-save': <NoSavePage />,
-  '/saves': <SavesPage />,
+  '/settings': <SettingsPage />,
   '/progress': <ProgressOverviewPage />,
   '/progress/bosses/:bossId': <BossDetailPage />,
   '/calculator': <CalculatorOverviewPage />,
   '/simulator': <SimulatorOverviewPage />,
+  '/simulator/bosses': <SimulatorBossListPage />,
+  '/simulator/bosses/:bossId': <SimulatorBossDetailPage />,
 };
 
 const routes: RouteObject[] = [

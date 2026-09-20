@@ -35,6 +35,7 @@
     "recipes/fletching.json": "09b7f97fc22c6d1c44ef4085e34703310cc7766ed39872e8586b95d450d283c8",
     "recipes/crafting.json": "fc74d660022731e1f407a3d2933d0357be0206873006d74122541b25356825d1",
     "recipes/herblore.json": "69df4baaf947388160db489b39e5c2f03340628e5d9dc4bce2c2319a26d44be0",
-    "recipes/construction.json": "daa4fa240b5011d05309a49ca40b65d2aba0d48392cf821780365a4514b91971"
+    "recipes/construction.json": "daa4fa240b5011d05309a49ca40b65d2aba0d48392cf821780365a4514b91971",
+    "mercenaries.json": "3c012bd8a732a876ede197bc9945389f5b17fe1f4e5b994ad38956462ce2a76d"
   }
 }

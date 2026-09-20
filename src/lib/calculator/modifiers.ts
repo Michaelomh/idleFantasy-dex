@@ -1,8 +1,8 @@
 import type { PlayerState } from '@/lib/save-source/types';
-import { getEquipment, getPrestigePaths, getBuildings } from '@/lib/progress/game-data';
+import { getEquipment, getPrestigePaths, getBuildings, getBlessings } from '@/lib/progress/game-data';
 import { resolveAllSkillBonuses, type SkillBonus } from '@/lib/bonuses';
 import { activeNodesForSkill, effectTotal } from '@/lib/bonuses/prestige';
-import { resolveActiveXpBlessing } from '@/lib/bonuses/blessings';
+import { resolveActiveBlessing } from '@/lib/bonuses/blessings';
 import { resolveCapeBonus } from '@/lib/bonuses/cape';
 import { toolEfficiency } from './tool-efficiency';
 import { sessionLength } from './session-duration';
@@ -71,11 +71,12 @@ export async function resolveModifiers(
   timedBoostsEnabled: boolean,
   resourceLevelRequired = 0,
 ): Promise<ResolvedModifiers> {
-  const [allBonuses, trees, equipment, buildings] = await Promise.all([
+  const [allBonuses, trees, equipment, buildings, blessings] = await Promise.all([
     resolveAllSkillBonuses(playerState),
     getPrestigePaths(),
     getEquipment(),
     getBuildings(),
+    getBlessings(),
   ]);
 
   const bonus = allBonuses.find((b) => b.id === skillId) as SkillBonus;
@@ -123,14 +124,16 @@ export async function resolveModifiers(
 
   const blessing =
     timedBoostsEnabled && !ironman
-      ? resolveActiveXpBlessing(
+      ? resolveActiveBlessing(
+          'XP',
           (flags.active_blessing_key as string | undefined) ?? '',
           Number(flags.active_blessing_expires_at ?? 0),
+          blessings,
           now,
-          prayerCapeMult,
         )
       : null;
-  const blessingMultiplier = blessing ? 1 + blessing.xpPct / 100 : 1;
+  const blessingXpPct = blessing ? Math.round((blessing.magnitude - 1) * prayerCapeMult * 1000) / 10 : 0;
+  const blessingMultiplier = blessing ? 1 + blessingXpPct / 100 : 1;
 
   const session = await sessionLength(playerState);
   const yieldMultiplier = bonus.yieldSources.reduce((product, s) => product * (1 + s.pct / 100), 1);
@@ -225,7 +228,7 @@ export async function resolveModifiers(
   if (prestigeBoostActive) xpModifiers.push({ label: 'XP Boost (Temporary)', value: 'x2' });
   if (blessing) {
     const blessingSource = prayerCapeMult > 1 ? `${blessing.label} + Prayer Cape` : blessing.label;
-    xpModifiers.push({ label: `Church blessing (${blessingSource})`, value: pct(blessing.xpPct) });
+    xpModifiers.push({ label: `Church blessing (${blessingSource})`, value: pct(blessingXpPct) });
   }
 
   return {
