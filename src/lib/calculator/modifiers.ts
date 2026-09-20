@@ -115,25 +115,27 @@ export async function resolveModifiers(
     : 0;
   const inputSavePct = isCraftFamily ? Math.min(50, effectTotal(activeNodes, 'input_save_pct')) : 0;
 
-  const purchasedBoostActive = timedBoostsEnabled && !ironman && Number(flags.xp_boost_expires_at ?? 0) > now;
+  const purchasedBoostReady = !ironman && Number(flags.xp_boost_expires_at ?? 0) > now;
+  const purchasedBoostActive = timedBoostsEnabled && purchasedBoostReady;
   const prestigeBoosts = (flags.prestige_xp_boosts as Record<string, number> | undefined) ?? {};
-  const prestigeBoostActive = timedBoostsEnabled && !ironman && (prestigeBoosts[skillId] ?? 0) > now;
+  const prestigeBoostReady = !ironman && (prestigeBoosts[skillId] ?? 0) > now;
+  const prestigeBoostActive = timedBoostsEnabled && prestigeBoostReady;
   const xpBoostFactor = (purchasedBoostActive ? 2 : 1) * (prestigeBoostActive ? 2 : 1);
   const prayerCape = resolveCapeBonus(playerState, 'prayer', equipment, 1);
   const prayerCapeMult = 1 + prayerCape.multiplier;
 
-  const blessing =
-    timedBoostsEnabled && !ironman
-      ? resolveActiveBlessing(
-          'XP',
-          (flags.active_blessing_key as string | undefined) ?? '',
-          Number(flags.active_blessing_expires_at ?? 0),
-          blessings,
-          now,
-        )
-      : null;
-  const blessingXpPct = blessing ? Math.round((blessing.magnitude - 1) * prayerCapeMult * 1000) / 10 : 0;
-  const blessingMultiplier = blessing ? 1 + blessingXpPct / 100 : 1;
+  const blessingReady = !ironman
+    ? resolveActiveBlessing(
+        'XP',
+        (flags.active_blessing_key as string | undefined) ?? '',
+        Number(flags.active_blessing_expires_at ?? 0),
+        blessings,
+        now,
+      )
+    : null;
+  const blessing = timedBoostsEnabled ? blessingReady : null;
+  const blessingReadyXpPct = blessingReady ? Math.round((blessingReady.magnitude - 1) * prayerCapeMult * 1000) / 10 : 0;
+  const blessingMultiplier = blessing ? 1 + blessingReadyXpPct / 100 : 1;
 
   const session = await sessionLength(playerState);
   const yieldMultiplier = bonus.yieldSources.reduce((product, s) => product * (1 + s.pct / 100), 1);
@@ -192,7 +194,13 @@ export async function resolveModifiers(
   const isFarming = skillId === 'farming';
   const isThieving = skillId === 'thieving';
   const excludePetFromXpPct =
-    isGatheringTool || isCraftFamily || skillId === 'firemaking' || isAgility || isFarming || isThieving;
+    isGatheringTool ||
+    isCraftFamily ||
+    skillId === 'firemaking' ||
+    skillId === 'runecrafting' ||
+    isAgility ||
+    isFarming ||
+    isThieving;
 
   const capeXpSource = isAgility
     ? bonus.xpSources.find((s) => s.label !== 'Pets' && s.label !== 'Prestige')
@@ -224,11 +232,19 @@ export async function resolveModifiers(
         'Live testing shows this doesn’t currently add XP for Agility, even though it’s implemented in the game files - not counted in the total shown.',
     });
   }
-  if (purchasedBoostActive) xpModifiers.push({ label: 'XP Boost (Purchased)', value: 'x2' });
-  if (prestigeBoostActive) xpModifiers.push({ label: 'XP Boost (Temporary)', value: 'x2' });
-  if (blessing) {
-    const blessingSource = prayerCapeMult > 1 ? `${blessing.label} + Prayer Cape` : blessing.label;
-    xpModifiers.push({ label: `Church blessing (${blessingSource})`, value: pct(blessingXpPct) });
+  if (purchasedBoostReady) {
+    xpModifiers.push({ label: 'XP Boost (Purchased)', value: 'x2', disabled: !purchasedBoostActive });
+  }
+  if (prestigeBoostReady) {
+    xpModifiers.push({ label: 'XP Boost (Temporary)', value: 'x2', disabled: !prestigeBoostActive });
+  }
+  if (blessingReady) {
+    const blessingSource = prayerCapeMult > 1 ? `${blessingReady.label} + Prayer Cape` : blessingReady.label;
+    xpModifiers.push({
+      label: `Church blessing (${blessingSource})`,
+      value: pct(blessingReadyXpPct),
+      disabled: !blessing,
+    });
   }
 
   return {
@@ -257,8 +273,20 @@ export async function resolveModifiers(
   };
 }
 
+export function bucketedCraftXp(qty: number, xpPerItem: number, toolEff: number, petBoostPct: number): number {
+  const frameCount = Math.min(qty, 60);
+  let xp = 0;
+  for (let bucket = 0; bucket < frameCount; bucket++) {
+    const itemsInBucket = Math.floor(((bucket + 1) * qty) / frameCount) - Math.floor((bucket * qty) / frameCount);
+    xp += Math.floor(xpPerItem * itemsInBucket * toolEff * (1 + petBoostPct / 100));
+  }
+  return xp;
+}
+
 export function applyXpMultipliers(rawXp: number, mods: ResolvedModifiers): number {
-  return rawXp * (1 + mods.xpPct / 100) * mods.xpBoostFactor * mods.blessingMultiplier * mods.xpCapeMultiplier;
+  return Math.floor(
+    rawXp * (1 + mods.xpPct / 100) * mods.xpBoostFactor * mods.blessingMultiplier * mods.xpCapeMultiplier,
+  );
 }
 
 export function applyYieldMultiplier(rawQty: number, mods: ResolvedModifiers): number {
@@ -276,7 +304,8 @@ export function toolEfficiencyRows(mods: ResolvedModifiers, base: number): Modif
     running *= mods.toolEff;
     rows.push({
       label: 'Tool Efficiency',
-      value: `x${mods.toolEff.toFixed(2)} (${Math.round(running).toLocaleString()})`,
+      value: `x${mods.toolEff.toFixed(3)} (${Math.round(running).toLocaleString()})`,
+      info: 'The higher your equipped tool is compared to the target, the higher the efficiency bonus.',
     });
   }
   if (mods.toolEffMultiplier !== 1) {

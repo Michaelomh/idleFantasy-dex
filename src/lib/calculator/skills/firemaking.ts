@@ -1,13 +1,7 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getLogEntries } from '../game-data';
 import { humanize } from '@/lib/utils/humanize';
-import {
-  resolveModifiers,
-  applyXpMultipliers,
-  applyYieldMultiplier,
-  withBaseRow,
-  toolEfficiencyRows,
-} from '../modifiers';
+import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier, withBaseRow, bucketedCraftXp } from '../modifiers';
 import { craftActionDuration } from '../session-duration';
 import type { CalculatorInputs, SessionResult } from '../types';
 
@@ -32,7 +26,7 @@ export async function firemaking(playerState: PlayerState, inputs: CalculatorInp
   );
   const qty = inputs.qty ?? 1;
   const xpPerLog = (log?.xp_per_log as number | undefined) ?? 0;
-  const rawXp = xpPerLog * qty * mods.toolEff;
+  const rawXp = bucketedCraftXp(qty, xpPerLog, mods.toolEff, 0);
   const ashKey = ASH_FOR_LOG[inputs.targetKey] ?? 'ashes';
   const outputQty = applyYieldMultiplier(qty, mods);
   const { minutes: sessionMinutes, breakdown: sessionBreakdown } = craftActionDuration(
@@ -47,7 +41,15 @@ export async function firemaking(playerState: PlayerState, inputs: CalculatorInp
     bonusItems: [],
     yieldBreakdown: withBaseRow('Base Yield', qty, mods.yieldModifiers),
     xpBreakdown: withBaseRow('Base XP', xpPerLog * qty, [
-      ...toolEfficiencyRows(mods, xpPerLog * qty),
+      ...(mods.toolEff !== 1
+        ? [
+            {
+              label: 'Tool Efficiency',
+              value: `x${mods.toolEff.toFixed(3)} (${rawXp.toLocaleString()})`,
+              info: 'The higher your equipped tool is compared to the target, the higher the efficiency bonus.',
+            },
+          ]
+        : []),
       ...mods.xpModifiers,
     ]),
     sessionMinutes,
