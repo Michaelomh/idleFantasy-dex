@@ -1,5 +1,14 @@
 import { CHARACTER_TITLES, type PlayerState } from '@/lib/save-source/types';
-import { ALL_GUILDS, GUILD_DAILIES_REQUIRED_PER_TIER, GUILD_MAX_LEVEL, guildLabel, SKILL_IDS } from '@/lib/game/skills';
+import {
+  ALL_GUILDS,
+  CATEGORY_ORDER,
+  GUILD_DAILIES_REQUIRED_PER_TIER,
+  GUILD_MAX_LEVEL,
+  guildLabel,
+  SKILL_IDS,
+  SKILLS,
+} from '@/lib/game/skills';
+import { skillIcon } from '@/lib/game/skill-icons';
 import { humanize } from '@/lib/utils/humanize';
 import { formatNumber } from '@/lib/utils/format-number';
 import { warnOnDrift } from '@/lib/utils/warn-on-drift';
@@ -9,6 +18,7 @@ import {
   getBosses,
   getBuildings,
   getCrops,
+  getDungeons,
   getEnemies,
   getEquipment,
   getGems,
@@ -21,10 +31,12 @@ import {
   getQuests,
   getRunes,
   getSeasonalEvents,
+  type DungeonEntry,
+  type EquipmentEntry,
 } from './game-data';
 import { EXPEDITION_KEYS } from './expeditions-data.generated';
 import type { ProgressCategory, ProgressItem } from './types';
-import { MAX_ITEM_LEVEL_XP } from '@/lib/utils/xp-table';
+import { levelForXp, MAX_ITEM_LEVEL_XP } from '@/lib/utils/xp-table';
 
 function pct(points: number, max: number) {
   return max > 0 ? Math.min(1, points / max) : 0;
@@ -55,6 +67,12 @@ async function computeQuests(ps: PlayerState): Promise<ProgressCategory> {
   };
 }
 
+const GUILD_CATEGORY_OVERRIDES: Record<string, (typeof CATEGORY_ORDER)[number]> = {
+  warriors: 'Combat',
+  archers: 'Combat',
+  mages: 'Combat',
+};
+
 async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
   const guildQuests = await getGuildQuests();
   const tierCounts = (ps.raw.flags.guild_daily_tier_counts ?? {}) as Record<string, number>;
@@ -77,10 +95,16 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
       label: guildLabel(guild),
       done: level >= GUILD_MAX_LEVEL,
       detail: `${level} / ${GUILD_MAX_LEVEL}`,
+      section: GUILD_CATEGORY_OVERRIDES[guild] ?? SKILLS.find((s) => s.id === guild)?.category ?? 'Other',
+      icon: skillIcon(guild),
     };
-  });
+  }).sort(
+    (a, b) =>
+      CATEGORY_ORDER.indexOf(a.section as (typeof CATEGORY_ORDER)[number]) -
+      CATEGORY_ORDER.indexOf(b.section as (typeof CATEGORY_ORDER)[number]),
+  );
 
-  const points = ALL_GUILDS.reduce((sum, _guild, i) => sum + Number(items[i].detail!.split(' / ')[0]), 0);
+  const points = items.reduce((sum, item) => sum + Number(item.detail!.split(' / ')[0]), 0);
   return {
     id: 'guilds',
     label: 'Guilds',
@@ -95,35 +119,74 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
   const bosses = await getBosses();
   const enemyKills = (ps.raw.flags.enemy_kills ?? {}) as Record<string, number>;
   const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
+  const isMonumentPatron = Number(ps.raw.flags.monument_tier ?? 0) >= 1;
 
   let points = 0;
   let max = 0;
-  const items: ProgressItem[] = Object.values(bosses).map((boss) => {
-    const kills = enemyKills[boss.id] ?? 0;
-    const drops = boss.rare_drops ?? [];
-    const dropsOwned = drops.filter((d) => seenItems.has(d.item)).length;
-    max += 1 + drops.length;
-    points += (kills > 0 ? 1 : 0) + dropsOwned;
-    return {
-      id: boss.id,
-      label: boss.display_name,
-      done: kills > 0 && dropsOwned >= drops.length,
-      detail: `${boss.raid ? 'Raid' : 'Solo'} · ${formatNumber(kills)} kills · ${dropsOwned}/${drops.length} drops`,
-    };
-  });
+  const items: ProgressItem[] = Object.values(bosses)
+    .map((boss) => {
+      const kills = enemyKills[boss.id] ?? 0;
+      const drops = boss.rare_drops ?? [];
+      const dropsOwned = drops.filter((d) => seenItems.has(d.item)).length;
+      max += 1 + drops.length;
+      points += (kills > 0 ? 1 : 0) + dropsOwned;
+      return {
+        id: boss.id,
+        label: boss.display_name,
+        done: kills > 0 && dropsOwned >= drops.length,
+        detail: `${formatNumber(kills)} kills · ${dropsOwned}/${drops.length} drops`,
+        section: boss.raid ? 'Raid' : 'Solo',
+        locked: !!boss.requires_monument && !isMonumentPatron,
+      };
+    })
+    .sort((a, b) => (a.section === b.section ? 0 : a.section === 'Solo' ? -1 : 1));
 
   return { id: 'bosses', label: 'Bosses', points, max, hasDrilldown: true, items };
+}
+
+const ARMOURY_STYLE_ORDER = ['attack', 'strength', 'ranged', 'magic'] as const;
+const ARMOURY_STAT_LABELS: [keyof EquipmentEntry, string][] = [
+  ['attack_bonus', 'ATK'],
+  ['strength_bonus', 'STR'],
+  ['defense_bonus', 'DEF'],
+  ['ranged_attack_bonus', 'R.ATK'],
+  ['ranged_strength_bonus', 'R.STR'],
+  ['magic_attack_bonus', 'M.ATK'],
+  ['magic_damage_bonus', 'M.DMG'],
+];
+
+function armouryStats(eq: EquipmentEntry): string | undefined {
+  const parts = ARMOURY_STAT_LABELS.filter(([key]) => Number(eq[key] ?? 0) !== 0).map(
+    ([key, label]) => `${label} +${eq[key]}`,
+  );
+  return parts.length > 0 ? parts.join(' · ') : undefined;
+}
+
+function armouryRequirements(eq: EquipmentEntry): string | undefined {
+  const entries = Object.entries(eq.requirements ?? {});
+  return entries.length > 0 ? entries.map(([skill, level]) => `${humanize(skill)} ${level}`).join(', ') : undefined;
 }
 
 async function computeArmoury(ps: PlayerState): Promise<ProgressCategory> {
   const equipment = await getEquipment();
   const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
-  const items: ProgressItem[] = Object.entries(equipment).map(([key, eq]) => ({
-    id: key,
-    label: eq.display_name ?? humanize(key),
-    done: seenItems.has(key),
-    detail: eq.slot,
-  }));
+  const items: ProgressItem[] = Object.entries(equipment)
+    .map(([key, eq]) => ({
+      id: key,
+      label: eq.display_name ?? humanize(key),
+      done: seenItems.has(key),
+      detail: eq.slot,
+      section: eq.combat_style ? humanize(eq.combat_style) : 'Other',
+      requirements: armouryRequirements(eq),
+      stats: armouryStats(eq),
+    }))
+    .sort((a, b) => {
+      const styleIndex = (s: string) => {
+        const i = ARMOURY_STYLE_ORDER.indexOf(s.toLowerCase() as (typeof ARMOURY_STYLE_ORDER)[number]);
+        return i === -1 ? ARMOURY_STYLE_ORDER.length : i;
+      };
+      return styleIndex(a.section!) - styleIndex(b.section!);
+    });
   return {
     id: 'armoury',
     label: 'Armoury',
@@ -139,21 +202,29 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
   const prestige = (ps.raw.flags.skill_prestige ?? {}) as Record<string, number>;
   const orderedPaths = [...paths].sort((a, b) => SKILL_IDS.indexOf(a.skill) - SKILL_IDS.indexOf(b.skill));
 
-  const items: ProgressItem[] = orderedPaths.map((skillPaths) => {
-    const nonXpCost = skillPaths.paths
-      .filter((p) => !p.auto)
-      .flatMap((p) => p.nodes)
-      .reduce((sum, n) => sum + n.cost, 0);
-    const cap = Math.ceil(nonXpCost / 3);
-    const owned = Math.min(prestige[skillPaths.skill] ?? 0, cap);
-    const level = ps.raw.skillLevels[skillPaths.skill] ?? 1;
-    return {
-      id: skillPaths.skill,
-      label: humanize(skillPaths.skill),
-      done: owned >= cap && cap > 0,
-      detail: `${owned} / ${cap} prestiges · level ${level}`,
-    };
-  });
+  const items: ProgressItem[] = orderedPaths
+    .map((skillPaths) => {
+      const nonXpCost = skillPaths.paths
+        .filter((p) => !p.auto)
+        .flatMap((p) => p.nodes)
+        .reduce((sum, n) => sum + n.cost, 0);
+      const cap = Math.ceil(nonXpCost / 3);
+      const owned = Math.min(prestige[skillPaths.skill] ?? 0, cap);
+      const level = ps.raw.skillLevels[skillPaths.skill] ?? 1;
+      return {
+        id: skillPaths.skill,
+        label: humanize(skillPaths.skill),
+        done: owned >= cap && cap > 0,
+        detail: `${owned} / ${cap} prestiges · level ${level}`,
+        section: SKILLS.find((s) => s.id === skillPaths.skill)?.category ?? 'Other',
+        icon: skillIcon(skillPaths.skill),
+      };
+    })
+    .sort(
+      (a, b) =>
+        CATEGORY_ORDER.indexOf(a.section as (typeof CATEGORY_ORDER)[number]) -
+        CATEGORY_ORDER.indexOf(b.section as (typeof CATEGORY_ORDER)[number]),
+    );
 
   return {
     id: 'levels',
@@ -282,15 +353,36 @@ function computeExpeditions(ps: PlayerState): ProgressCategory {
   };
 }
 
+/** Groups every dungeon's enemy_spawns by enemy, mirroring the game's own GameDataRepository.enemyLocations. */
+function enemyDungeonNames(dungeons: Record<string, DungeonEntry>): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const dungeon of Object.values(dungeons)) {
+    for (const spawn of dungeon.enemy_spawns) {
+      const names = map.get(spawn.enemy) ?? [];
+      names.push(dungeon.display_name);
+      map.set(spawn.enemy, names);
+    }
+  }
+  for (const names of map.values()) names.sort();
+  return map;
+}
+
 async function computeBestiary(ps: PlayerState): Promise<ProgressCategory> {
-  const enemies = await getEnemies();
+  const [enemies, dungeons] = await Promise.all([getEnemies(), getDungeons()]);
+  const dungeonsByEnemy = enemyDungeonNames(dungeons);
   const kills = (ps.raw.flags.enemy_kills ?? {}) as Record<string, number>;
-  const items: ProgressItem[] = Object.values(enemies).map((e) => ({
-    id: e.name,
-    label: e.display_name,
-    done: (kills[e.name] ?? 0) > 0,
-    detail: `${kills[e.name] ?? 0} killed`,
-  }));
+  const items: ProgressItem[] = Object.values(enemies).map((e) => {
+    const locations = dungeonsByEnemy.get(e.name);
+    if (!locations && import.meta.env.DEV) {
+      console.warn(`[game-data-drift] enemy "${e.name}" isn't spawned by any known dungeon.`);
+    }
+    return {
+      id: e.name,
+      label: e.display_name,
+      done: (kills[e.name] ?? 0) > 0,
+      detail: `${kills[e.name] ?? 0} killed · ${locations?.join(', ') ?? 'Unknown location'}`,
+    };
+  });
   return {
     id: 'bestiary',
     label: 'Bestiary',
@@ -348,13 +440,14 @@ async function computeHeirloomTools(ps: PlayerState): Promise<ProgressCategory> 
   let points = 0;
   for (const [key, eq] of heirlooms) {
     const owned = seen.has(key);
+    const level = levelForXp(heirloomXp[key] ?? 0);
     const maxed = (heirloomXp[key] ?? 0) >= MAX_ITEM_LEVEL_XP;
     points += (owned ? 1 : 0) + (maxed ? 1 : 0);
     items.push({
       id: key,
       label: eq.display_name ?? humanize(key),
       done: owned && maxed,
-      detail: `${owned ? 'Obtained' : 'Not obtained'} · ${maxed ? 'Max level' : 'Not maxed'}`,
+      detail: owned ? `Level ${level}${maxed ? ' (max)' : ''}` : 'Not obtained',
     });
   }
 

@@ -18,7 +18,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -80,6 +80,28 @@ const SKILLING_DUNGEON_KEYS = [
 ];
 const EXPEDITION_NOTE_THRESHOLD = 5;
 const EXPEDITIONS_OUTPUT = join(REPO_ROOT, 'src', 'lib', 'progress', 'expeditions-data.generated.ts');
+
+/**
+ * Combat dungeons live one-per-file (unlike recipes), so merge
+ * app/src/main/assets/data/dungeons/*.json into a single file
+ * instead of vendoring each one.
+ */
+const DUNGEONS_OUTPUT = join(VENDOR_DIR, 'dungeons.json');
+
+function buildDungeonsJson(source) {
+  const dungeonsDir = join(dataDirOf(source), 'dungeons');
+  if (!existsSync(dungeonsDir)) die(`dungeons directory not found at ${dungeonsDir}`);
+  const files = readdirSync(dungeonsDir).filter((f) => f.endsWith('.json'));
+  const dungeons = {};
+  for (const file of files) {
+    const d = JSON.parse(readFileSync(join(dungeonsDir, file), 'utf8'));
+    dungeons[d.name] = {
+      display_name: d.display_name,
+      enemy_spawns: (d.enemy_spawns ?? []).map((s) => ({ enemy: s.enemy })),
+    };
+  }
+  return JSON.stringify(dungeons, null, 2) + '\n';
+}
 
 const die = (msg) => {
   process.stderr.write(`error: ${msg}\n`);
@@ -222,6 +244,7 @@ function sync(source, fresh) {
   }
   writeFileSync(MANIFEST, JSON.stringify(fresh, null, 2) + '\n');
   writeFileSync(EXPEDITIONS_OUTPUT, buildExpeditionsTs(source));
+  writeFileSync(DUNGEONS_OUTPUT, buildDungeonsJson(source));
 
   const kb = FILES.reduce((n, f) => n + statSync(join(VENDOR_DIR, f)).size, 0) / 1024;
   console.log(

@@ -57,4 +57,5 @@ export type TargetOption = {
   label: string;
   levelRequired: number;
   locked: boolean;
+  filterTags?: Record<string, string>;
 };

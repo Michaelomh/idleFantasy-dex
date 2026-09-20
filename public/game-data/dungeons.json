@@ -1,0 +1,405 @@
+{
+  "abyssal_ruins": {
+    "display_name": "Abyssal Ruins",
+    "enemy_spawns": [
+      {
+        "enemy": "abyssal_leech"
+      },
+      {
+        "enemy": "void_guardian"
+      },
+      {
+        "enemy": "deep_horror"
+      }
+    ]
+  },
+  "abyssal_throne": {
+    "display_name": "Abyssal Throne",
+    "enemy_spawns": [
+      {
+        "enemy": "abyssal_lord"
+      },
+      {
+        "enemy": "eternal_sentinel"
+      },
+      {
+        "enemy": "void_archon"
+      },
+      {
+        "enemy": "abyssal_guardian"
+      },
+      {
+        "enemy": "elder_lich"
+      }
+    ]
+  },
+  "ancient_forest_ruins": {
+    "display_name": "Ancient Forest Ruins",
+    "enemy_spawns": [
+      {
+        "enemy": "corrupted_druid"
+      },
+      {
+        "enemy": "vine_beast"
+      },
+      {
+        "enemy": "forest_spirit"
+      }
+    ]
+  },
+  "ancient_forge": {
+    "display_name": "Ancient Forge",
+    "enemy_spawns": [
+      {
+        "enemy": "dwarven_guardian"
+      },
+      {
+        "enemy": "iron_golem"
+      },
+      {
+        "enemy": "forge_demon"
+      }
+    ]
+  },
+  "ancient_temple": {
+    "display_name": "Ancient Temple",
+    "enemy_spawns": [
+      {
+        "enemy": "ancient_guardian"
+      },
+      {
+        "enemy": "lich"
+      },
+      {
+        "enemy": "dragon"
+      }
+    ]
+  },
+  "arcane_ruins": {
+    "display_name": "Arcane Ruins",
+    "enemy_spawns": [
+      {
+        "enemy": "arcane_construct"
+      },
+      {
+        "enemy": "corrupted_mage"
+      },
+      {
+        "enemy": "void_guardian"
+      }
+    ]
+  },
+  "bandit_camp": {
+    "display_name": "Bandit Camp",
+    "enemy_spawns": [
+      {
+        "enemy": "rogue"
+      },
+      {
+        "enemy": "bandit"
+      }
+    ]
+  },
+  "blightwood": {
+    "display_name": "The Blightwood",
+    "enemy_spawns": [
+      {
+        "enemy": "shade_stalker"
+      },
+      {
+        "enemy": "bone_colossus"
+      },
+      {
+        "enemy": "dread_dullahan"
+      }
+    ]
+  },
+  "cloud_kingdom": {
+    "display_name": "Cloud Kingdom",
+    "enemy_spawns": [
+      {
+        "enemy": "storm_imp"
+      },
+      {
+        "enemy": "sky_serpent"
+      },
+      {
+        "enemy": "cloud_giant"
+      }
+    ]
+  },
+  "collapsed_mine": {
+    "display_name": "Collapsed Mine",
+    "enemy_spawns": [
+      {
+        "enemy": "mine_spider"
+      },
+      {
+        "enemy": "cave_troll"
+      },
+      {
+        "enemy": "rock_golem"
+      }
+    ]
+  },
+  "corrupted_sanctum": {
+    "display_name": "Corrupted Sanctum",
+    "enemy_spawns": [
+      {
+        "enemy": "shadow_beast"
+      },
+      {
+        "enemy": "twisted_treant"
+      },
+      {
+        "enemy": "corrupted_mage"
+      }
+    ]
+  },
+  "dragon_lair": {
+    "display_name": "Dragon's Lair",
+    "enemy_spawns": [
+      {
+        "enemy": "dragon"
+      },
+      {
+        "enemy": "demon"
+      },
+      {
+        "enemy": "knight"
+      }
+    ]
+  },
+  "drowned_temple": {
+    "display_name": "Drowned Temple",
+    "enemy_spawns": [
+      {
+        "enemy": "drowned_cultist"
+      },
+      {
+        "enemy": "sea_spirit"
+      },
+      {
+        "enemy": "cursed_fisherman"
+      }
+    ]
+  },
+  "farm": {
+    "display_name": "Farm",
+    "enemy_spawns": [
+      {
+        "enemy": "chicken"
+      },
+      {
+        "enemy": "sheep"
+      },
+      {
+        "enemy": "cow"
+      }
+    ]
+  },
+  "fortress_ruins": {
+    "display_name": "Fortress Ruins",
+    "enemy_spawns": [
+      {
+        "enemy": "guard"
+      },
+      {
+        "enemy": "knight"
+      },
+      {
+        "enemy": "dark_wizard"
+      }
+    ]
+  },
+  "frozen_citadel": {
+    "display_name": "Frozen Citadel",
+    "enemy_spawns": [
+      {
+        "enemy": "frost_giant"
+      },
+      {
+        "enemy": "ice_golem"
+      },
+      {
+        "enemy": "glacial_mage"
+      },
+      {
+        "enemy": "frost_wyvern"
+      }
+    ]
+  },
+  "goblin_cave": {
+    "display_name": "Goblin Cave",
+    "enemy_spawns": [
+      {
+        "enemy": "giant_rat"
+      },
+      {
+        "enemy": "goblin"
+      }
+    ]
+  },
+  "guild_of_shadows": {
+    "display_name": "Guild of Shadows",
+    "enemy_spawns": [
+      {
+        "enemy": "shadow_assassin"
+      },
+      {
+        "enemy": "vault_guardian"
+      },
+      {
+        "enemy": "guild_master"
+      },
+      {
+        "enemy": "shadow_thief"
+      }
+    ]
+  },
+  "hollowfen": {
+    "display_name": "The Hollowfen",
+    "enemy_spawns": [
+      {
+        "enemy": "will_o_wisp"
+      },
+      {
+        "enemy": "grave_ghoul"
+      },
+      {
+        "enemy": "husk_horror"
+      },
+      {
+        "enemy": "barrow_wight"
+      }
+    ]
+  },
+  "imp_cavern": {
+    "display_name": "Imp Cavern",
+    "enemy_spawns": [
+      {
+        "enemy": "imp"
+      },
+      {
+        "enemy": "giant_rat"
+      }
+    ]
+  },
+  "infernal_stronghold": {
+    "display_name": "Infernal Stronghold",
+    "enemy_spawns": [
+      {
+        "enemy": "fire_giant"
+      },
+      {
+        "enemy": "demon"
+      },
+      {
+        "enemy": "hellhound"
+      }
+    ]
+  },
+  "orc_stronghold": {
+    "display_name": "Orc Stronghold",
+    "enemy_spawns": [
+      {
+        "enemy": "orc_warrior"
+      },
+      {
+        "enemy": "troll"
+      }
+    ]
+  },
+  "rogue_sanctum": {
+    "display_name": "Rogue Sanctum",
+    "enemy_spawns": [
+      {
+        "enemy": "rogue"
+      },
+      {
+        "enemy": "cutpurse"
+      },
+      {
+        "enemy": "assassin"
+      }
+    ]
+  },
+  "shadow_den": {
+    "display_name": "Shadow Den",
+    "enemy_spawns": [
+      {
+        "enemy": "rogue"
+      },
+      {
+        "enemy": "cutpurse"
+      },
+      {
+        "enemy": "dark_wizard"
+      }
+    ]
+  },
+  "spider_den": {
+    "display_name": "Spider Den",
+    "enemy_spawns": [
+      {
+        "enemy": "spider"
+      },
+      {
+        "enemy": "wild_monkey"
+      }
+    ]
+  },
+  "sunspire": {
+    "display_name": "The Sunspire",
+    "enemy_spawns": [
+      {
+        "enemy": "sun_wisp"
+      },
+      {
+        "enemy": "ember_hound"
+      },
+      {
+        "enemy": "cinder_colossus"
+      }
+    ]
+  },
+  "undead_crypt": {
+    "display_name": "Undead Crypt",
+    "enemy_spawns": [
+      {
+        "enemy": "skeleton"
+      },
+      {
+        "enemy": "zombie"
+      },
+      {
+        "enemy": "dark_wizard"
+      }
+    ]
+  },
+  "void_rift": {
+    "display_name": "Void Rift",
+    "enemy_spawns": [
+      {
+        "enemy": "void_stalker"
+      },
+      {
+        "enemy": "rift_guardian"
+      },
+      {
+        "enemy": "chaos_elemental"
+      }
+    ]
+  },
+  "volcanic_depths": {
+    "display_name": "Volcanic Depths",
+    "enemy_spawns": [
+      {
+        "enemy": "hellhound"
+      },
+      {
+        "enemy": "demon"
+      }
+    ]
+  }
+}
