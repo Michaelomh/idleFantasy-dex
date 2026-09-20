@@ -58,6 +58,7 @@ const FILES = [
   'recipes/crafting.json',
   'recipes/herblore.json',
   'recipes/construction.json',
+  'mercenaries.json',
 ];
 
 /**

@@ -11,6 +11,16 @@ export type EquipmentEntry = {
   requirements?: Record<string, number>;
   cape_skill?: string;
   cape_bonus?: number;
+  combat_style?: 'attack' | 'strength' | 'ranged' | 'magic' | null;
+  attack_bonus?: number;
+  strength_bonus?: number;
+  defense_bonus?: number;
+  ranged_attack_bonus?: number;
+  ranged_strength_bonus?: number;
+  magic_attack_bonus?: number;
+  magic_damage_bonus?: number;
+  attack_speed?: number;
+  infinite_runes?: string;
   [key: string]: unknown;
 };
 export const getEquipment = () => load<Record<string, EquipmentEntry>>('equipment.json');
@@ -42,6 +52,22 @@ export type BossEntry = {
 };
 export const getBosses = () => load<Record<string, BossEntry>>('raid_bosses.json');
 
+export type MercenaryEntry = {
+  id: string;
+  display_name: string;
+  emoji?: string;
+  tier: 'cheap' | 'seasoned' | 'elite';
+  combat_style: 'melee' | 'ranged' | 'magic';
+  attack_level: number;
+  strength_level: number;
+  defense_level: number;
+  hp: number;
+  attack_bonus: number;
+  strength_bonus: number;
+  hire_cost: number;
+};
+export const getMercenaries = () => load<MercenaryEntry[]>('mercenaries.json');
+
 export type PrestigePathNode = { id: string; cost: number; effect?: string; value?: number };
 export type PrestigePath = { key: string; auto: boolean; nodes: PrestigePathNode[] };
 export type PrestigeSkillPaths = { skill: string; paths: PrestigePath[] };
@@ -68,6 +94,14 @@ export const getBuildings = () => load<Record<string, BuildingEntry>>('buildings
 
 export type SeasonalEventEntry = { id?: string; display_name?: string; [key: string]: unknown };
 export const getSeasonalEvents = () => load<Record<string, SeasonalEventEntry>>('seasonal_events.json');
+
+export type BlessingEntry = {
+  key: string;
+  prayer_level_required: number;
+  type: 'XP' | 'DEFENSE' | 'COINS';
+  magnitude: number;
+};
+export const getBlessings = () => load<BlessingEntry[]>('blessings.json');
 
 export type EnemyEntry = {
   name: string;

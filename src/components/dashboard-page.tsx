@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { usePlayerState } from '@/lib/player/use-player-state';
-import { resolveAllSkillBonuses, computeActiveBoosts, type SkillBonus } from '@/lib/bonuses';
+import { resolveAllSkillBonuses, computeActiveBoosts, type SkillBonus, type ActiveBoostRow } from '@/lib/bonuses';
 import { CATEGORY_ORDER } from '@/lib/game/skills';
 import { SkillBonusRow } from '@/components/skill-bonus-row';
 import { ActiveBoostsSection } from '@/components/active-boosts-section';
@@ -23,6 +23,7 @@ export function DashboardPage() {
   const playerState = usePlayerState();
   const [override, setOverride] = useState<PlayerState | null>(null);
   const [skillBonuses, setSkillBonuses] = useState<SkillBonus[] | null>(null);
+  const [activeBoosts, setActiveBoosts] = useState<ActiveBoostRow[]>([]);
   const [hasHandle, setHasHandle] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -44,10 +45,16 @@ export function DashboardPage() {
     };
   }, [effectivePlayerState]);
 
-  const activeBoosts = useMemo(
-    () => (effectivePlayerState ? computeActiveBoosts(effectivePlayerState) : []),
-    [effectivePlayerState],
-  );
+  useEffect(() => {
+    if (!effectivePlayerState) return;
+    let cancelled = false;
+    void computeActiveBoosts(effectivePlayerState).then((result) => {
+      if (!cancelled) setActiveBoosts(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [effectivePlayerState]);
 
   async function handleSync() {
     setSyncError(null);
