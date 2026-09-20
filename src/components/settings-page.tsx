@@ -15,10 +15,12 @@ import {
   Trash2,
   Upload,
   File,
+  Palette,
   type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/lib/hooks/use-theme';
 import type { Theme } from '@/lib/app/theme';
+import { getDefaultFilter, setDefaultFilter, type Filter } from '@/lib/app/preferences';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Button } from '@/components/ui/button.tsx';
 import {
@@ -50,11 +52,18 @@ import { clearExplore, getSelectedSlot, setSelectedSlot } from '@/lib/app/boot-s
 const REPO_URL = 'https://github.com/Michaelomh/idleFantasy-dex';
 const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 const GAME_URL = 'https://github.com/tristinbaker/IdleFantasy';
+const SKILL_ICONS_URL = 'https://shikashipx.itch.io/shikashis-fantasy-icons-pack';
 
 const THEME_OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
   { value: 'system', label: 'System', icon: Monitor },
   { value: 'light', label: 'Light', icon: Sun },
   { value: 'dark', label: 'Dark', icon: Moon },
+];
+
+const DEFAULT_FILTER_OPTIONS: { value: Filter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'done', label: 'Done' },
+  { value: 'missing', label: 'Missing' },
 ];
 
 function SectionHeading({ children }: { children: ReactNode }) {
@@ -94,6 +103,7 @@ function AboutLink({
 export function SettingsPage() {
   const navigate = useNavigate();
   const [theme, setTheme] = useTheme();
+  const [defaultFilter, setDefaultFilterState] = useState<Filter>(getDefaultFilter);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [slots, setSlots] = useState<Record<string, CachedSave>>({});
@@ -247,6 +257,31 @@ export function SettingsPage() {
         </ToggleGroup>
       </div>
 
+      <div className="flex flex-col gap-2">
+        <SectionHeading>Preferences</SectionHeading>
+        <p className="body text-text-secondary">Default filter for Progress category pages</p>
+        <ToggleGroup
+          value={[defaultFilter]}
+          onValueChange={(values) => {
+            const next = values[0] as Filter | undefined;
+            if (!next) return;
+            setDefaultFilterState(next);
+            setDefaultFilter(next);
+          }}
+          className="w-full gap-1 rounded-full border border-border bg-card p-1"
+        >
+          {DEFAULT_FILTER_OPTIONS.map(({ value, label }) => (
+            <ToggleGroupItem
+              key={value}
+              value={value}
+              className="h-11 flex-1 gap-1.5 rounded-full font-bold text-text-secondary data-pressed:bg-primary data-pressed:text-primary-foreground"
+            >
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+
       <div className="flex flex-col gap-3">
         <SectionHeading>Save Data</SectionHeading>
 
@@ -353,6 +388,11 @@ export function SettingsPage() {
         <AboutLink icon={Gamepad2} label="Based on" value="IdleFantasy" href={GAME_URL} />
         <AboutLink icon={Code2} label="Source Code" value="Open" href={REPO_URL} />
         <AboutLink icon={ScrollText} label="License" value="GPL-3.0" href={LICENSE_URL} />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <SectionHeading>Art Credits</SectionHeading>
+        <AboutLink icon={Palette} label="Skill icons" value="Shikashi" href={SKILL_ICONS_URL} />
       </div>
     </div>
   );

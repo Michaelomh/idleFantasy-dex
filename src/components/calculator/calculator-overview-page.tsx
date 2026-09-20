@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { SKILLS, CATEGORY_ORDER } from '@/lib/game/skills';
+import { skillIcon } from '@/lib/game/skill-icons';
 
 const CALCULATOR_SKILL_IDS = new Set(
   SKILLS.filter((s) => s.category === 'Gathering' || s.category === 'Crafting').map((s) => s.id),
@@ -20,14 +21,16 @@ export function CalculatorOverviewPage() {
             <span className="h3">{category}</span>
             <div className="flex flex-col gap-2">
               {skills.map((skill) => {
-                // TEMP: would feature as more is validated.
                 return (
                   <div
                     key={skill.id}
                     onClick={() => navigate(`/calculator/${skill.id}`)}
                     className="flex cursor-pointer items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
                   >
-                    <span className="body flex items-center gap-1.5">{skill.label}</span>
+                    <span className="body flex items-center gap-1.5">
+                      <img src={skillIcon(skill.id)} alt="" className="size-4 shrink-0" />
+                      {skill.label}
+                    </span>
                     <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
                   </div>
                 );

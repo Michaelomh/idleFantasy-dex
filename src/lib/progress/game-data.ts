@@ -49,6 +49,8 @@ export type BossEntry = {
   xp_rewards?: Record<string, number>;
   rare_drops?: { item: string; chance?: number; comment?: string }[];
   common_loot?: { coins_min?: number; coins_max?: number; items?: Record<string, { min: number; max: number }> };
+  /** Gated behind Grand Monument patronage rather than combat level, e.g. "Only patrons of the Grand Monument may face it." */
+  requires_monument?: boolean;
 };
 export const getBosses = () => load<Record<string, BossEntry>>('raid_bosses.json');
 
@@ -110,6 +112,12 @@ export type EnemyEntry = {
   always_drops?: { item: string }[];
 };
 export const getEnemies = () => load<Record<string, EnemyEntry>>('enemies.json');
+
+export type DungeonEntry = {
+  display_name: string;
+  enemy_spawns: { enemy: string }[];
+};
+export const getDungeons = () => load<Record<string, DungeonEntry>>('dungeons.json');
 
 export type FishEntry = { id?: string; display_name?: string; [key: string]: unknown };
 export const getFish = () => load<Record<string, FishEntry>>('fish.json');

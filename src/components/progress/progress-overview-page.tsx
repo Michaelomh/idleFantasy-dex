@@ -5,11 +5,10 @@ import { Progress } from '@/components/ui/progress';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeAllCategories, rollUp, PROGRESS_SECTIONS, type ProgressCategory } from '@/lib/progress';
 import type { PlayerState } from '@/lib/save-source';
+import { useScrollRestoration } from '@/lib/hooks/use-scroll-restoration';
 import { LoadingScreen } from '@/components/loading-screen';
 
-// TEMP: would feature as more is validated.
 const CATEGORY_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfident' | 'info'>> = {
-  'heirloom-tools': 'wip',
   titles: 'unvalidated',
   inventory: 'info',
 };
@@ -34,6 +33,8 @@ export function ProgressOverviewPage() {
       cancelled = true;
     };
   }, [playerState]);
+
+  useScrollRestoration('progress-overview', !!categories);
 
   if (!playerState || !categories) {
     return <LoadingScreen />;

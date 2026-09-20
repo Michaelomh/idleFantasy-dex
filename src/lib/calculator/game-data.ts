@@ -40,6 +40,7 @@ export type RecipeEntry = {
   item_name?: string;
   effects?: Record<string, number>;
   healing_value?: number;
+  type?: string;
 };
 export const getRecipes = (family: 'smithing' | 'cooking' | 'fletching' | 'crafting' | 'herblore' | 'construction') =>
   load<Record<string, RecipeEntry>>(`recipes/${family}.json`);

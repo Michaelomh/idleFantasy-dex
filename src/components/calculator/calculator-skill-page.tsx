@@ -12,11 +12,14 @@ import {
   totalPatchCount,
   hasCropRotationBonus,
   formatMinSec,
+  targetFilterGroupsForSkill,
+  applyTargetFilters,
   type SessionResult,
   type TargetOption,
   type CalculatorInputs,
   type ModifierRow,
 } from '@/lib/calculator';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
@@ -36,6 +39,24 @@ function defaultTarget(targets: TargetOption[]): string {
 
 type SectionId = 'yield' | 'xp' | 'session';
 const DEFAULT_SECTION_ORDER: SectionId[] = ['yield', 'xp', 'session'];
+
+const MATERIAL_SAVE_PRESTIGE_PATH: Partial<Record<string, { name: string; percent: number }>> = {
+  smithing: { name: 'Thrift', percent: 30 },
+  crafting: { name: 'Thrift', percent: 30 },
+  construction: { name: 'Halfling race', percent: 15 },
+};
+
+const MATERIAL_SAVE_SKILLS = ['smithing', 'crafting', 'construction', 'fletching', 'herblore', 'cooking'];
+
+function materialSaveInfo(skillId: string): string | undefined {
+  if (!MATERIAL_SAVE_SKILLS.includes(skillId)) return undefined;
+  const prestige = MATERIAL_SAVE_PRESTIGE_PATH[skillId];
+  return (
+    "Materials required can be lower due to Artisan's Workshop (secondary materials, up to 15%)" +
+    (prestige ? ` or the ${prestige.name} prestige path (all materials, up to ${prestige.percent}%)` : '') +
+    '.'
+  );
+}
 
 type PersistedCalculatorInputs = {
   targetKey?: string;
@@ -100,6 +121,7 @@ export function CalculatorSkillPage() {
   const [result, setResult] = useState<SessionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sectionOrder, setSectionOrder] = useState<SectionId[]>(DEFAULT_SECTION_ORDER);
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string | undefined>>({});
   const [persistedInputs, setPersistedInputs] = useSessionStorage<PersistedCalculatorInputs>(
     `calculator:${skillId}`,
     {},
@@ -108,6 +130,7 @@ export function CalculatorSkillPage() {
 
   const config = useMemo(() => skillInputConfig(skillId), [skillId]);
   const isGathering = SKILLS.find((s) => s.id === skillId)?.category === 'Gathering';
+  const filterGroups = useMemo(() => targetFilterGroupsForSkill(skillId, selectedFilters), [skillId, selectedFilters]);
 
   useEffect(() => {
     if (!playerState || !skillId) return;
@@ -131,6 +154,7 @@ export function CalculatorSkillPage() {
         setAshCatalystKey(persistedInputs.ashCatalystKey ?? null);
         setCropRotated(persistedInputs.cropRotated ?? cropRotationDefault);
         setTimedBoostsEnabled(persistedInputs.timedBoostsEnabled ?? true);
+        setSelectedFilters({});
         setResult(null);
         setError(null);
         setSectionOrder(DEFAULT_SECTION_ORDER);
@@ -209,6 +233,28 @@ export function CalculatorSkillPage() {
     };
   }, [playerState, skillId, inputs]);
 
+  const filteredTargets = useMemo(
+    () => applyTargetFilters(targets ?? [], filterGroups, selectedFilters),
+    [targets, filterGroups, selectedFilters],
+  );
+
+  function handleFilterChange(groupId: string, values: string[]) {
+    const nextFilters: Record<string, string | undefined> = { ...selectedFilters, [groupId]: values[0] };
+    const nextGroups = targetFilterGroupsForSkill(skillId, nextFilters);
+    for (const id of Object.keys(nextFilters)) {
+      const group = nextGroups.find((g) => g.id === id);
+      const value = nextFilters[id];
+      if (!group || (value && !group.options.includes(value))) {
+        nextFilters[id] = undefined;
+      }
+    }
+    setSelectedFilters(nextFilters);
+    const nextTargets = applyTargetFilters(targets ?? [], nextGroups, nextFilters);
+    if (targetKey && !nextTargets.some((t) => t.key === targetKey)) {
+      setTargetKey(defaultTarget(nextTargets));
+    }
+  }
+
   if (!playerState || !targets) {
     return <LoadingScreen />;
   }
@@ -219,18 +265,42 @@ export function CalculatorSkillPage() {
     <div className="flex flex-col gap-4 p-4">
       <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
         <span className="h3">Inputs</span>
+
         <div className="flex items-center justify-between gap-2">
           <Label htmlFor="target" className="min-w-0 truncate">
             Target
           </Label>
           <NativeSelect id="target" className="w-56" value={targetKey} onChange={(e) => setTargetKey(e.target.value)}>
-            {targets.map((t) => (
+            {filteredTargets.map((t) => (
               <NativeSelectOption key={t.key} value={t.key}>
                 {t.label} {t.locked ? `(needs level ${t.levelRequired})` : ''}
               </NativeSelectOption>
             ))}
           </NativeSelect>
         </div>
+
+        {filterGroups.map((group) => (
+          <div key={group.id} className="flex flex-col gap-1.5">
+            <Label className="min-w-0 truncate">{group.label}</Label>
+            <ToggleGroup
+              value={selectedFilters[group.id] ? [selectedFilters[group.id]!] : []}
+              onValueChange={(values) => handleFilterChange(group.id, values)}
+              className="flex flex-wrap gap-1.5 rounded-none border-none bg-transparent p-0"
+            >
+              {group.options.map((option) => (
+                <ToggleGroupItem
+                  key={option}
+                  value={option}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full data-pressed:bg-primary data-pressed:text-primary-foreground"
+                >
+                  {option}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+        ))}
 
         {config.showQty && (
           <div className="flex items-center justify-between gap-2">
@@ -308,7 +378,12 @@ export function CalculatorSkillPage() {
 
         {result?.materialsRequired && result.materialsRequired.length > 0 && (
           <div className="flex flex-col items-baseline justify-between gap-2">
-            <Label className="body text-white">Materials required</Label>
+            <Label className="body flex min-w-0 items-center gap-1.5 truncate text-white">
+              <span className="truncate">Materials required</span>
+              {materialSaveInfo(skillId) && (
+                <StatusNotice variant="info" className="size-3.5" message={materialSaveInfo(skillId)} />
+              )}
+            </Label>
             <p className="data">
               {result.materialsRequired.map((m) => `${m.label} x${formatNumber(m.qty)}`).join(', ')}
             </p>

@@ -18,6 +18,11 @@ The app fetches them lazily at runtime; they are never bundled and never block f
 `manifest.json` is the source of truth: it records the version, the upstream commit, and a
 sha256 for every file.
 
+`dungeons.json` is the one exception: the game has no single dungeons file - it discovers
+combat dungeons by listing its `dungeons/*.json` directory at runtime. `sync-game-data.js`
+mirrors that scan and writes one merged file here (not hash-verified, regenerated each sync,
+review its diff like any other refresh).
+
 ## Refreshing
 
 Run `pnpm sync-game-data --source <local IdleFantasy checkout>` by hand, then review the

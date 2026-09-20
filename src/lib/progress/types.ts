@@ -2,8 +2,12 @@ export type ProgressItem = {
   id: string;
   label: string;
   done: boolean;
-  /** Extra context shown in the drill-down row, e.g. "7 / 10", a source hint, a kill count. */
   detail?: string;
+  section?: string;
+  icon?: string;
+  locked?: boolean;
+  requirements?: string;
+  stats?: string;
 };
 
 export type ProgressCategory = {
