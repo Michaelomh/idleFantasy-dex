@@ -10,7 +10,8 @@ const buttonVariants = cva(
         primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
         secondary: 'border-border bg-transparent text-foreground hover:bg-card',
         text: 'bg-transparent px-2 text-primary hover:opacity-80',
-        destructive: 'bg-transparent px-2 text-destructive hover:opacity-80',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        'destructive-text': 'bg-transparent px-2 text-destructive hover:opacity-80',
         ghost: 'bg-transparent text-foreground hover:bg-card',
       },
       size: {

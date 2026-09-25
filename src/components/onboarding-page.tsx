@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { FolderOpen, Upload } from 'lucide-react';
+import { ArrowRight, FolderOpen, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button.tsx';
 import {
   getDirectoryHandle,
@@ -83,7 +83,7 @@ export function OnboardingPage() {
 
   if (picking) {
     return (
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-3 px-6 py-4">
         <h1 className="h1">Pick a character</h1>
         <p className="body text-text-secondary">Found more than one character in that folder.</p>
         {picking.map(({ identity }) => (
@@ -96,25 +96,36 @@ export function OnboardingPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <h1 className="h1">Welcome</h1>
-      <p className="body text-text-secondary">Load your Idle Fantasy save to get started</p>
+    <div className="flex flex-1 flex-col items-center justify-between px-6 pt-4 text-center">
+      <div className="flex flex-col items-center gap-2 pt-32">
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" className="size-20" />
+        <h1 className="h1">IdleFantasy-Dex</h1>
+        <p className="body text-text-secondary">Dashboard for tracking your IdleFantasy progress.</p>
+      </div>
 
-      {error && <p className="body text-destructive">{error}</p>}
-      {folderName && <p className="body text-text-secondary">Backup folder: {folderName}</p>}
+      <div className="w-full">
+        {error && <p className="body mb-2 text-destructive">{error}</p>}
+        {folderName && <p className="body mb-2 text-text-secondary">Backup folder: {folderName}</p>}
 
-      <Button variant="primary" onClick={handleFolderPick} disabled={!supportsDirectoryHandle}>
-        <FolderOpen /> {folderName ? 'Change backup folder' : 'Pick backup folder'}
-      </Button>
-      <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-        <Upload /> Upload a save file
-      </Button>
-      <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={handleFileChange} />
+        <div className="flex flex-col gap-3">
+          <Button variant="primary" onClick={handleFolderPick} disabled={!supportsDirectoryHandle}>
+            <FolderOpen /> {folderName ? 'Change Backup Folder' : 'Connect Backup Folder'}
+          </Button>
+          <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+            <Upload /> Upload a save file
+          </Button>
+          <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={handleFileChange} />
+        </div>
 
-      <div className="mt-4 flex flex-col gap-3">
-        <p className="body text-text-secondary">Or explore without a save:</p>
-        <Button variant="ghost" onClick={handleExplore}>
-          Explore with a mock account
+        <p className="body mt-3 text-gray-600">
+          Only possible for some browsers (Chrome). If this button is disabled that means that your browser is currently
+          not supported.
+        </p>
+      </div>
+
+      <div className="w-full pb-4">
+        <Button variant="text" className="w-full" onClick={handleExplore}>
+          Explore with a mock account <ArrowRight />
         </Button>
       </div>
     </div>

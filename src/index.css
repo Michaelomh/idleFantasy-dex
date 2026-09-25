@@ -27,6 +27,7 @@
   --color-accent: var(--accent-track);
   --color-accent-foreground: var(--text-primary);
   --color-destructive: var(--error);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border-hairline);
   --color-input: var(--border-hairline);
   --color-ring: var(--accent);
@@ -83,6 +84,7 @@
   --notice-bg: #241c0c;
   --notice-border: #453314;
   --notice-text: #e4dac6;
+  --destructive-foreground: #ffffff;
 }
 
 /* ---------- dark (native) ---------- */
@@ -172,89 +174,91 @@
   }
 }
 
-/* the overall completion percentage. Nothing else in the app is 72px. */
-.num-xl {
-  font-family: var(--font-mono);
-  font-size: 72px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  color: var(--accent);
-}
+@layer components {
+  /* the overall completion percentage. Nothing else in the app is 72px. */
+  .num-xl {
+    font-family: var(--font-mono);
+    font-size: 72px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--accent);
+  }
 
-/* wordmark, screen titles. One per screen at most. */
-.h1 {
-  font-family: var(--font-sans);
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
+  /* wordmark, screen titles. One per screen at most. */
+  .h1 {
+    font-family: var(--font-sans);
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
 
-/* Goal detail sub-header, bottom-sheet titles: anything that titles a
+  /* Goal detail sub-header, bottom-sheet titles: anything that titles a
    pushed surface rather than a screen. */
-.h2 {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-}
+  .h2 {
+    font-family: var(--font-sans);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
 
-/* Goal card names, Settings group titles: the largest thing inside a card. */
-.h3 {
-  font-family: var(--font-sans);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.3;
-}
+  /* Goal card names, Settings group titles: the largest thing inside a card. */
+  .h3 {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
 
-/* Button labels, top-bar character name, skill names.
+  /* Button labels, top-bar character name, skill names.
    Sits at heading weight but is NOT a heading: never title a block with it,
    and never title a block with something a user might try to tap. */
-.button-label {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.35;
-}
+  .button-label {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
 
-/* onboarding value line, sheet body copy, caveat explanations.
+  /* onboarding value line, sheet body copy, caveat explanations.
    Rare by design — more than two lines usually means the number
    is not doing enough work. */
-.body {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
+  .body {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
 
-/* Goal card fractions, collision-sheet comparison values. */
-.data {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.4;
-}
+  /* Goal card fractions, collision-sheet comparison values. */
+  .data {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
 
-/* rows of game data: quest names, equipment pieces, monster names. */
-.list-row {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.45;
-}
+  /* rows of game data: quest names, equipment pieces, monster names. */
+  .list-row {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+  }
 
-/* section labels, freshness pills, caveat badges, row meta, footers.
+  /* section labels, freshness pills, caveat badges, row meta, footers.
    A number inside a label is still a label: "47 LEFT" is .label, not .data. */
-.label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  line-height: 1.35;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  white-space: nowrap;
+  .label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
 }

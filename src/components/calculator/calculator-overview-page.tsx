@@ -12,6 +12,7 @@ export function CalculatorOverviewPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4">
+      <h1 className="h1">Calculator</h1>
       {CATEGORY_ORDER.filter((category) => category !== 'Combat').map((category) => {
         const skills = SKILLS.filter((s) => s.category === category && CALCULATOR_SKILL_IDS.has(s.id));
         if (skills.length === 0) return null;

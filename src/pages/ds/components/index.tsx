@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { FlaskConical, Gauge, Link2Off, TrendingUp, X } from 'lucide-react';
+import { FlaskConical, Gauge, Link2Off, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { Badge, type BadgeVariant } from '@/components/badge';
@@ -8,7 +8,6 @@ import { FloatingNavBar } from '@/components/floating-nav-bar';
 import { GoalCard } from '@/components/goal-card';
 import { GoalDetailHeader, TopStatusBar } from '@/components/headers';
 import { SkillRow } from '@/components/skill-row';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -49,6 +48,7 @@ export function Component() {
           <Button variant="secondary">Secondary</Button>
           <Button variant="text">Text</Button>
           <Button variant="destructive">Destructive</Button>
+          <Button variant="destructive-text">Destructive Text</Button>
         </div>
       </Section>
 
@@ -94,21 +94,26 @@ export function Component() {
 
       <Section title="Banner">
         <div className="flex max-w-sm flex-col gap-3">
-          <Banner icon={<span className="size-1.5 shrink-0 rounded-full bg-stale" aria-hidden />}>
-            <span className="body flex-1 text-notice-text">Showing data from 3 days ago</span>
-            <Button variant="text" className="h-auto px-0" onClick={() => {}}>
-              Refresh
-            </Button>
-            <button type="button" onClick={() => {}} aria-label="Dismiss">
-              <X className="size-4 text-notice-text" />
-            </button>
-          </Banner>
-          <Banner icon={<Link2Off className="size-4 shrink-0 text-aging" />}>
-            <span className="body flex-1 text-notice-text">Reconnect to your backup folder to refresh</span>
-            <Button variant="text" className="h-auto px-0" onClick={() => {}}>
-              Reconnect
-            </Button>
-          </Banner>
+          <Banner
+            tone="stale"
+            title="Save is 3 days old"
+            description="These numbers can differ from your game."
+            action={
+              <Button variant="primary" onClick={() => {}}>
+                Sync now
+              </Button>
+            }
+          />
+          <Banner
+            tone="aging"
+            icon={<Link2Off className="size-4 shrink-0 text-aging" />}
+            title="Reconnect your backup folder to refresh."
+            action={
+              <Button variant="text" className="h-auto px-0" onClick={() => {}}>
+                Reconnect
+              </Button>
+            }
+          />
         </div>
       </Section>
 
@@ -136,15 +141,6 @@ export function Component() {
             <div className="label mb-2 text-muted-foreground">Goal detail sub-header</div>
             <GoalDetailHeader goalName="Quests" current={142} total={189} onBack={() => {}} />
           </div>
-        </div>
-      </Section>
-
-      <Section title="Theme toggle">
-        <div className="flex items-center gap-3">
-          <ThemeToggle className="border border-border" />
-          <span className="body">
-            Flips a manual light/dark override, persisted to <code className="data">localStorage</code>.
-          </span>
         </div>
       </Section>
 

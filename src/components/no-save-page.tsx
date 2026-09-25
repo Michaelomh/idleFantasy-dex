@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { FolderOpen, RefreshCw, Upload } from 'lucide-react';
+import { ArrowRight, FolderOpen, RefreshCw, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button.tsx';
 import {
   getAllCachedSaves,
@@ -86,33 +86,38 @@ export function NoSavePage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <h1 className="h1">No save found</h1>
-      <p className="body text-text-secondary">Your cached save data is gone. Reconnect below.</p>
+    <div className="flex flex-1 flex-col items-center justify-between px-6 pt-4 text-center">
+      <div className="flex flex-col items-center gap-2 pt-32">
+        <h1 className="h1">No save found</h1>
+        <p className="body text-text-secondary">Your cached save data is gone. Reconnect below.</p>
+        {error && <p className="body text-destructive">{error}</p>}
+      </div>
 
-      {error && <p className="body text-destructive">{error}</p>}
+      <div className="flex w-full flex-col gap-3">
+        {otherSlots.map((identity) => (
+          <Button key={identity} variant="primary" onClick={() => enterSlot(identity)}>
+            Switch to {identity}
+          </Button>
+        ))}
 
-      {otherSlots.map((identity) => (
-        <Button key={identity} variant="primary" onClick={() => enterSlot(identity)}>
-          Switch to {identity}
+        <Button variant="primary" onClick={() => fileInputRef.current?.click()}>
+          <Upload /> Upload a save file
         </Button>
-      ))}
-      <Button variant="secondary" onClick={handleResync} disabled={!hasHandle}>
-        <RefreshCw /> Re-sync folder
-      </Button>
-      <Button variant="secondary" onClick={handlePickFolder} disabled={!supportsDirectoryHandle}>
-        <FolderOpen /> {hasHandle ? 'Change backup folder' : 'Set backup folder'}
-      </Button>
-      <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-        <Upload /> Upload a save file
-      </Button>
-      <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={handleFileChange} />
+        <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={handleFileChange} />
 
-      {otherSlots.length === 0 && (
+        {hasHandle && (
+          <Button variant="secondary" onClick={handleResync}>
+            <RefreshCw /> Re-sync folder
+          </Button>
+        )}
+        <Button variant="secondary" onClick={handlePickFolder} disabled={!supportsDirectoryHandle}>
+          <FolderOpen /> {hasHandle ? 'Change Backup Folder' : 'Connect Backup Folder'}
+        </Button>
+
         <Button variant="text" onClick={handleStartFresh}>
-          Or start fresh instead
+          Or start fresh instead <ArrowRight />
         </Button>
-      )}
+      </div>
     </div>
   );
 }
