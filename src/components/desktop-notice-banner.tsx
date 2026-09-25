@@ -10,16 +10,19 @@ export function DesktopNoticeBanner() {
   if (dismissed === 'true') return null;
 
   return (
-    <Banner className="hidden md:flex">
-      <span className="body flex-1 text-white">This app is optimized for mobile screens.</span>
-      <button
-        type="button"
-        aria-label="Dismiss"
-        onClick={() => setDismissed('true')}
-        className="text-white/80 hover:text-white"
-      >
-        <X className="size-4" />
-      </button>
-    </Banner>
+    <Banner
+      className="hidden md:flex"
+      title="This app works best on mobile screens."
+      action={
+        <button
+          type="button"
+          aria-label="Dismiss"
+          onClick={() => setDismissed('true')}
+          className="text-notice-text/80 hover:text-notice-text"
+        >
+          <X className="size-4" />
+        </button>
+      }
+    />
   );
 }

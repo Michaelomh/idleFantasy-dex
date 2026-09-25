@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router';
+import { Outlet, ScrollRestoration, useLocation, useNavigate, useOutlet } from 'react-router';
+import { AnimatePresence, motion } from 'motion/react';
 import { Calculator, House, Settings, Swords, TrendingUp } from 'lucide-react';
-import { PageHeader } from './page-header.tsx';
 import { FloatingNavBar } from './floating-nav-bar.tsx';
 import { ExploreBanner } from './explore-banner.tsx';
 import { DesktopNoticeBanner } from './desktop-notice-banner.tsx';
 import { NotFoundPage } from './not-found-page.tsx';
 import { DOCK_TABS, isRouteDisabled, matchRoute } from '@/lib/app/routes.ts';
 import { resolveBootState, type BootState } from '@/lib/app/boot-state.ts';
+import { useHideExperimental } from '@/lib/hooks/use-hide-experimental';
+
+const PRE_BOOT_PATHS = new Set(['/welcome', '/onboarding', '/no-save']);
+const EXPERIMENTAL_DOCK_PATHS = new Set(['/calculator', '/simulator']);
 
 const DOCK_ICONS = [
   <House key="overview" className="size-5" />,
@@ -17,6 +21,28 @@ const DOCK_ICONS = [
   <Settings key="settings" className="size-5" />,
 ];
 
+const DOCK_ENTRIES = DOCK_TABS.map((tab, index) => ({ ...tab, icon: DOCK_ICONS[index] }));
+
+function AnimatedOutlet() {
+  const location = useLocation();
+  const outlet = useOutlet();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="flex flex-1 flex-col"
+      >
+        {outlet}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -24,7 +50,9 @@ export function AppLayout() {
   const disabled = !!rawMatch && isRouteDisabled(location.pathname);
   const match = disabled ? undefined : rawMatch;
   const showDock = match?.dockTab !== undefined;
-  const activeIndex = DOCK_TABS.findIndex((tab) =>
+  const [hideExperimental] = useHideExperimental();
+  const dockEntries = DOCK_ENTRIES.filter((tab) => !hideExperimental || !EXPERIMENTAL_DOCK_PATHS.has(tab.path));
+  const activeIndex = dockEntries.findIndex((tab) =>
     tab.path === '/' ? location.pathname === '/' : location.pathname.startsWith(tab.path),
   );
   const [bootState, setBootState] = useState<BootState | null>(null);
@@ -40,7 +68,7 @@ export function AppLayout() {
       const realSlotExists = state === 'ok' || state === 'missing';
 
       // redirects for char saves
-      if (pathname === '/onboarding') {
+      if (pathname === '/welcome' || pathname === '/onboarding') {
         if (realSlotExists) navigate('/', { replace: true });
         return;
       }
@@ -48,7 +76,7 @@ export function AppLayout() {
         if (state !== 'missing') navigate('/', { replace: true });
         return;
       }
-      if (state === 'none') navigate('/onboarding', { replace: true });
+      if (state === 'none') navigate('/welcome', { replace: true });
       else if (state === 'missing') navigate('/no-save', { replace: true });
     });
     return () => {
@@ -74,20 +102,17 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-screen flex-col pb-24">
-      <PageHeader
-        title={match?.title ?? 'Not Found'}
-        showBack={!!match?.parent}
-        onBack={() => match?.parent && navigate(match.parent)}
-      />
       <DesktopNoticeBanner />
       {bootState === 'explore' && <ExploreBanner />}
       <ScrollRestoration getKey={(location) => location.pathname} />
-      <div className="flex flex-1 flex-col">{disabled ? <NotFoundPage /> : <Outlet />}</div>
+      <div className="flex flex-1 flex-col">
+        {disabled ? <NotFoundPage /> : PRE_BOOT_PATHS.has(location.pathname) ? <AnimatedOutlet /> : <Outlet />}
+      </div>
       {showDock && (
         <FloatingNavBar
-          items={DOCK_TABS.map((tab, index) => ({ label: tab.label, icon: DOCK_ICONS[index] }))}
+          items={dockEntries.map((tab) => ({ label: tab.label, icon: tab.icon }))}
           activeIndex={activeIndex}
-          onChange={(index) => navigate(DOCK_TABS[index].path)}
+          onChange={(index) => navigate(dockEntries[index].path)}
         />
       )}
     </div>

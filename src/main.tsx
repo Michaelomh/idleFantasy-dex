@@ -6,6 +6,7 @@ import './index.css';
 import { AppLayout } from './components/app-layout.tsx';
 import { RoutePage } from './components/route-page.tsx';
 import { DashboardPage } from './components/dashboard-page.tsx';
+import { WelcomePage } from './components/welcome-page.tsx';
 import { OnboardingPage } from './components/onboarding-page.tsx';
 import { NoSavePage } from './components/no-save-page.tsx';
 import { SettingsPage } from './components/settings-page.tsx';
@@ -55,6 +56,7 @@ const CALCULATOR_SKILL_PATHS = new Set([
 ]);
 
 const ROUTE_OVERRIDES: Record<string, RouteObject['element']> = {
+  '/welcome': <WelcomePage />,
   '/onboarding': <OnboardingPage />,
   '/no-save': <NoSavePage />,
   '/settings': <SettingsPage />,

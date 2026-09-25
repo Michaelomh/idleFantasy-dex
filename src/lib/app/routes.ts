@@ -1,9 +1,7 @@
 export type RouteMeta = {
   path: string;
   title: string;
-  /** Absolute path to navigate back to, or null if this page has no back button. */
   parent: string | null;
-  /** Index into DOCK_TABS if the floating dock bar should be visible on this page. */
   dockTab?: number;
   disabled?: boolean;
 };
@@ -60,6 +58,7 @@ export const ROUTES: RouteMeta[] = [
   { path: '/calculator/workers/:skillId', title: 'Worker Skill', parent: '/calculator/workers', dockTab: 3 },
 
   { path: '/settings', title: 'Settings', parent: '/', dockTab: 4 },
+  { path: '/welcome', title: 'Welcome', parent: null },
   { path: '/onboarding', title: 'Onboarding', parent: null },
   { path: '/no-save', title: 'No Save Found', parent: null },
 ];

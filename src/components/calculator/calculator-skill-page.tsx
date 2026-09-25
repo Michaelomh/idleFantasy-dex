@@ -263,6 +263,7 @@ export function CalculatorSkillPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4">
+      <h1 className="h1">{match?.title ?? 'Calculator'}</h1>
       <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
         <span className="h3">Inputs</span>
 

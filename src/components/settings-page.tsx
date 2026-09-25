@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { cn } from 'cn';
 import {
   ExternalLink,
   Monitor,
@@ -8,32 +9,28 @@ import {
   Code2,
   ScrollText,
   Gamepad2,
-  Eye,
   FolderOpen,
-  FolderSync,
   RefreshCw,
   Trash2,
   Upload,
-  File,
+  User,
   Palette,
+  ListFilter,
+  FlaskConical,
+  ListChecks,
+  CircleCheck,
+  CircleDashed,
   type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/lib/hooks/use-theme';
+import { useHideExperimental } from '@/lib/hooks/use-hide-experimental';
 import type { Theme } from '@/lib/app/theme';
 import { getDefaultFilter, setDefaultFilter, type Filter } from '@/lib/app/preferences';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { IconToggleGroup } from '@/components/icon-toggle-group.tsx';
 import { Button } from '@/components/ui/button.tsx';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog.tsx';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.tsx';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet.tsx';
+import { Switch } from '@/components/ui/switch.tsx';
+import { Separator } from '@/components/ui/separator.tsx';
 import {
   deleteCachedSave,
   getAllCachedSaves,
@@ -46,6 +43,7 @@ import {
   supportsDirectoryHandle,
   type CachedSave,
   type IngestOutcome,
+  type StalenessType,
 } from '@/lib/save-source';
 import { clearExplore, getSelectedSlot, setSelectedSlot } from '@/lib/app/boot-state.ts';
 
@@ -60,14 +58,61 @@ const THEME_OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
   { value: 'dark', label: 'Dark', icon: Moon },
 ];
 
-const DEFAULT_FILTER_OPTIONS: { value: Filter; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'done', label: 'Done' },
-  { value: 'missing', label: 'Missing' },
+const DEFAULT_FILTER_OPTIONS: { value: Filter; label: string; icon: LucideIcon }[] = [
+  { value: 'all', label: 'All', icon: ListChecks },
+  { value: 'done', label: 'Done', icon: CircleCheck },
+  { value: 'missing', label: 'Missing', icon: CircleDashed },
 ];
+
+const DEFAULT_FILTER_DESCRIPTIONS: Record<Filter, string> = {
+  all: 'Showing all items',
+  done: 'Showing only completed items',
+  missing: 'Showing only missing items',
+};
+
+const STALE_DOT: Record<StalenessType, string> = {
+  fresh: 'bg-fresh',
+  aging: 'bg-aging',
+  stale: 'bg-stale',
+  future: 'bg-aging',
+  unknown: 'bg-text-secondary',
+};
+
+const STALE_TEXT: Record<StalenessType, string> = {
+  fresh: 'text-fresh',
+  aging: 'text-aging',
+  stale: 'text-stale',
+  future: 'text-aging',
+  unknown: 'text-text-secondary',
+};
 
 function SectionHeading({ children }: { children: ReactNode }) {
   return <span className="label text-text-secondary uppercase">{children}</span>;
+}
+
+function PreferenceRow({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 p-4">
+      <div className="flex min-w-0 items-start gap-2">
+        <Icon className="mt-0.5 size-4 shrink-0 text-text-secondary" />
+        <div className="flex min-w-0 flex-col">
+          <span className="body">{title}</span>
+          <span className="label whitespace-normal! text-text-secondary">{description}</span>
+        </div>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
 }
 
 function AboutLink({
@@ -104,6 +149,7 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const [theme, setTheme] = useTheme();
   const [defaultFilter, setDefaultFilterState] = useState<Filter>(getDefaultFilter);
+  const [hideExperimental, setHideExperimental] = useHideExperimental();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [slots, setSlots] = useState<Record<string, CachedSave>>({});
@@ -113,7 +159,7 @@ export function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<string | null>(null);
-  const [openTooltip, setOpenTooltip] = useState<string | null>(null);
+  const [pendingSwitch, setPendingSwitch] = useState<string | null>(null);
 
   useEffect(() => {
     void Promise.all([refresh(), refreshFolder()]).finally(() => setLoading(false));
@@ -141,6 +187,12 @@ export function SettingsPage() {
     setSelectedSlot(identity);
     clearExplore();
     navigate('/');
+  }
+
+  function confirmSwitch() {
+    if (!pendingSwitch) return;
+    handleView(pendingSwitch);
+    setPendingSwitch(null);
   }
 
   async function confirmRemove() {
@@ -237,49 +289,47 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4">
-      <div className="flex flex-col gap-2">
-        <SectionHeading>Theme</SectionHeading>
-        <ToggleGroup
-          value={[theme]}
-          onValueChange={(values) => values[0] && setTheme(values[0] as Theme)}
-          className="w-full gap-1 rounded-full border border-border bg-card p-1"
-        >
-          {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
-            <ToggleGroupItem
-              key={value}
-              value={value}
-              className="h-11 flex-1 gap-1.5 rounded-full font-bold text-text-secondary data-pressed:bg-primary data-pressed:text-primary-foreground"
-            >
-              <Icon className="size-4" />
-              {label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
-
+      <h1 className="h1">Settings</h1>
       <div className="flex flex-col gap-2">
         <SectionHeading>Preferences</SectionHeading>
-        <p className="body text-text-secondary">Default filter for Progress category pages</p>
-        <ToggleGroup
-          value={[defaultFilter]}
-          onValueChange={(values) => {
-            const next = values[0] as Filter | undefined;
-            if (!next) return;
-            setDefaultFilterState(next);
-            setDefaultFilter(next);
-          }}
-          className="w-full gap-1 rounded-full border border-border bg-card p-1"
-        >
-          {DEFAULT_FILTER_OPTIONS.map(({ value, label }) => (
-            <ToggleGroupItem
-              key={value}
-              value={value}
-              className="h-11 flex-1 gap-1.5 rounded-full font-bold text-text-secondary data-pressed:bg-primary data-pressed:text-primary-foreground"
-            >
-              {label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+
+        <div className="flex flex-col rounded-card border border-border bg-card">
+          <PreferenceRow icon={Palette} title="Theme" description="App color theme">
+            <IconToggleGroup value={theme} onValueChange={setTheme} options={THEME_OPTIONS} showLabel="selected" />
+          </PreferenceRow>
+
+          <Separator />
+
+          <PreferenceRow
+            icon={ListFilter}
+            title="Default Filter"
+            description={DEFAULT_FILTER_DESCRIPTIONS[defaultFilter]}
+          >
+            <IconToggleGroup
+              value={defaultFilter}
+              onValueChange={(next) => {
+                setDefaultFilterState(next);
+                setDefaultFilter(next);
+              }}
+              options={DEFAULT_FILTER_OPTIONS}
+              showLabel="selected"
+            />
+          </PreferenceRow>
+
+          <Separator />
+
+          <PreferenceRow
+            icon={FlaskConical}
+            title="Hide Experimental Features"
+            description={
+              hideExperimental
+                ? 'Hiding active boosts, skill overview, calculator, and simulator'
+                : 'Showing active boosts, skill overview, calculator, and simulator'
+            }
+          >
+            <Switch id="hide-experimental" size="lg" checked={hideExperimental} onCheckedChange={setHideExperimental} />
+          </PreferenceRow>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -289,98 +339,143 @@ export function SettingsPage() {
         {error && <p className="body text-destructive">{error}</p>}
         {busy && <p className="body text-text-secondary">Working…</p>}
 
-        {loading ? (
-          <p className="body text-text-secondary">Loading…</p>
-        ) : identities.length === 0 ? (
-          <p className="body text-text-secondary">No characters loaded.</p>
-        ) : (
-          identities.map((identity) => {
-            const { playerState, arrival } = slots[identity];
-            const stale = staleness(playerState.exportedAt);
-            const viewing = identity === getSelectedSlot();
-            return (
-              <div key={identity} className="flex items-center gap-2 rounded-card border border-border bg-card p-4">
-                <div className="flex-1">
-                  <p className="body">
-                    {playerState.character ?? identity}
-                    {viewing ? ' (viewing)' : ''}
-                  </p>
-                  <p className="label flex items-center gap-1 text-text-secondary">
-                    <Tooltip
-                      open={openTooltip === identity}
-                      onOpenChange={(open) => setOpenTooltip(open ? identity : null)}
-                    >
-                      <TooltipTrigger onClick={() => setOpenTooltip((cur) => (cur === identity ? null : identity))}>
-                        {arrival.source === 'directory' ? (
-                          <FolderSync className="size-3.5" />
-                        ) : (
-                          <File className="size-3.5" />
-                        )}
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {arrival.source === 'directory' ? 'Synced from folder' : 'Manual upload'}
-                      </TooltipContent>
-                    </Tooltip>
-                    {stale.label} ({humanAge(stale.ageMs)})
-                  </p>
-                </div>
-                {!viewing && (
-                  <Button
-                    variant="secondary"
-                    size="icon-sm"
-                    onClick={() => handleView(identity)}
-                    aria-label="View"
-                    disabled={busy}
+        <div className="flex flex-col overflow-hidden rounded-card border border-border bg-card">
+          {loading ? (
+            <p className="body p-4 text-text-secondary">Loading…</p>
+          ) : identities.length === 0 ? (
+            <p className="body p-4 text-text-secondary">No characters loaded.</p>
+          ) : (
+            identities.map((identity, index) => {
+              const { playerState } = slots[identity];
+              const stale = staleness(playerState.exportedAt);
+              const viewing = identity === getSelectedSlot();
+              return (
+                <Fragment key={identity}>
+                  {index > 0 && <Separator />}
+                  <div
+                    role={viewing ? undefined : 'button'}
+                    tabIndex={viewing ? undefined : 0}
+                    onClick={() => !viewing && setPendingSwitch(identity)}
+                    onKeyDown={(e) => {
+                      if (!viewing && (e.key === 'Enter' || e.key === ' ')) setPendingSwitch(identity);
+                    }}
+                    className={cn(
+                      'flex items-center gap-2 p-4',
+                      !viewing && 'cursor-pointer',
+                      viewing && 'bg-primary/5',
+                    )}
                   >
-                    <Eye className="size-4" />
-                  </Button>
-                )}
-                <Button
-                  variant="destructive"
-                  size="icon-sm"
-                  onClick={() => setPendingRemove(identity)}
-                  aria-label="Remove"
-                  disabled={busy}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+                    <div className="flex-1">
+                      <p className="body flex items-center gap-2 font-bold">
+                        {playerState.character ?? identity}
+                        {viewing && <span className="label text-primary">CURRENT</span>}
+                      </p>
+                      <p className="label flex items-center gap-1.5 text-text-secondary">
+                        <span className={cn('size-1.5 shrink-0 rounded-full', STALE_DOT[stale.type])} />
+                        <span className={STALE_TEXT[stale.type]}>{stale.label}</span> · Updated {humanAge(stale.ageMs)}{' '}
+                        ago
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-text-secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPendingRemove(identity);
+                      }}
+                      aria-label="Remove"
+                      disabled={busy}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </Fragment>
+              );
+            })
+          )}
+
+          <Separator />
+
+          <div className="flex flex-col items-center gap-2 p-4">
+            {folderName && <p className="body text-text-secondary">Backup folder: {folderName}</p>}
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={busy}
+            >
+              <Upload /> Upload a save file
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={handlePickFolder}
+              disabled={busy || !supportsDirectoryHandle}
+            >
+              <FolderOpen /> {folderName ? 'Change backup folder' : 'Connect backup folder'}
+            </Button>
+            {folderName && (
+              <Button variant="secondary" className="w-full" onClick={handleResync} disabled={busy}>
+                <RefreshCw /> Re-sync folder
+              </Button>
+            )}
+            <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={handleFileChange} />
+          </div>
+        </div>
+
+        <Sheet open={pendingRemove !== null} onOpenChange={(open) => !open && setPendingRemove(null)}>
+          <SheetContent side="bottom">
+            <SheetHeader className="flex-row items-start gap-4">
+              <div className="flex size-14 shrink-0 items-center justify-center rounded-card border border-destructive/40 bg-destructive/10 text-destructive">
+                <Trash2 />
               </div>
-            );
-          })
-        )}
-
-        {folderName && <p className="body text-text-secondary">Backup folder: {folderName}</p>}
-        <Button variant="secondary" onClick={handleResync} disabled={busy || !folderName}>
-          <RefreshCw /> Re-sync folder
-        </Button>
-        <Button variant="secondary" onClick={handlePickFolder} disabled={busy || !supportsDirectoryHandle}>
-          <FolderOpen /> {folderName ? 'Change backup folder' : 'Set backup folder'}
-        </Button>
-        <Button variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={busy}>
-          <Upload /> Upload a save file
-        </Button>
-        <input ref={fileInputRef} type="file" accept=".json,application/json" hidden onChange={handleFileChange} />
-
-        <AlertDialog open={pendingRemove !== null} onOpenChange={(open) => !open && setPendingRemove(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Remove {pendingRemove ? (slots[pendingRemove]?.playerState.character ?? pendingRemove) : ''}?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {Object.keys(slots).length === 1
-                  ? "It's your last character - you'll be sent to reconnect a save."
-                  : "This can't be undone."}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction variant="destructive" onClick={() => void confirmRemove()}>
+              <div className="flex flex-col gap-1 text-left">
+                <SheetTitle>
+                  Remove {pendingRemove ? (slots[pendingRemove]?.playerState.character ?? pendingRemove) : ''}?
+                </SheetTitle>
+                <SheetDescription>
+                  {Object.keys(slots).length === 1
+                    ? "It's your last character - you'll be sent to reconnect a save."
+                    : "This can't be undone."}
+                </SheetDescription>
+              </div>
+            </SheetHeader>
+            <SheetFooter className="flex-row">
+              <Button variant="secondary" className="flex-1" onClick={() => setPendingRemove(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={() => void confirmRemove()}>
                 Remove
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        <Sheet open={pendingSwitch !== null} onOpenChange={(open) => !open && setPendingSwitch(null)}>
+          <SheetContent side="bottom">
+            <SheetHeader className="flex-row items-start gap-4">
+              <div className="flex size-14 shrink-0 items-center justify-center rounded-card border border-primary/40 bg-primary/10 text-primary">
+                <User />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <SheetTitle>
+                  Switch to {pendingSwitch ? (slots[pendingSwitch]?.playerState.character ?? pendingSwitch) : ''}?
+                </SheetTitle>
+                <SheetDescription>You'll start viewing this character's data instead.</SheetDescription>
+              </div>
+            </SheetHeader>
+            <SheetFooter className="flex-row">
+              <Button variant="secondary" className="flex-1" onClick={() => setPendingSwitch(null)}>
+                Cancel
+              </Button>
+              <Button variant="primary" className="flex-1" onClick={confirmSwitch}>
+                Switch
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </div>
 
       <div className="flex flex-col gap-2">

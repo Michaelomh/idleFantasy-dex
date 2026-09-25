@@ -44,6 +44,7 @@ export function ProgressOverviewPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4">
+      <h1 className="h1">Progress</h1>
       <div className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
         <div className="flex items-baseline justify-between">
           <span className="h2">Overall Completion</span>

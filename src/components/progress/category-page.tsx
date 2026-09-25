@@ -57,6 +57,7 @@ export function ProgressCategoryPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
+      <h1 className="h1">{match?.title ?? 'Progress'}</h1>
       <span className="data text-lg">
         {Math.floor(category.points)} / {category.max}
       </span>
