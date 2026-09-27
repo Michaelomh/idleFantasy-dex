@@ -23,7 +23,6 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
-import { Separator } from '@/components/ui/separator';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -80,15 +79,13 @@ function BreakdownSection({ title, rows, defaultOpen }: { title: string; rows: M
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent className="flex flex-col gap-2">
-        {rows.map((row, i) =>
+        {rows.map((row) =>
           row.heading ? (
             <div key={row.label}>
-              {i > 0 && <Separator className="my-1.5" />}
               <span className="label text-text-secondary uppercase">{row.label}</span>
             </div>
           ) : (
             <div key={row.label}>
-              {i > 0 && !rows[i - 1]?.heading && <Separator className="my-1.5" />}
               <div className={`flex items-baseline justify-between gap-2 ${row.disabled ? 'opacity-50' : ''}`}>
                 <span className="body flex min-w-0 items-center gap-1.5 text-text-secondary">
                   <span className="min-w-0 truncate">{row.label}</span>

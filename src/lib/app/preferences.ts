@@ -1,4 +1,12 @@
+import { CircleCheck, CircleDashed, ListChecks, type LucideIcon } from 'lucide-react';
+
 export type Filter = 'all' | 'done' | 'missing';
+
+export const FILTER_OPTIONS: { value: Filter; label: string; icon: LucideIcon }[] = [
+  { value: 'all', label: 'All', icon: ListChecks },
+  { value: 'done', label: 'Done', icon: CircleCheck },
+  { value: 'missing', label: 'Missing', icon: CircleDashed },
+];
 
 const DEFAULT_FILTER_KEY = 'idlefantasy-dex:default-filter';
 
@@ -20,28 +28,54 @@ export function setDefaultFilter(filter: Filter) {
   }
 }
 
-const HIDE_EXPERIMENTAL_KEY = 'idlefantasy-dex:hide-experimental';
-const hideExperimentalListeners = new Set<() => void>();
+const SHOW_EXPERIMENTAL_KEY = 'idlefantasy-dex:show-experimental';
+const showExperimentalListeners = new Set<() => void>();
 
-export function getHideExperimental(): boolean {
+export function getShowExperimental(): boolean {
   try {
-    return window.localStorage.getItem(HIDE_EXPERIMENTAL_KEY) === '1';
+    return window.localStorage.getItem(SHOW_EXPERIMENTAL_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+export function setShowExperimental(show: boolean) {
+  try {
+    if (show) window.localStorage.removeItem(SHOW_EXPERIMENTAL_KEY);
+    else window.localStorage.setItem(SHOW_EXPERIMENTAL_KEY, '0');
+  } catch {
+    /* localStorage unavailable (private mode, etc.) - falls back to "shown" next load */
+  }
+  showExperimentalListeners.forEach((listener) => listener());
+}
+
+export function subscribeShowExperimental(listener: () => void): () => void {
+  showExperimentalListeners.add(listener);
+  return () => showExperimentalListeners.delete(listener);
+}
+
+const INCLUDE_ELDER_ISLE_KEY = 'idlefantasy-dex:include-elder-isle';
+const includeElderIsleListeners = new Set<() => void>();
+
+export function getIncludeElderIsle(): boolean {
+  try {
+    return window.localStorage.getItem(INCLUDE_ELDER_ISLE_KEY) === '1';
   } catch {
     return false;
   }
 }
 
-export function setHideExperimental(hide: boolean) {
+export function setIncludeElderIsle(include: boolean) {
   try {
-    if (hide) window.localStorage.setItem(HIDE_EXPERIMENTAL_KEY, '1');
-    else window.localStorage.removeItem(HIDE_EXPERIMENTAL_KEY);
+    if (include) window.localStorage.setItem(INCLUDE_ELDER_ISLE_KEY, '1');
+    else window.localStorage.removeItem(INCLUDE_ELDER_ISLE_KEY);
   } catch {
-    /* localStorage unavailable (private mode, etc.) - falls back to "shown" next load */
+    /* localStorage unavailable (private mode, etc.) - falls back to "excluded" next load */
   }
-  hideExperimentalListeners.forEach((listener) => listener());
+  includeElderIsleListeners.forEach((listener) => listener());
 }
 
-export function subscribeHideExperimental(listener: () => void): () => void {
-  hideExperimentalListeners.add(listener);
-  return () => hideExperimentalListeners.delete(listener);
+export function subscribeIncludeElderIsle(listener: () => void): () => void {
+  includeElderIsleListeners.add(listener);
+  return () => includeElderIsleListeners.delete(listener);
 }

@@ -25,6 +25,7 @@ export const CHARACTER_TITLES = [
   'merchant_prince',
   'pathfinder',
   'master_farmer',
+  'isle_champion',
 ] as const;
 export type CharacterTitle = (typeof CHARACTER_TITLES)[number] | (string & {});
 

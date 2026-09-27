@@ -249,8 +249,6 @@
     line-height: 1.45;
   }
 
-  /* section labels, freshness pills, caveat badges, row meta, footers.
-   A number inside a label is still a label: "47 LEFT" is .label, not .data. */
   .label {
     font-family: var(--font-mono);
     font-size: 12px;
@@ -260,5 +258,15 @@
     text-transform: uppercase;
     color: var(--text-muted);
     white-space: nowrap;
+  }
+
+  .description {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: normal;
+    line-height: 1.35;
+    text-transform: none;
+    color: var(--text-muted);
   }
 }

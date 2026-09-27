@@ -22,7 +22,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSyn
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { humanize } from '../src/lib/humanize.ts';
+import { humanize } from '../src/lib/utils/humanize.ts';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const VENDOR_DIR = join(REPO_ROOT, 'public', 'game-data');
@@ -169,7 +169,7 @@ function buildExpeditionsTs(source) {
     ' */\n\n' +
     'export const EXPEDITION_KEYS = [\n' +
     keysList +
-    '\n] as const;\n\n'
+    '\n] as const;\n'
   );
 }
 

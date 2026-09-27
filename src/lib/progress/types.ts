@@ -6,8 +6,8 @@ export type ProgressItem = {
   section?: string;
   icon?: string;
   locked?: boolean;
-  requirements?: string;
   stats?: string;
+  realm?: 'mainland' | 'elder';
 };
 
 export type ProgressCategory = {

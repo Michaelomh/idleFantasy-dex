@@ -1,14 +1,46 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { SKILLS, CATEGORY_ORDER } from '@/lib/game/skills';
 import { skillIcon } from '@/lib/game/skill-icons';
+import { usePlayerState } from '@/lib/player/use-player-state';
+import { getPrestigePaths, type PrestigeSkillPaths } from '@/lib/progress/game-data';
+import { SkillStatRow } from '@/components/skill-stat-row';
 
 const CALCULATOR_SKILL_IDS = new Set(
   SKILLS.filter((s) => s.category === 'Gathering' || s.category === 'Crafting').map((s) => s.id),
 ).add('agility');
 
+function skillDescription(
+  playerState: ReturnType<typeof usePlayerState>,
+  prestigeTrees: Map<string, PrestigeSkillPaths> | null,
+  skillId: string,
+): string | null {
+  if (!playerState || !prestigeTrees) return null;
+  const level = playerState.raw.skillLevels[skillId] ?? 1;
+  const tree = prestigeTrees.get(skillId);
+  if (!tree) return `Level ${level}`;
+
+  const nonXpCost = tree.paths
+    .filter((p) => !p.auto)
+    .flatMap((p) => p.nodes)
+    .reduce((sum, n) => sum + n.cost, 0);
+  const cap = Math.ceil(nonXpCost / 3);
+  if (cap <= 0) return `Level ${level}`;
+
+  const prestige = (playerState.raw.flags.skill_prestige as Record<string, number> | undefined) ?? {};
+  const owned = Math.min(prestige[skillId] ?? 0, cap);
+  return `Level ${level} • ${owned}/${cap} Prestige${owned >= cap ? ' (Max)' : ''}`;
+}
+
 export function CalculatorOverviewPage() {
   const navigate = useNavigate();
+  const playerState = usePlayerState();
+  const [prestigeTrees, setPrestigeTrees] = useState<Map<string, PrestigeSkillPaths> | null>(null);
+
+  useEffect(() => {
+    void getPrestigePaths().then((trees) => setPrestigeTrees(new Map(trees.map((t) => [t.skill, t]))));
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -22,18 +54,17 @@ export function CalculatorOverviewPage() {
             <span className="h3">{category}</span>
             <div className="flex flex-col gap-2">
               {skills.map((skill) => {
+                const description = skillDescription(playerState, prestigeTrees, skill.id);
                 return (
-                  <div
+                  <SkillStatRow
                     key={skill.id}
+                    icon={skillIcon(skill.id)}
+                    iconClassName="size-8"
+                    label={skill.label}
+                    description={description}
                     onClick={() => navigate(`/calculator/${skill.id}`)}
-                    className="flex cursor-pointer items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
-                  >
-                    <span className="body flex items-center gap-1.5">
-                      <img src={skillIcon(skill.id)} alt="" className="size-4 shrink-0" />
-                      {skill.label}
-                    </span>
-                    <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
-                  </div>
+                    right={<ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />}
+                  />
                 );
               })}
             </div>

@@ -6,6 +6,7 @@ import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeAllCategories, rollUp, PROGRESS_SECTIONS, type ProgressCategory } from '@/lib/progress';
 import type { PlayerState } from '@/lib/save-source';
 import { useScrollRestoration } from '@/lib/hooks/use-scroll-restoration';
+import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { LoadingScreen } from '@/components/loading-screen';
 
 const CATEGORY_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfident' | 'info'>> = {
@@ -13,12 +14,16 @@ const CATEGORY_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfide
   inventory: 'info',
 };
 
-let categoriesCache: { playerState: PlayerState; categories: ProgressCategory[] } | null = null;
+let categoriesCache: { playerState: PlayerState; includeElderIsle: boolean; categories: ProgressCategory[] } | null =
+  null;
 
 export function ProgressOverviewPage() {
   const playerState = usePlayerState();
+  const [includeElderIsle] = useIncludeElderIsle();
   const [categories, setCategories] = useState<ProgressCategory[] | null>(() =>
-    playerState && categoriesCache?.playerState === playerState ? categoriesCache.categories : null,
+    playerState && categoriesCache?.playerState === playerState && categoriesCache.includeElderIsle === includeElderIsle
+      ? categoriesCache.categories
+      : null,
   );
   const navigate = useNavigate();
 
@@ -26,13 +31,13 @@ export function ProgressOverviewPage() {
     if (!playerState) return;
     let cancelled = false;
     void computeAllCategories(playerState).then((result) => {
-      categoriesCache = { playerState, categories: result };
+      categoriesCache = { playerState, includeElderIsle, categories: result };
       if (!cancelled) setCategories(result);
     });
     return () => {
       cancelled = true;
     };
-  }, [playerState]);
+  }, [playerState, includeElderIsle]);
 
   useScrollRestoration('progress-overview', !!categories);
 

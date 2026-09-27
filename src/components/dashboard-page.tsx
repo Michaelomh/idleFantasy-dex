@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button.tsx';
 import { CircularProgress } from '@/components/ui/circular-progress.tsx';
 import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
-import { useHideExperimental } from '@/lib/hooks/use-hide-experimental';
+import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
+import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { humanize } from '@/lib/utils/humanize';
 import {
   getCachedSave,
@@ -36,7 +37,8 @@ const STATUS_COLORS: Record<StalenessType, { dot: string; text: string }> = {
 };
 
 export function DashboardPage() {
-  const [hideExperimental] = useHideExperimental();
+  const [showExperimental] = useShowExperimental();
+  const [includeElderIsle] = useIncludeElderIsle();
   const playerState = usePlayerState();
   const [override, setOverride] = useState<PlayerState | null>(null);
   const [skillBonuses, setSkillBonuses] = useState<SkillBonus[] | null>(null);
@@ -72,7 +74,7 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [effectivePlayerState]);
+  }, [effectivePlayerState, includeElderIsle]);
 
   async function handleSync() {
     setSyncError(null);
@@ -108,6 +110,7 @@ export function DashboardPage() {
   const statusColor = STATUS_COLORS[stale.type];
   const showStaleBanner = hasHandle && (stale.type === 'aging' || stale.type === 'stale');
   const staleDays = stale.ageMs != null ? Math.round(stale.ageMs / (24 * 60 * 60 * 1000)) : 0;
+  const isMaxCombatLevel = playerStateForRender.combatLevel === MAX_COMBAT_LEVEL;
 
   const chips = [humanize(playerStateForRender.race), playerStateForRender.gender].filter(Boolean) as string[];
   if (playerStateForRender.ironman) chips.push('Ironman');
@@ -115,11 +118,11 @@ export function DashboardPage() {
   const bottomStats: { label: string; value: string | null }[] = [
     { label: 'Coins', value: playerStateForRender.coins != null ? formatNumber(playerStateForRender.coins) : null },
     {
-      label: 'Carnival tickets',
+      label: 'Carnival',
       value: playerStateForRender.carnivalTickets != null ? formatNumber(playerStateForRender.carnivalTickets) : null,
     },
     {
-      label: 'Slayer points',
+      label: 'Slayer pts',
       value: playerStateForRender.slayerPoints != null ? formatNumber(playerStateForRender.slayerPoints) : null,
     },
   ];
@@ -164,7 +167,7 @@ export function DashboardPage() {
       {syncError && <p className="label text-destructive">{syncError}</p>}
 
       <CircularProgress value={completion ?? 0} size={280} strokeWidth={18} className="self-center">
-        <span className="num-xl">{completion != null ? `${completion.toFixed(1)}%` : '—'}</span>
+        <span className="num-xl text-5xl">{completion != null ? `${completion.toFixed(1)}%` : '—'}</span>
         <span className="label mt-1 text-text-secondary">Completion</span>
       </CircularProgress>
 
@@ -185,37 +188,41 @@ export function DashboardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-card border border-border bg-card p-4">
-          <p className="label text-text-secondary">Combat</p>
-          <p className="mt-1 flex items-baseline gap-1.5">
-            <span className="data text-3xl">{playerStateForRender.combatLevel ?? '-'}</span>
-            {playerStateForRender.combatLevel != null && (
-              <span className="data text-text-secondary">/ {MAX_COMBAT_LEVEL}</span>
-            )}
-          </p>
-        </div>
-        <div className="rounded-card border border-border bg-card p-4">
-          <p className="label text-text-secondary">Total</p>
-          <p className="data mt-1 text-3xl">
-            {playerStateForRender.totalLevel != null ? playerStateForRender.totalLevel.toLocaleString() : '-'}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        {bottomStats.map(({ label, value }) => (
-          <div
-            key={label}
-            className="flex flex-col items-start gap-0.5 rounded-card border border-border p-3 text-left"
-          >
-            <p className="data text-sm">{value ?? '-'}</p>
-            <p className="label whitespace-normal text-text-secondary">{label}</p>
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-card border border-border bg-card p-4">
+            <p className={cn('label text-text-secondary', isMaxCombatLevel && 'text-primary')}>Combat</p>
+            <p className="mt-1 flex items-baseline gap-1.5">
+              <span className={cn('data text-3xl', isMaxCombatLevel && 'text-primary')}>
+                {playerStateForRender.combatLevel ?? '-'}
+              </span>
+              <span className={cn('data text-text-secondary', isMaxCombatLevel && 'text-primary')}>
+                / {MAX_COMBAT_LEVEL}
+              </span>
+            </p>
           </div>
-        ))}
+          <div className="rounded-card border border-border bg-card p-4">
+            <p className="label text-text-secondary">Total</p>
+            <p className="data mt-1 text-3xl">
+              {playerStateForRender.totalLevel != null ? playerStateForRender.totalLevel.toLocaleString() : '-'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {bottomStats.map(({ label, value }) => (
+            <div
+              key={label}
+              className="flex flex-col items-start gap-0.5 rounded-card border border-border p-3 text-left"
+            >
+              <p className="data text-sm">{value ?? '-'}</p>
+              <p className="description whitespace-normal text-text-secondary">{label}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {!hideExperimental &&
+      {showExperimental &&
         (!skillBonuses ? (
           <p className="body text-text-secondary">Loading bonuses…</p>
         ) : (
