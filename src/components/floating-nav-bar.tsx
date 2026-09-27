@@ -52,7 +52,7 @@ export function FloatingNavBar({
               }}
               type="button"
               onClick={() => onChange(index)}
-              className="relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-4xl px-2.5 py-3"
+              className="relative flex min-w-0 flex-1 flex-col items-center gap-1 rounded-4xl px-2.5 py-3"
             >
               <span className={cn('relative z-10', active ? 'text-primary' : 'text-muted-foreground')}>
                 {item.icon}

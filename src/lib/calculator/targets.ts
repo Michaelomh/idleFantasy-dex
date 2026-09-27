@@ -13,6 +13,7 @@ import {
   type RecipeEntry,
 } from './game-data';
 import type { TargetOption } from './types';
+import { ELDER_ISLE_IDS } from '@/lib/game/elder-isle';
 
 const SMITHING_TIERS = ['runite', 'adamantite', 'mithril', 'steel', 'iron', 'bronze', 'platinum', 'gold', 'silver'];
 
@@ -166,6 +167,10 @@ async function herbloreTargets(recipes: Record<string, RecipeEntry>, level: numb
     .sort((a, b) => a.levelRequired - b.levelRequired);
 }
 
+function excludeElderIsle<T extends [string, unknown]>(entries: T[]): T[] {
+  return entries.filter(([key]) => !ELDER_ISLE_IDS.has(key));
+}
+
 function toOptions(
   entries: [string, { display_name?: string; level_required?: number }][],
   level: number,
@@ -185,11 +190,11 @@ export async function targetsForSkill(skillId: string, playerState: PlayerState)
 
   switch (skillId) {
     case 'mining':
-      return toOptions(Object.entries(await getOreEntries()), level);
+      return toOptions(excludeElderIsle(Object.entries(await getOreEntries())), level);
     case 'fishing':
-      return toOptions(Object.entries(await getFishEntries()), level);
+      return toOptions(excludeElderIsle(Object.entries(await getFishEntries())), level);
     case 'woodcutting':
-      return toOptions(Object.entries(await getTrees()), level);
+      return toOptions(excludeElderIsle(Object.entries(await getTrees())), level);
     case 'thieving':
       return toOptions(
         (await getThievingNpcs()).map((n) => [
@@ -199,7 +204,7 @@ export async function targetsForSkill(skillId: string, playerState: PlayerState)
         level,
       );
     case 'agility':
-      return toOptions(Object.entries(await getAgilityCourses()), level);
+      return toOptions(excludeElderIsle(Object.entries(await getAgilityCourses())), level);
     case 'farming':
       // exclude magic_bean from the target list.
       return toOptions(
@@ -211,9 +216,9 @@ export async function targetsForSkill(skillId: string, playerState: PlayerState)
     case 'runecrafting':
       return toOptions(Object.entries(await getRuneEntries()), level);
     case 'firemaking':
-      return toOptions(Object.entries(await getLogEntries()), level);
+      return toOptions(excludeElderIsle(Object.entries(await getLogEntries())), level);
     case 'smithing':
-      return smithingTargets(await getRecipes('smithing'), level);
+      return smithingTargets(Object.fromEntries(excludeElderIsle(Object.entries(await getRecipes('smithing')))), level);
     case 'construction':
       return constructionTargets(await getRecipes('construction'), level);
     case 'fletching':
@@ -223,7 +228,7 @@ export async function targetsForSkill(skillId: string, playerState: PlayerState)
     case 'herblore':
       return herbloreTargets(await getRecipes('herblore'), level);
     case 'cooking':
-      return toOptions(Object.entries(await getRecipes(skillId)), level);
+      return toOptions(excludeElderIsle(Object.entries(await getRecipes(skillId))), level);
     default:
       return [];
   }

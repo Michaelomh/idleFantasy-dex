@@ -17,20 +17,18 @@ import {
   Palette,
   ListFilter,
   FlaskConical,
-  ListChecks,
-  CircleCheck,
-  CircleDashed,
+  Waves,
   type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/lib/hooks/use-theme';
-import { useHideExperimental } from '@/lib/hooks/use-hide-experimental';
+import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
+import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import type { Theme } from '@/lib/app/theme';
-import { getDefaultFilter, setDefaultFilter, type Filter } from '@/lib/app/preferences';
+import { getDefaultFilter, setDefaultFilter, FILTER_OPTIONS, type Filter } from '@/lib/app/preferences';
 import { IconToggleGroup } from '@/components/icon-toggle-group.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet.tsx';
 import { Switch } from '@/components/ui/switch.tsx';
-import { Separator } from '@/components/ui/separator.tsx';
 import {
   deleteCachedSave,
   getAllCachedSaves,
@@ -56,12 +54,6 @@ const THEME_OPTIONS: { value: Theme; label: string; icon: LucideIcon }[] = [
   { value: 'system', label: 'System', icon: Monitor },
   { value: 'light', label: 'Light', icon: Sun },
   { value: 'dark', label: 'Dark', icon: Moon },
-];
-
-const DEFAULT_FILTER_OPTIONS: { value: Filter; label: string; icon: LucideIcon }[] = [
-  { value: 'all', label: 'All', icon: ListChecks },
-  { value: 'done', label: 'Done', icon: CircleCheck },
-  { value: 'missing', label: 'Missing', icon: CircleDashed },
 ];
 
 const DEFAULT_FILTER_DESCRIPTIONS: Record<Filter, string> = {
@@ -106,8 +98,8 @@ function PreferenceRow({
       <div className="flex min-w-0 items-start gap-2">
         <Icon className="mt-0.5 size-4 shrink-0 text-text-secondary" />
         <div className="flex min-w-0 flex-col">
-          <span className="body">{title}</span>
-          <span className="label whitespace-normal! text-text-secondary">{description}</span>
+          <span className="body font-semibold">{title}</span>
+          <span className="description whitespace-normal text-text-secondary">{description}</span>
         </div>
       </div>
       <div className="shrink-0">{children}</div>
@@ -149,7 +141,8 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const [theme, setTheme] = useTheme();
   const [defaultFilter, setDefaultFilterState] = useState<Filter>(getDefaultFilter);
-  const [hideExperimental, setHideExperimental] = useHideExperimental();
+  const [showExperimental, setShowExperimental] = useShowExperimental();
+  const [includeElderIsle, setIncludeElderIsle] = useIncludeElderIsle();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [slots, setSlots] = useState<Record<string, CachedSave>>({});
@@ -298,8 +291,6 @@ export function SettingsPage() {
             <IconToggleGroup value={theme} onValueChange={setTheme} options={THEME_OPTIONS} showLabel="selected" />
           </PreferenceRow>
 
-          <Separator />
-
           <PreferenceRow
             icon={ListFilter}
             title="Default Filter"
@@ -311,23 +302,38 @@ export function SettingsPage() {
                 setDefaultFilterState(next);
                 setDefaultFilter(next);
               }}
-              options={DEFAULT_FILTER_OPTIONS}
+              options={FILTER_OPTIONS}
               showLabel="selected"
             />
           </PreferenceRow>
 
-          <Separator />
-
           <PreferenceRow
             icon={FlaskConical}
-            title="Hide Experimental Features"
+            title="Experimental Features"
             description={
-              hideExperimental
-                ? 'Hiding active boosts, skill overview, calculator, and simulator'
-                : 'Showing active boosts, skill overview, calculator, and simulator'
+              showExperimental
+                ? 'Showing active boosts, skill overview, calculator, and simulator'
+                : 'Hiding active boosts, skill overview, calculator, and simulator'
             }
           >
-            <Switch id="hide-experimental" size="lg" checked={hideExperimental} onCheckedChange={setHideExperimental} />
+            <Switch id="show-experimental" size="lg" checked={showExperimental} onCheckedChange={setShowExperimental} />
+          </PreferenceRow>
+
+          <PreferenceRow
+            icon={Waves}
+            title="Include Elder Isle"
+            description={
+              includeElderIsle
+                ? 'Showing Elder Isle resources, bosses, pets and gear in Progress'
+                : 'Hiding Elder Isle resources, bosses, pets and gear in Progress'
+            }
+          >
+            <Switch
+              id="include-elder-isle"
+              size="lg"
+              checked={includeElderIsle}
+              onCheckedChange={setIncludeElderIsle}
+            />
           </PreferenceRow>
         </div>
       </div>
@@ -345,13 +351,12 @@ export function SettingsPage() {
           ) : identities.length === 0 ? (
             <p className="body p-4 text-text-secondary">No characters loaded.</p>
           ) : (
-            identities.map((identity, index) => {
+            identities.map((identity) => {
               const { playerState } = slots[identity];
               const stale = staleness(playerState.exportedAt);
               const viewing = identity === getSelectedSlot();
               return (
                 <Fragment key={identity}>
-                  {index > 0 && <Separator />}
                   <div
                     role={viewing ? undefined : 'button'}
                     tabIndex={viewing ? undefined : 0}
@@ -366,14 +371,11 @@ export function SettingsPage() {
                     )}
                   >
                     <div className="flex-1">
-                      <p className="body flex items-center gap-2 font-bold">
-                        {playerState.character ?? identity}
-                        {viewing && <span className="label text-primary">CURRENT</span>}
-                      </p>
-                      <p className="label flex items-center gap-1.5 text-text-secondary">
+                      <p className="body flex items-center gap-2 font-bold">{playerState.character ?? identity}</p>
+                      <p className="description flex items-center gap-1.5 text-text-secondary">
                         <span className={cn('size-1.5 shrink-0 rounded-full', STALE_DOT[stale.type])} />
-                        <span className={STALE_TEXT[stale.type]}>{stale.label}</span> · Updated {humanAge(stale.ageMs)}{' '}
-                        ago
+                        <span className={cn('uppercase', STALE_TEXT[stale.type])}>{stale.label}</span> (Updated{' '}
+                        {humanAge(stale.ageMs)} ago)
                       </p>
                     </div>
                     <Button
@@ -394,8 +396,6 @@ export function SettingsPage() {
               );
             })
           )}
-
-          <Separator />
 
           <div className="flex flex-col items-center gap-2 p-4">
             {folderName && <p className="body text-text-secondary">Backup folder: {folderName}</p>}

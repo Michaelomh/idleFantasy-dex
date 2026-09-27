@@ -51,8 +51,29 @@ export type BossEntry = {
   common_loot?: { coins_min?: number; coins_max?: number; items?: Record<string, { min: number; max: number }> };
   /** Gated behind Grand Monument patronage rather than combat level, e.g. "Only patrons of the Grand Monument may face it." */
   requires_monument?: boolean;
+  /** Gated behind having built the Dock (see town_building_tiers.dock in the save). */
+  requires_dock?: boolean;
+  /** Gated behind total skill level; 0 means no gate. */
+  total_level_required?: number;
 };
 export const getBosses = () => load<Record<string, BossEntry>>('raid_bosses.json');
+
+/**
+ * Upstream's raid_bosses.json lists sea_serpent last (it was appended when Elder Isle
+ * shipped), but display-wise it belongs right after Kraken and before Gothic Ember - it's
+ * the mainland gatekeeper boss guarding the passage to the isle. Reorder for display only;
+ * the vendored file itself must stay byte-identical to upstream, so don't hand-edit it there
+ * - it'll just get overwritten on the next sync.
+ */
+export function sortBossesForDisplay<T extends { id: string }>(bosses: T[]): T[] {
+  const sorted = [...bosses];
+  const seaSerpentIndex = sorted.findIndex((b) => b.id === 'sea_serpent');
+  if (seaSerpentIndex === -1) return sorted;
+  const [seaSerpent] = sorted.splice(seaSerpentIndex, 1);
+  const krakenIndex = sorted.findIndex((b) => b.id === 'kraken');
+  sorted.splice(krakenIndex + 1, 0, seaSerpent);
+  return sorted;
+}
 
 export type MercenaryEntry = {
   id: string;

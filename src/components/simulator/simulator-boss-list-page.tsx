@@ -1,10 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { getBosses, type BossEntry } from '@/lib/progress/game-data';
+import { getBosses, sortBossesForDisplay, type BossEntry } from '@/lib/progress/game-data';
 import { LoadingScreen } from '@/components/loading-screen';
+import { ELDER_ISLE_BOSS_IDS } from '@/lib/game/elder-isle';
+import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
+
+function BossRow({ boss, onSelect }: { boss: BossEntry; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-left hover:bg-card"
+    >
+      <span className="text-xl">{boss.emoji}</span>
+      <span className="body flex-1">{boss.display_name}</span>
+      {ELDER_ISLE_BOSS_IDS.has(boss.id) && (
+        <span className="label rounded-full border border-border px-2 py-0.5 text-text-secondary">Elder Isle</span>
+      )}
+    </button>
+  );
+}
 
 export function SimulatorBossListPage() {
   const navigate = useNavigate();
+  const [includeElderIsle] = useIncludeElderIsle();
   const [bosses, setBosses] = useState<Record<string, BossEntry> | null>(null);
 
   useEffect(() => {
@@ -15,25 +34,25 @@ export function SimulatorBossListPage() {
     return <LoadingScreen />;
   }
 
+  const visibleBosses = sortBossesForDisplay(Object.values(bosses)).filter(
+    (boss) => includeElderIsle || !ELDER_ISLE_BOSS_IDS.has(boss.id),
+  );
+  const sections = [
+    { title: 'Solo', list: visibleBosses.filter((boss) => !boss.raid) },
+    { title: 'Raid', list: visibleBosses.filter((boss) => boss.raid) },
+  ];
+
   return (
-    <div className="flex flex-col gap-2 p-4">
+    <div className="flex flex-col gap-4 p-4">
       <h1 className="h1">Bosses</h1>
-      <div className="flex flex-col gap-1">
-        {Object.values(bosses).map((boss) => (
-          <button
-            key={boss.id}
-            type="button"
-            onClick={() => navigate(`/simulator/bosses/${boss.id}`)}
-            className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-left hover:bg-card"
-          >
-            <span className="text-xl">{boss.emoji}</span>
-            <span className="body flex-1">{boss.display_name}</span>
-            <span className="label rounded-full border border-border px-2 py-0.5 text-text-secondary">
-              {boss.raid ? 'Raid' : 'Solo'}
-            </span>
-          </button>
-        ))}
-      </div>
+      {sections.map(({ title, list }) => (
+        <div key={title} className="flex flex-col gap-1">
+          <h2 className="h3">{title}</h2>
+          {list.map((boss) => (
+            <BossRow key={boss.id} boss={boss} onSelect={() => navigate(`/simulator/bosses/${boss.id}`)} />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

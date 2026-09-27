@@ -8,7 +8,7 @@ import { DesktopNoticeBanner } from './desktop-notice-banner.tsx';
 import { NotFoundPage } from './not-found-page.tsx';
 import { DOCK_TABS, isRouteDisabled, matchRoute } from '@/lib/app/routes.ts';
 import { resolveBootState, type BootState } from '@/lib/app/boot-state.ts';
-import { useHideExperimental } from '@/lib/hooks/use-hide-experimental';
+import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
 
 const PRE_BOOT_PATHS = new Set(['/welcome', '/onboarding', '/no-save']);
 const EXPERIMENTAL_DOCK_PATHS = new Set(['/calculator', '/simulator']);
@@ -50,8 +50,8 @@ export function AppLayout() {
   const disabled = !!rawMatch && isRouteDisabled(location.pathname);
   const match = disabled ? undefined : rawMatch;
   const showDock = match?.dockTab !== undefined;
-  const [hideExperimental] = useHideExperimental();
-  const dockEntries = DOCK_ENTRIES.filter((tab) => !hideExperimental || !EXPERIMENTAL_DOCK_PATHS.has(tab.path));
+  const [showExperimental] = useShowExperimental();
+  const dockEntries = DOCK_ENTRIES.filter((tab) => showExperimental || !EXPERIMENTAL_DOCK_PATHS.has(tab.path));
   const activeIndex = dockEntries.findIndex((tab) =>
     tab.path === '/' ? location.pathname === '/' : location.pathname.startsWith(tab.path),
   );

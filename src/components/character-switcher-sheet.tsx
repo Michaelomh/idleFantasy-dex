@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from 'cn';
 import { Sheet, SheetContent } from '@/components/ui/sheet.tsx';
-import { Separator } from '@/components/ui/separator.tsx';
 import { computeAllCategories, rollUp } from '@/lib/progress';
 import { getAllCachedSaves, type CachedSave } from '@/lib/save-source';
 import { humanize } from '@/lib/utils/humanize';
@@ -45,13 +44,12 @@ export function CharacterSwitcherSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="pt-4 pb-4">
         <div className="flex flex-col overflow-hidden">
-          {identities.map((identity, index) => {
+          {identities.map((identity) => {
             const { playerState } = slots![identity];
             const selected = identity === currentIdentity;
             const completion = completions[identity];
             return (
               <div key={identity}>
-                {index > 0 && <Separator />}
                 <button
                   type="button"
                   onClick={() => onSelect(identity)}

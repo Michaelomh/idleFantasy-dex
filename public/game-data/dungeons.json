@@ -1,4 +1,15 @@
 {
+  "abyssal_depths": {
+    "display_name": "Abyssal Depths",
+    "enemy_spawns": [
+      {
+        "enemy": "abyssal_horror"
+      },
+      {
+        "enemy": "void_seraph"
+      }
+    ]
+  },
   "abyssal_ruins": {
     "display_name": "Abyssal Ruins",
     "enemy_spawns": [
@@ -30,6 +41,17 @@
       },
       {
         "enemy": "elder_lich"
+      }
+    ]
+  },
+  "ancient_forest": {
+    "display_name": "Ancient Forest",
+    "enemy_spawns": [
+      {
+        "enemy": "grove_stalker"
+      },
+      {
+        "enemy": "grove_dryad"
       }
     ]
   },
@@ -97,6 +119,17 @@
       },
       {
         "enemy": "bandit"
+      }
+    ]
+  },
+  "beach_and_cliffs": {
+    "display_name": "Beach & Cliffs",
+    "enemy_spawns": [
+      {
+        "enemy": "beach_marauder"
+      },
+      {
+        "enemy": "beach_leviathan"
       }
     ]
   },
@@ -399,6 +432,17 @@
       },
       {
         "enemy": "demon"
+      }
+    ]
+  },
+  "volcano_peak": {
+    "display_name": "Volcano Peak",
+    "enemy_spawns": [
+      {
+        "enemy": "ash_beast"
+      },
+      {
+        "enemy": "lava_wraith"
       }
     ]
   }

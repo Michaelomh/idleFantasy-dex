@@ -12,10 +12,22 @@ import { skillIcon } from '@/lib/game/skill-icons';
 import { humanize } from '@/lib/utils/humanize';
 import { formatNumber } from '@/lib/utils/format-number';
 import { warnOnDrift } from '@/lib/utils/warn-on-drift';
+import {
+  ELDER_ISLE_BOSS_IDS,
+  ELDER_ISLE_DUNGEON_IDS,
+  ELDER_ISLE_ENEMY_IDS,
+  ELDER_ISLE_IDS,
+  ELDER_ISLE_PET_IDS,
+  ELDER_QUEST_CHAIN,
+  ELDER_LORE_FRAGMENTS,
+  ELDER_SKILL_IDS,
+} from '@/lib/game/elder-isle';
+import { getIncludeElderIsle } from '@/lib/app/preferences';
 import { computeAchievements } from './achievements';
 import {
   getBones,
   getBosses,
+  sortBossesForDisplay,
   getBuildings,
   getCrops,
   getDungeons,
@@ -42,6 +54,15 @@ function pct(points: number, max: number) {
   return max > 0 ? Math.min(1, points / max) : 0;
 }
 
+function elderQuestsCompleted(ps: PlayerState): Set<string> {
+  return new Set((ps.raw.flags.elder_quests_completed as string[] | undefined) ?? []);
+}
+
+function elderQuestItems(ps: PlayerState): ProgressItem[] {
+  const completed = elderQuestsCompleted(ps);
+  return ELDER_QUEST_CHAIN.map((q) => ({ id: q.id, label: q.title, done: completed.has(q.id), detail: q.act }));
+}
+
 async function computeQuests(ps: PlayerState): Promise<ProgressCategory> {
   const quests = await getQuests();
   const completedIds = new Set(ps.raw.questProgress.filter((q) => q.completed).map((q) => q.questId));
@@ -57,6 +78,7 @@ async function computeQuests(ps: PlayerState): Promise<ProgressCategory> {
       detail: progressLine ?? q.description,
     };
   });
+  if (getIncludeElderIsle()) items.push(...elderQuestItems(ps));
   return {
     id: 'quests',
     label: 'Quests',
@@ -81,6 +103,7 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
   for (const gq of Object.values(guildQuests))
     stepQuestByGuildTier.set(`${gq.guild}:${gq.guild_level_required}`, gq.id);
 
+  const levelByGuild = new Map<string, number>();
   const items: ProgressItem[] = ALL_GUILDS.map((guild) => {
     let level = 0;
     for (let tier = 0; tier < GUILD_MAX_LEVEL; tier++) {
@@ -90,11 +113,13 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
       if (!dailiesOk || !questOk) break;
       level = tier + 1;
     }
+    levelByGuild.set(guild, level);
+    const done = level >= GUILD_MAX_LEVEL;
     return {
       id: guild,
       label: guildLabel(guild),
-      done: level >= GUILD_MAX_LEVEL,
-      detail: `${level} / ${GUILD_MAX_LEVEL}`,
+      done,
+      detail: `${level}/${GUILD_MAX_LEVEL}${done ? ' (Max)' : ''}`,
       section: GUILD_CATEGORY_OVERRIDES[guild] ?? SKILLS.find((s) => s.id === guild)?.category ?? 'Other',
       icon: skillIcon(guild),
     };
@@ -104,7 +129,7 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
       CATEGORY_ORDER.indexOf(b.section as (typeof CATEGORY_ORDER)[number]),
   );
 
-  const points = items.reduce((sum, item) => sum + Number(item.detail!.split(' / ')[0]), 0);
+  const points = [...levelByGuild.values()].reduce((sum, level) => sum + level, 0);
   return {
     id: 'guilds',
     label: 'Guilds',
@@ -120,10 +145,16 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
   const enemyKills = (ps.raw.flags.enemy_kills ?? {}) as Record<string, number>;
   const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
   const isMonumentPatron = Number(ps.raw.flags.monument_tier ?? 0) >= 1;
+  const buildingTiers = (ps.raw.flags.town_building_tiers ?? {}) as Record<string, number>;
+  const dockBuilt = (buildingTiers.dock ?? 0) >= 1;
+  const totalLevel = ps.totalLevel ?? 0;
+
+  const includeElderIsle = getIncludeElderIsle();
 
   let points = 0;
   let max = 0;
-  const items: ProgressItem[] = Object.values(bosses)
+  const items: ProgressItem[] = sortBossesForDisplay(Object.values(bosses))
+    .filter((boss) => includeElderIsle || !ELDER_ISLE_BOSS_IDS.has(boss.id))
     .map((boss) => {
       const kills = enemyKills[boss.id] ?? 0;
       const drops = boss.rare_drops ?? [];
@@ -136,7 +167,10 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
         done: kills > 0 && dropsOwned >= drops.length,
         detail: `${formatNumber(kills)} kills · ${dropsOwned}/${drops.length} drops`,
         section: boss.raid ? 'Raid' : 'Solo',
-        locked: !!boss.requires_monument && !isMonumentPatron,
+        locked:
+          (!!boss.requires_monument && !isMonumentPatron) ||
+          (!!boss.requires_dock && !dockBuilt) ||
+          (!!boss.total_level_required && totalLevel < boss.total_level_required),
       };
     })
     .sort((a, b) => (a.section === b.section ? 0 : a.section === 'Solo' ? -1 : 1));
@@ -162,22 +196,18 @@ function armouryStats(eq: EquipmentEntry): string | undefined {
   return parts.length > 0 ? parts.join(' · ') : undefined;
 }
 
-function armouryRequirements(eq: EquipmentEntry): string | undefined {
-  const entries = Object.entries(eq.requirements ?? {});
-  return entries.length > 0 ? entries.map(([skill, level]) => `${humanize(skill)} ${level}`).join(', ') : undefined;
-}
-
 async function computeArmoury(ps: PlayerState): Promise<ProgressCategory> {
   const equipment = await getEquipment();
   const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
+  const includeElderIsle = getIncludeElderIsle();
   const items: ProgressItem[] = Object.entries(equipment)
+    .filter(([key]) => includeElderIsle || !ELDER_ISLE_IDS.has(key))
     .map(([key, eq]) => ({
       id: key,
       label: eq.display_name ?? humanize(key),
       done: seenItems.has(key),
       detail: eq.slot,
       section: eq.combat_style ? humanize(eq.combat_style) : 'Other',
-      requirements: armouryRequirements(eq),
       stats: armouryStats(eq),
     }))
     .sort((a, b) => {
@@ -202,7 +232,10 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
   const prestige = (ps.raw.flags.skill_prestige ?? {}) as Record<string, number>;
   const orderedPaths = [...paths].sort((a, b) => SKILL_IDS.indexOf(a.skill) - SKILL_IDS.indexOf(b.skill));
 
-  const items: ProgressItem[] = orderedPaths
+  let points = 0;
+  let max = 0;
+
+  const mainlandItems: ProgressItem[] = orderedPaths
     .map((skillPaths) => {
       const nonXpCost = skillPaths.paths
         .filter((p) => !p.auto)
@@ -211,6 +244,8 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
       const cap = Math.ceil(nonXpCost / 3);
       const owned = Math.min(prestige[skillPaths.skill] ?? 0, cap);
       const level = ps.raw.skillLevels[skillPaths.skill] ?? 1;
+      points += owned;
+      max += cap;
       return {
         id: skillPaths.skill,
         label: humanize(skillPaths.skill),
@@ -218,6 +253,7 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
         detail: `${owned} / ${cap} prestiges · level ${level}`,
         section: SKILLS.find((s) => s.id === skillPaths.skill)?.category ?? 'Other',
         icon: skillIcon(skillPaths.skill),
+        realm: 'mainland' as const,
       };
     })
     .sort(
@@ -226,11 +262,36 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
         CATEGORY_ORDER.indexOf(b.section as (typeof CATEGORY_ORDER)[number]),
     );
 
+  const items = [...mainlandItems];
+  if (getIncludeElderIsle()) {
+    const elderLevels = (ps.raw.flags.elder_skill_levels ?? {}) as Record<string, number>;
+    const elderItems: ProgressItem[] = ELDER_SKILL_IDS.map((skillId) => {
+      const level = elderLevels[skillId] ?? 1;
+      const maxed = level >= 99;
+      points += maxed ? 1 : 0;
+      max += 1;
+      return {
+        id: `elder_${skillId}`,
+        label: SKILLS.find((s) => s.id === skillId)?.label ?? humanize(skillId),
+        done: maxed,
+        detail: `Level ${level}`,
+        section: SKILLS.find((s) => s.id === skillId)?.category ?? 'Other',
+        icon: skillIcon(skillId),
+        realm: 'elder' as const,
+      };
+    }).sort(
+      (a, b) =>
+        CATEGORY_ORDER.indexOf(a.section as (typeof CATEGORY_ORDER)[number]) -
+        CATEGORY_ORDER.indexOf(b.section as (typeof CATEGORY_ORDER)[number]),
+    );
+    items.push(...elderItems);
+  }
+
   return {
     id: 'levels',
     label: 'Levels & Prestige',
-    points: items.reduce((sum, i) => sum + Number(i.detail!.split(' / ')[0]), 0),
-    max: items.reduce((sum, i) => sum + Number(i.detail!.split(' / ')[1].split(' ')[0]), 0),
+    points,
+    max,
     hasDrilldown: true,
     items,
   };
@@ -239,12 +300,15 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
 async function computePets(ps: PlayerState): Promise<ProgressCategory> {
   const pets = await getPets();
   const owned = new Set(ps.raw.pets.map((p) => p.id));
-  const items: ProgressItem[] = Object.values(pets).map((pet) => ({
-    id: pet.id,
-    label: pet.display_name,
-    done: owned.has(pet.id),
-    detail: pet.source,
-  }));
+  const includeElderIsle = getIncludeElderIsle();
+  const items: ProgressItem[] = Object.values(pets)
+    .filter((pet) => includeElderIsle || !ELDER_ISLE_PET_IDS.has(pet.id))
+    .map((pet) => ({
+      id: pet.id,
+      label: pet.display_name,
+      done: owned.has(pet.id),
+      detail: pet.source,
+    }));
   return {
     id: 'pets',
     label: 'Pets',
@@ -261,7 +325,9 @@ function computeTitles(ps: PlayerState): ProgressCategory {
     if (!id.startsWith('seasonal_')) warnOnDrift('unlocked title', id, CHARACTER_TITLES);
   }
   const unlockedSet = new Set(unlocked);
-  const items: ProgressItem[] = CHARACTER_TITLES.map((id) => ({
+  const includeElderIsle = getIncludeElderIsle();
+  const knownTitles = includeElderIsle ? CHARACTER_TITLES : CHARACTER_TITLES.filter((id) => id !== 'isle_champion');
+  const items: ProgressItem[] = knownTitles.map((id) => ({
     id,
     label: humanize(id),
     done: unlockedSet.has(id),
@@ -279,7 +345,7 @@ function computeTitles(ps: PlayerState): ProgressCategory {
     id: 'titles',
     label: 'Titles',
     points: items.filter((i) => i.done && !i.id.startsWith('seasonal_')).length,
-    max: CHARACTER_TITLES.length,
+    max: knownTitles.length,
     hasDrilldown: true,
     items,
     info: 'Might not work properly with seasonal titles',
@@ -343,9 +409,22 @@ function computeExpeditions(ps: PlayerState): ProgressCategory {
       detail: `${Math.min(found, EXPEDITION_NOTE_THRESHOLD)} / ${EXPEDITION_NOTE_THRESHOLD} notes`,
     };
   });
+  const includeElderIsle = getIncludeElderIsle();
+  if (includeElderIsle) {
+    const completed = elderQuestsCompleted(ps);
+    const discovered = ELDER_LORE_FRAGMENTS.filter(
+      (f) => f.unlockedByQuest === null || completed.has(f.unlockedByQuest),
+    ).length;
+    items.push({
+      id: 'elder_isle_lore',
+      label: 'Elder Isle Lore',
+      done: discovered >= ELDER_LORE_FRAGMENTS.length,
+      detail: `${discovered} / ${ELDER_LORE_FRAGMENTS.length} notes`,
+    });
+  }
   return {
     id: 'expeditions',
-    label: 'Expeditions',
+    label: includeElderIsle ? 'Expeditions & Lore' : 'Expeditions',
     points: items.filter((i) => i.done).length,
     max: items.length,
     hasDrilldown: true,
@@ -369,20 +448,27 @@ function enemyDungeonNames(dungeons: Record<string, DungeonEntry>): Map<string, 
 
 async function computeBestiary(ps: PlayerState): Promise<ProgressCategory> {
   const [enemies, dungeons] = await Promise.all([getEnemies(), getDungeons()]);
-  const dungeonsByEnemy = enemyDungeonNames(dungeons);
+  const includeElderIsle = getIncludeElderIsle();
+  const dungeonsByEnemy = enemyDungeonNames(
+    includeElderIsle
+      ? dungeons
+      : Object.fromEntries(Object.entries(dungeons).filter(([key]) => !ELDER_ISLE_DUNGEON_IDS.has(key))),
+  );
   const kills = (ps.raw.flags.enemy_kills ?? {}) as Record<string, number>;
-  const items: ProgressItem[] = Object.values(enemies).map((e) => {
-    const locations = dungeonsByEnemy.get(e.name);
-    if (!locations && import.meta.env.DEV) {
-      console.warn(`[game-data-drift] enemy "${e.name}" isn't spawned by any known dungeon.`);
-    }
-    return {
-      id: e.name,
-      label: e.display_name,
-      done: (kills[e.name] ?? 0) > 0,
-      detail: `${kills[e.name] ?? 0} killed · ${locations?.join(', ') ?? 'Unknown location'}`,
-    };
-  });
+  const items: ProgressItem[] = Object.values(enemies)
+    .filter((e) => includeElderIsle || !ELDER_ISLE_ENEMY_IDS.has(e.name))
+    .map((e) => {
+      const locations = dungeonsByEnemy.get(e.name);
+      if (!locations && import.meta.env.DEV) {
+        console.warn(`[game-data-drift] enemy "${e.name}" isn't spawned by any known dungeon.`);
+      }
+      return {
+        id: e.name,
+        label: e.display_name,
+        done: (kills[e.name] ?? 0) > 0,
+        detail: `${kills[e.name] ?? 0} killed · ${locations?.join(', ') ?? 'Unknown location'}`,
+      };
+    });
   return {
     id: 'bestiary',
     label: 'Bestiary',
@@ -405,18 +491,23 @@ async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
     getBones(),
     getRunes(),
   ]);
-  const universe = new Set<string>(Object.keys(equipment));
+  const includeElderIsle = getIncludeElderIsle();
+  const isElderIsleId = (k: string) => ELDER_ISLE_IDS.has(k) || ELDER_ISLE_ENEMY_IDS.has(k);
+
+  const universe = new Set<string>(Object.keys(equipment).filter((k) => includeElderIsle || !isElderIsleId(k)));
   for (const e of Object.values(enemies)) {
+    if (!includeElderIsle && ELDER_ISLE_ENEMY_IDS.has(e.name)) continue;
     for (const d of e.drop_table ?? []) universe.add(d.item);
     for (const d of e.always_drops ?? []) universe.add(d.item);
   }
   for (const category of Object.values(marketplace)) for (const key of Object.keys(category.items)) universe.add(key);
   for (const resource of [gems, ores, logs, crops, bones, runes])
-    for (const key of Object.keys(resource)) universe.add(key);
-  const seen = new Set<string>([
-    ...((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []),
-    ...Object.keys(ps.raw.inventory),
-  ]);
+    for (const key of Object.keys(resource)) if (includeElderIsle || !isElderIsleId(key)) universe.add(key);
+  const seen = new Set<string>(
+    [...((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []), ...Object.keys(ps.raw.inventory)].filter(
+      (k) => includeElderIsle || !isElderIsleId(k),
+    ),
+  );
   for (const k of seen) universe.add(k);
   const owned = [...universe].filter((k) => seen.has(k));
   return {

@@ -8,7 +8,7 @@ const WEAPON_SLOT_BY_STYLE: Record<CombatStyle, string> = {
   magic: 'weapon_magic',
 };
 
-export const ARMOR_SLOTS = ['head', 'body', 'legs', 'boots', 'cape', 'ring', 'necklace', 'shield'] as const;
+export const ARMOR_SLOTS = ['head', 'body', 'legs', 'boots', 'cape', 'ring', 'necklace', 'shield', 'signet'] as const;
 
 export function weaponSlotForStyle(style: CombatStyle): string {
   return WEAPON_SLOT_BY_STYLE[style];
