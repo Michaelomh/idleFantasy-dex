@@ -1,8 +1,8 @@
 # Coding Standards
 
 Conventions for this repo that aren't already enforced by ESLint, Prettier, or
-`tsconfig.json`. Read alongside `CLAUDE.md` (project rules) and `CONTEXT.md` (domain
-language) - this file only covers code style and structure.
+`tsconfig.json`. Read alongside `CONTEXT.md` (domain language) - this file only covers code
+style and structure.
 
 ## TypeScript
 
@@ -34,14 +34,31 @@ game can add new values in any update, so:
 - Derive literal values from a real save export, not the game's UI source - they can
   disagree (e.g. `"Halfling"` in the character-creation UI vs `"halfling"` in
   `flags.character_race`).
-- Export known values as a runtime array (`KNOWN_CHARACTER_RACES`, etc.) and derive the
-  union from it with `(typeof ARRAY)[number] | (string & {})`, instead of writing the
+- Export known values as a runtime array (`CHARACTER_RACES`, `CHARACTER_TITLES`) and derive
+  the union from it with `(typeof ARRAY)[number] | (string & {})`, instead of writing the
   literals twice.
 - Pass the parsed value through `warnOnDrift()` in `validate.ts` - a dev-only warning
-  tagged `[game-data-drift]` that never fails the save, just surfaces drift.
+  tagged `[game-data-drift]` that never fails the save, just surfaces drift. Grep for
+  `[game-data-drift]` to find every place this check runs.
+- When re-deriving one of these lists from a newer game checkout, note the game version it
+  was pulled from as a comment above the type (format: the "Pinned version" table in
+  `public/game-data/README.md`).
 
-See `CLAUDE.md` for the full list of closed sets likely to drift this way (quest IDs, boss
-IDs, skill IDs, equipment slots, etc.).
+Other closed sets likely to drift the same way:
+
+- Quest IDs / quest categories
+- Achievement IDs
+- Pet IDs and pet rarity tiers
+- Equipment slot names and equipment IDs
+- Boss IDs (solo, raid, infinity tower, dungeon)
+- Skill IDs (`SESSION_CALCULATORS` in `src/lib/calculator/skills/index.ts`, and the
+  `/calculator/*` routes in `src/lib/app/routes.ts`)
+- Prestige path IDs
+- Guild names/ranks
+- Seasonal event IDs
+- Currency types (coins, carnival tickets, slayer points, and any new ones added later)
+- Flag/save-schema keys read in `src/lib/save-source/validate.ts` - a game update can rename
+  or add `flags.*` keys the parser doesn't know about yet
 
 ## Comments
 
@@ -84,8 +101,8 @@ install size matters.
 
 - File names are kebab-case (`skill-bonus-row.tsx`, `use-player-state.ts`).
 - Route-level components live in `src/components/` and are suffixed `-page.tsx`
-  (`dashboard-page.tsx`, `saves-page.tsx`, `onboarding-page.tsx`). Non-route components have
-  no suffix (`skill-bonus-row.tsx`, `active-boosts-section.tsx`).
+  (`dashboard-page.tsx`, `settings-page.tsx`, `onboarding-page.tsx`). Non-route components
+  have no suffix (`skill-bonus-row.tsx`, `loadout-section.tsx`).
 - Feature areas with more than one route get their own subfolder under `src/components/`
   (`components/progress/`); a single-file feature stays flat.
 - `src/components/ui/` holds shadcn-managed primitives (`button.tsx`, `sheet.tsx`,
@@ -105,7 +122,9 @@ install size matters.
 ## Testing
 
 There is no test suite and no test framework installed in this repo (`package.json` has no
-`vitest`/`jest`/`playwright` dependency, and `src/` has no `*.test.*`/`*.spec.*` files).
+`vitest`/`playwright` dependency, and `src/` has no `*.test.*`/`*.spec.*` files).
 Correctness currently rests on `pnpm typecheck`, `pnpm lint`, and manual verification. Don't
 assume a testing convention that isn't here - if you introduce a framework, add its
 conventions to this section rather than guessing at them in advance.
+
+- Testing might be added in the future.

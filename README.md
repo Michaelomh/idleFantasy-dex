@@ -2,14 +2,23 @@
 
 Track your completion in **[Idle Fantasy](https://github.com/tristinbaker/IdleFantasy)** -
 quests, guilds, drops, equipment, and prestige - and see how far every goal is from done.
-Projections (time to completion, items per session, XP rates) come later; see the roadmap.
+Projections (time to completion, items per session, XP rates) come later.
 
 > **Status:** the Completion dashboard (all 16 goal categories), the per-skill Calculator
 > (all 13 Gathering/Crafting skills plus Agility), a boss Simulator, and Settings are all
 > live at
-> [michaelomh.github.io/idleFantasy-dex](https://michaelomh.github.io/idleFantasy-dex/). See
+> [michaelomh.github.io/idleFantasy-dex](https://michaelomh.github.io/idleFantasy-dex/). The
+> Calculator and Simulator are experimental - turn on **Experimental Features** in Settings
+> to see them. See
 > [CONTRIBUTING.md](./CONTRIBUTING.md) if you'd like to help. Alternatively, you can raise
-> an issue for things that found while using the app.
+> an issue for anything you find while using the app.
+
+<p align="center">
+  <img src=".github/screenshots/overview.png" width="200" alt="Overview: overall progress and character summary" />
+  <img src=".github/screenshots/progress.png" width="200" alt="Progress: completion by category" />
+  <img src=".github/screenshots/progress-levels.png" width="200" alt="Levels and Prestige drilldown" />
+  <img src=".github/screenshots/progress-bosses.png" width="200" alt="Bosses drilldown with drops per boss" />
+</p>
 
 ## Why
 

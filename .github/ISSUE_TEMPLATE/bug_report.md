@@ -8,8 +8,8 @@ assignees: ''
 
 ## What happened
 
-<!-- What did you see? Include the affected Goal (Quests, Guilds, Raid boss drops,
-Armoury, Levels & Prestige) if relevant. If relevant, please insert images or video
+<!-- What did you see? Include the affected page (e.g. Progress > Quests, Calculator >
+Mining, Simulator > Bosses) if relevant. If relevant, please insert images or video
 demo of what is happening. -->
 
 ## What you expected

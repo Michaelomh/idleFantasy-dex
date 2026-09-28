@@ -33,18 +33,18 @@ const showExperimentalListeners = new Set<() => void>();
 
 export function getShowExperimental(): boolean {
   try {
-    return window.localStorage.getItem(SHOW_EXPERIMENTAL_KEY) !== '0';
+    return window.localStorage.getItem(SHOW_EXPERIMENTAL_KEY) === '1';
   } catch {
-    return true;
+    return false;
   }
 }
 
 export function setShowExperimental(show: boolean) {
   try {
-    if (show) window.localStorage.removeItem(SHOW_EXPERIMENTAL_KEY);
-    else window.localStorage.setItem(SHOW_EXPERIMENTAL_KEY, '0');
+    if (show) window.localStorage.setItem(SHOW_EXPERIMENTAL_KEY, '1');
+    else window.localStorage.removeItem(SHOW_EXPERIMENTAL_KEY);
   } catch {
-    /* localStorage unavailable (private mode, etc.) - falls back to "shown" next load */
+    /* localStorage unavailable (private mode, etc.) - falls back to "hidden" next load */
   }
   showExperimentalListeners.forEach((listener) => listener());
 }

@@ -43,7 +43,7 @@ import {
   type IngestOutcome,
   type StalenessType,
 } from '@/lib/save-source';
-import { clearExplore, getSelectedSlot, setSelectedSlot } from '@/lib/app/boot-state.ts';
+import { clearExplore, getSelectedSlot, isExploring, setSelectedSlot } from '@/lib/app/boot-state.ts';
 
 const REPO_URL = 'https://github.com/Michaelomh/idleFantasy-dex';
 const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
@@ -279,6 +279,12 @@ export function SettingsPage() {
   }
 
   const identities = Object.keys(slots);
+  const exploring = isExploring();
+
+  function handleLoadOwnSave() {
+    clearExplore();
+    navigate('/onboarding');
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4">
@@ -345,7 +351,22 @@ export function SettingsPage() {
         {error && <p className="body text-destructive">{error}</p>}
         {busy && <p className="body text-text-secondary">Working…</p>}
 
-        <div className="flex flex-col overflow-hidden rounded-card border border-border bg-card">
+        {exploring && (
+          <div className="flex items-center justify-between gap-3">
+            <p className="description text-text-secondary">You're exploring with a sample character.</p>
+            <Button variant="text" size="sm" onClick={handleLoadOwnSave}>
+              Load your save
+            </Button>
+          </div>
+        )}
+
+        <div
+          inert={exploring}
+          className={cn(
+            'flex flex-col overflow-hidden rounded-card border border-border bg-card',
+            exploring && 'opacity-50',
+          )}
+        >
           {loading ? (
             <p className="body p-4 text-text-secondary">Loading…</p>
           ) : identities.length === 0 ? (
