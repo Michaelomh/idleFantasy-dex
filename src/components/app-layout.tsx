@@ -5,8 +5,7 @@ import { Calculator, House, Settings, Swords, TrendingUp } from 'lucide-react';
 import { FloatingNavBar } from './floating-nav-bar.tsx';
 import { ExploreBanner } from './explore-banner.tsx';
 import { DesktopNoticeBanner } from './desktop-notice-banner.tsx';
-import { NotFoundPage } from './not-found-page.tsx';
-import { DOCK_TABS, isRouteDisabled, matchRoute } from '@/lib/app/routes.ts';
+import { DOCK_TABS, matchRoute } from '@/lib/app/routes.ts';
 import { resolveBootState, type BootState } from '@/lib/app/boot-state.ts';
 import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
 
@@ -46,10 +45,8 @@ function AnimatedOutlet() {
 export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const rawMatch = matchRoute(location.pathname);
-  const disabled = !!rawMatch && isRouteDisabled(location.pathname);
-  const match = disabled ? undefined : rawMatch;
-  const showDock = match?.dockTab !== undefined;
+  const match = matchRoute(location.pathname);
+  const showDock = !!match && !PRE_BOOT_PATHS.has(match.path);
   const [showExperimental] = useShowExperimental();
   const dockEntries = DOCK_ENTRIES.filter((tab) => showExperimental || !EXPERIMENTAL_DOCK_PATHS.has(tab.path));
   const activeIndex = dockEntries.findIndex((tab) =>
@@ -106,7 +103,7 @@ export function AppLayout() {
       {bootState === 'explore' && <ExploreBanner />}
       <ScrollRestoration getKey={(location) => location.pathname} />
       <div className="flex flex-1 flex-col">
-        {disabled ? <NotFoundPage /> : PRE_BOOT_PATHS.has(location.pathname) ? <AnimatedOutlet /> : <Outlet />}
+        {PRE_BOOT_PATHS.has(location.pathname) ? <AnimatedOutlet /> : <Outlet />}
       </div>
       {showDock && (
         <FloatingNavBar

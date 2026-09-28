@@ -4,7 +4,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { createHashRouter, RouterProvider, type RouteObject } from 'react-router';
 import './index.css';
 import { AppLayout } from './components/app-layout.tsx';
-import { RoutePage } from './components/route-page.tsx';
 import { DashboardPage } from './components/dashboard-page.tsx';
 import { WelcomePage } from './components/welcome-page.tsx';
 import { OnboardingPage } from './components/onboarding-page.tsx';
@@ -23,24 +22,6 @@ import { SimulatorBossDetailPage } from './components/simulator/simulator-boss-d
 import { NotFoundPage } from './components/not-found-page.tsx';
 import { ROUTES } from './lib/app/routes.ts';
 import { ReloadPrompt } from './components/reload-prompt.tsx';
-import { Toaster } from './components/ui/sonner.tsx';
-
-const CALCULATOR_SKILL_PATHS = new Set([
-  '/calculator/mining',
-  '/calculator/fishing',
-  '/calculator/woodcutting',
-  '/calculator/farming',
-  '/calculator/agility',
-  '/calculator/thieving',
-  '/calculator/smithing',
-  '/calculator/cooking',
-  '/calculator/fletching',
-  '/calculator/crafting',
-  '/calculator/firemaking',
-  '/calculator/runecrafting',
-  '/calculator/herblore',
-  '/calculator/construction',
-]);
 
 const ROUTE_OVERRIDES: Record<string, RouteObject['element']> = {
   '/welcome': <WelcomePage />,
@@ -72,9 +53,7 @@ const routes: RouteObject[] = [
     element: <AppLayout />,
     children: ROUTES.map((route) => {
       if (route.path === '/') return { index: true, element: <DashboardPage /> };
-      const element =
-        ROUTE_OVERRIDES[route.path] ??
-        (CALCULATOR_SKILL_PATHS.has(route.path) ? <CalculatorSkillPage /> : <RoutePage />);
+      const element = route.parent === '/calculator' ? <CalculatorSkillPage /> : ROUTE_OVERRIDES[route.path];
       return { path: route.path.slice(1), element };
     }).concat({ path: '*', element: <NotFoundPage /> }),
   },
@@ -94,7 +73,6 @@ createRoot(document.getElementById('root')!).render(
     <TooltipProvider>
       <RouterProvider router={router} />
       <ReloadPrompt />
-      <Toaster />
     </TooltipProvider>
   </StrictMode>,
 );

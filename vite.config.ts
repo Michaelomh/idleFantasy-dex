@@ -8,14 +8,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 // Pin the Game Data runtime cache to the vendored snapshot's game version, so
 // refreshing the snapshot (a new version_code) orphans the old cache naturally.
 function gameDataVersion(): string {
-  for (const p of ['./public/game-data/manifest.json', './vendor/game-data/manifest.json']) {
-    try {
-      return String(JSON.parse(readFileSync(p, 'utf8')).game.version_code);
-    } catch {
-      /* try next */
-    }
+  try {
+    return String(JSON.parse(readFileSync('./public/game-data/manifest.json', 'utf8')).game.version_code);
+  } catch {
+    return 'dev';
   }
-  return 'dev';
 }
 
 // https://vite.dev/config/

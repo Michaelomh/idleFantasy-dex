@@ -2,7 +2,7 @@
 name: Game data drift
 about: Idle Fantasy has shipped a new version and the vendored data snapshot may be stale
 title: 'Game data drift: version <old> -> <new>'
-labels: game-data
+labels: ''
 assignees: ''
 ---
 

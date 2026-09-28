@@ -14,7 +14,3 @@ assignees: ''
 
 <!-- What would you like to see instead? Use the project's vocabulary (Goal, Ledger,
 Save Source, Projection, etc.) where it applies. -->
-
-## Roadmap context
-
-<!-- provide the list item in ROADMAP.md or leave empty if it doesn't link to anything-->
