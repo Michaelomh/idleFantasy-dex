@@ -6,7 +6,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
  */
 export function ReloadPrompt() {
   const {
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW();
 
@@ -19,9 +19,6 @@ export function ReloadPrompt() {
     >
       <span>A new version is available.</span>
       <div className="flex gap-2">
-        <button type="button" className="text-muted-foreground" onClick={() => setNeedRefresh(false)}>
-          Dismiss
-        </button>
         <button type="button" className="font-semibold text-primary" onClick={() => updateServiceWorker(true)}>
           Reload
         </button>

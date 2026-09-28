@@ -138,7 +138,6 @@ export function SimulatorBossDetailPage() {
   return (
     <div className="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2">
-        <span className="text-2xl">{boss.emoji}</span>
         <span className="h1">{boss.display_name}</span>
         <span className="label rounded-full border border-border px-2 py-0.5 text-text-secondary">
           {boss.raid ? 'Raid' : 'Solo'}

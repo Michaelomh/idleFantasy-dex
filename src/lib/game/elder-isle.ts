@@ -154,3 +154,24 @@ export const ELDER_SKILL_IDS = [
   'magic',
   'hitpoints',
 ];
+
+const ELDER_QUEST_IDS = new Set(ELDER_QUEST_CHAIN.map((q) => q.id));
+
+/** Whether a progress item belongs to Elder Isle, for showing the Elder Isle badge. */
+export function isElderIsleItem(categoryId: string, itemId: string): boolean {
+  switch (categoryId) {
+    case 'pets':
+      return ELDER_ISLE_PET_IDS.has(itemId);
+    case 'armoury':
+    case 'inventory':
+      return ELDER_ISLE_IDS.has(itemId) || ELDER_ISLE_ENEMY_IDS.has(itemId);
+    case 'quests':
+      return ELDER_QUEST_IDS.has(itemId);
+    case 'expeditions':
+      return itemId === 'elder_isle_lore';
+    case 'titles':
+      return itemId === 'isle_champion';
+    default:
+      return false;
+  }
+}

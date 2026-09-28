@@ -66,18 +66,12 @@ function elderQuestItems(ps: PlayerState): ProgressItem[] {
 async function computeQuests(ps: PlayerState): Promise<ProgressCategory> {
   const quests = await getQuests();
   const completedIds = new Set(ps.raw.questProgress.filter((q) => q.completed).map((q) => q.questId));
-  const progressByQuest = new Map(ps.raw.questProgress.map((q) => [q.questId, q.progress ?? 0]));
-  const items: ProgressItem[] = Object.values(quests).map((q) => {
-    const done = completedIds.has(q.id);
-    const progress = progressByQuest.get(q.id) ?? 0;
-    const progressLine = q.amount !== undefined ? `${Math.min(progress, q.amount)} / ${q.amount}` : undefined;
-    return {
-      id: q.id,
-      label: q.name,
-      done,
-      detail: progressLine ?? q.description,
-    };
-  });
+  const items: ProgressItem[] = Object.values(quests).map((q) => ({
+    id: q.id,
+    label: q.name,
+    done: completedIds.has(q.id),
+    detail: q.description,
+  }));
   if (getIncludeElderIsle()) items.push(...elderQuestItems(ps));
   return {
     id: 'quests',
@@ -122,6 +116,9 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
       detail: `${level}/${GUILD_MAX_LEVEL}${done ? ' (Max)' : ''}`,
       section: GUILD_CATEGORY_OVERRIDES[guild] ?? SKILLS.find((s) => s.id === guild)?.category ?? 'Other',
       icon: skillIcon(guild),
+      level,
+      current: level,
+      cap: GUILD_MAX_LEVEL,
     };
   }).sort(
     (a, b) =>
@@ -144,10 +141,6 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
   const bosses = await getBosses();
   const enemyKills = (ps.raw.flags.enemy_kills ?? {}) as Record<string, number>;
   const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
-  const isMonumentPatron = Number(ps.raw.flags.monument_tier ?? 0) >= 1;
-  const buildingTiers = (ps.raw.flags.town_building_tiers ?? {}) as Record<string, number>;
-  const dockBuilt = (buildingTiers.dock ?? 0) >= 1;
-  const totalLevel = ps.totalLevel ?? 0;
 
   const includeElderIsle = getIncludeElderIsle();
 
@@ -165,12 +158,11 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
         id: boss.id,
         label: boss.display_name,
         done: kills > 0 && dropsOwned >= drops.length,
-        detail: `${formatNumber(kills)} kills · ${dropsOwned}/${drops.length} drops`,
+        detail: `${formatNumber(kills)} kills`,
         section: boss.raid ? 'Raid' : 'Solo',
-        locked:
-          (!!boss.requires_monument && !isMonumentPatron) ||
-          (!!boss.requires_dock && !dockBuilt) ||
-          (!!boss.total_level_required && totalLevel < boss.total_level_required),
+        kills,
+        current: dropsOwned,
+        cap: drops.length,
       };
     })
     .sort((a, b) => (a.section === b.section ? 0 : a.section === 'Solo' ? -1 : 1));
@@ -206,9 +198,8 @@ async function computeArmoury(ps: PlayerState): Promise<ProgressCategory> {
       id: key,
       label: eq.display_name ?? humanize(key),
       done: seenItems.has(key),
-      detail: eq.slot,
+      detail: armouryStats(eq),
       section: eq.combat_style ? humanize(eq.combat_style) : 'Other',
-      stats: armouryStats(eq),
     }))
     .sort((a, b) => {
       const styleIndex = (s: string) => {
@@ -254,6 +245,9 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
         section: SKILLS.find((s) => s.id === skillPaths.skill)?.category ?? 'Other',
         icon: skillIcon(skillPaths.skill),
         realm: 'mainland' as const,
+        level,
+        current: owned,
+        cap,
       };
     })
     .sort(
@@ -278,6 +272,9 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
         section: SKILLS.find((s) => s.id === skillId)?.category ?? 'Other',
         icon: skillIcon(skillId),
         realm: 'elder' as const,
+        level,
+        current: level,
+        cap: 99,
       };
     }).sort(
       (a, b) =>
@@ -319,7 +316,36 @@ async function computePets(ps: PlayerState): Promise<ProgressCategory> {
   };
 }
 
-function computeTitles(ps: PlayerState): ProgressCategory {
+// Names and unlock requirements copied from the game's res/values/strings.xml
+// (title_<id>_name / title_<id>_requirement), game version 1.15.5.
+const TITLE_INFO: Record<(typeof CHARACTER_TITLES)[number], { name: string; requirement: string }> = {
+  master_smith: { name: 'Master Smith', requirement: 'Complete all Smithing quests' },
+  head_chef: { name: 'Head Chef', requirement: 'Complete all Cooking quests' },
+  master_miner: { name: 'Master Miner', requirement: 'Complete all Mining quests' },
+  master_angler: { name: 'Master Angler', requirement: 'Complete all Fishing quests' },
+  master_woodcutter: { name: 'Master Woodcutter', requirement: 'Complete all Woodcutting quests' },
+  master_fletcher: { name: 'Master Fletcher', requirement: 'Complete all Fletching quests' },
+  master_artisan: { name: 'Master Artisan', requirement: 'Complete all Crafting quests' },
+  runemaster: { name: 'Runemaster', requirement: 'Complete all Runecrafting quests' },
+  master_herbalist: { name: 'Master Herbalist', requirement: 'Complete all Herblore quests' },
+  master_builder: { name: 'Master Builder', requirement: 'Complete all Construction quests' },
+  devout: { name: 'Devout', requirement: 'Complete all Prayer quests' },
+  master_thief: { name: 'Master Thief', requirement: 'Complete all Thieving quests' },
+  flamekeeper: { name: 'Flamekeeper', requirement: 'Complete all Firemaking quests' },
+  slayer: { name: 'Slayer', requirement: 'Complete all Slayer quests' },
+  godslayer: { name: 'Godslayer', requirement: 'Defeat every boss at least once' },
+  patron_of_the_realm: { name: 'Patron of the Realm', requirement: 'Complete the Grand Monument' },
+  warlord: { name: 'Warlord', requirement: 'Reach max level in the Warriors Guild' },
+  marksman: { name: 'Marksman', requirement: 'Reach max level in the Archers Guild' },
+  archmage: { name: 'Archmage', requirement: 'Reach max level in the Mages Guild' },
+  merchant_prince: { name: 'Merchant Prince', requirement: 'Reach max level in the Mercantile Guild' },
+  pathfinder: { name: 'Pathfinder', requirement: 'Reach max level in the Agility Guild' },
+  master_farmer: { name: 'Master Farmer', requirement: 'Reach max level in the Farming Guild' },
+  isle_champion: { name: 'Champion of the Elder Isle', requirement: 'Defeat the Last Elder on Elder Isle' },
+};
+
+async function computeTitles(ps: PlayerState): Promise<ProgressCategory> {
+  const events = await getSeasonalEvents();
   const unlocked = (ps.raw.flags.unlocked_titles as string[] | undefined) ?? [];
   for (const id of unlocked) {
     if (!id.startsWith('seasonal_')) warnOnDrift('unlocked title', id, CHARACTER_TITLES);
@@ -329,16 +355,32 @@ function computeTitles(ps: PlayerState): ProgressCategory {
   const knownTitles = includeElderIsle ? CHARACTER_TITLES : CHARACTER_TITLES.filter((id) => id !== 'isle_champion');
   const items: ProgressItem[] = knownTitles.map((id) => ({
     id,
-    label: humanize(id),
+    label: TITLE_INFO[id].name,
     done: unlockedSet.has(id),
+    detail: TITLE_INFO[id].requirement,
   }));
 
   // Seasonal-event titles (e.g. "seasonal_sunspire_solstice_2026") are a new one per event,
   // unbounded and not in the hand-copied CHARACTER_TITLES catalogue. Shown for visibility,
   // excluded from both numerator and denominator rather than silently dropped or miscounted.
-  const seasonalTitles = unlocked.filter((id) => id.startsWith('seasonal_'));
-  for (const id of seasonalTitles) {
-    items.push({ id, label: humanize(id), done: true, detail: 'Seasonal - not counted' });
+
+  const banners = (ps.raw.flags.seasonal_banners_earned as { event_id: string; event_display_name?: string }[]) ?? [];
+  const seasonalIds = new Set([
+    ...unlocked.filter((id) => id.startsWith('seasonal_')),
+    ...Object.keys(events).map((eventId) => `seasonal_${eventId}`),
+  ]);
+  for (const id of seasonalIds) {
+    const eventId = id.slice('seasonal_'.length);
+    const eventName =
+      banners.find((b) => b.event_id === eventId)?.event_display_name ||
+      events[eventId]?.display_name ||
+      humanize(eventId);
+    items.push({
+      id,
+      label: `Champion of ${eventName}`,
+      done: unlockedSet.has(id),
+      detail: `Complete the ${eventName} Seasonal Event`,
+    });
   }
 
   return {
@@ -395,7 +437,6 @@ function computeGrandMonument(ps: PlayerState): ProgressCategory {
   };
 }
 
-/** Every expedition completes at 5 notes - enforced at sync time, see scripts/sync-game-data.js. */
 const EXPEDITION_NOTE_THRESHOLD = 5;
 
 function computeExpeditions(ps: PlayerState): ProgressCategory {
@@ -406,7 +447,8 @@ function computeExpeditions(ps: PlayerState): ProgressCategory {
       id: key,
       label: humanize(key),
       done: found >= EXPEDITION_NOTE_THRESHOLD,
-      detail: `${Math.min(found, EXPEDITION_NOTE_THRESHOLD)} / ${EXPEDITION_NOTE_THRESHOLD} notes`,
+      current: Math.min(found, EXPEDITION_NOTE_THRESHOLD),
+      cap: EXPEDITION_NOTE_THRESHOLD,
     };
   });
   const includeElderIsle = getIncludeElderIsle();
@@ -419,7 +461,8 @@ function computeExpeditions(ps: PlayerState): ProgressCategory {
       id: 'elder_isle_lore',
       label: 'Elder Isle Lore',
       done: discovered >= ELDER_LORE_FRAGMENTS.length,
-      detail: `${discovered} / ${ELDER_LORE_FRAGMENTS.length} notes`,
+      current: discovered,
+      cap: ELDER_LORE_FRAGMENTS.length,
     });
   }
   return {
@@ -432,7 +475,6 @@ function computeExpeditions(ps: PlayerState): ProgressCategory {
   };
 }
 
-/** Groups every dungeon's enemy_spawns by enemy, mirroring the game's own GameDataRepository.enemyLocations. */
 function enemyDungeonNames(dungeons: Record<string, DungeonEntry>): Map<string, string[]> {
   const map = new Map<string, string[]>();
   for (const dungeon of Object.values(dungeons)) {
@@ -466,7 +508,7 @@ async function computeBestiary(ps: PlayerState): Promise<ProgressCategory> {
         id: e.name,
         label: e.display_name,
         done: (kills[e.name] ?? 0) > 0,
-        detail: `${kills[e.name] ?? 0} killed · ${locations?.join(', ') ?? 'Unknown location'}`,
+        detail: `${formatNumber(kills[e.name] ?? 0)} kills · ${locations?.join(', ') ?? 'Unknown location'}`,
       };
     });
   return {
@@ -517,7 +559,9 @@ async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
     max: universe.size,
     info: 'Built from armoury items, monster drops, and your own save - not an official item list, and not fully accurate.',
     hasDrilldown: true,
-    items: [...universe].map((k) => ({ id: k, label: humanize(k), done: seen.has(k) })),
+    items: [...universe]
+      .map((k) => ({ id: k, label: humanize(k), done: seen.has(k) }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
   };
 }
 
@@ -538,7 +582,9 @@ async function computeHeirloomTools(ps: PlayerState): Promise<ProgressCategory> 
       id: key,
       label: eq.display_name ?? humanize(key),
       done: owned && maxed,
-      detail: owned ? `Level ${level}${maxed ? ' (max)' : ''}` : 'Not obtained',
+      detail: owned ? 'Obtained' : 'Not obtained',
+      current: owned ? level : 0,
+      cap: 99,
     });
   }
 
@@ -589,7 +635,7 @@ export const PROGRESS_SECTIONS: { label: string; categoryIds: (typeof CATEGORY_I
   { label: 'Combat', categoryIds: ['bosses', 'bestiary', 'infinity-tower'] },
   { label: 'Collection', categoryIds: ['armoury', 'inventory', 'pets', 'heirloom-tools', 'expeditions'] },
   { label: 'Awards', categoryIds: ['quests', 'achievements', 'titles'] },
-  { label: 'Other', categoryIds: ['builders-workshop', 'grand-monument', 'seasonal-events'] },
+  { label: 'Others', categoryIds: ['builders-workshop', 'grand-monument', 'seasonal-events'] },
 ];
 
 export async function computeAllCategories(ps: PlayerState): Promise<ProgressCategory[]> {
@@ -604,7 +650,7 @@ export async function computeAllCategories(ps: PlayerState): Promise<ProgressCat
     computeArmoury(ps),
     computeLevelsAndPrestige(ps),
     computePets(ps),
-    Promise.resolve(computeTitles(ps)),
+    computeTitles(ps),
     computeSeasonalEvents(ps),
     computeBuilderWorkshop(ps),
     Promise.resolve(computeGrandMonument(ps)),

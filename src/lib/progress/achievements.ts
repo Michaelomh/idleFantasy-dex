@@ -1,8 +1,50 @@
 import type { PlayerState } from '@/lib/save-source';
 import { SKILL_IDS } from '@/lib/game/skills';
 import { activeNodesForSkill } from '@/lib/bonuses/prestige';
-import { getPrestigePaths } from './game-data';
+import { getPrestigePaths, getBuildings } from './game-data';
 import type { ProgressCategory } from './types';
+
+/** Achievement display names, copied from the game's strings.xml (achievement_<id>_name). */
+const ACHIEVEMENT_NAMES: Record<string, string> = {
+  total_50: 'Adventurer',
+  total_100: 'Journeyman',
+  total_250: 'Seasoned',
+  total_500: 'Veteran',
+  total_750: 'Master',
+  total_1000: 'Legend',
+  total_1500: 'Champion',
+  skill_99: 'First Mastery',
+  all_99: 'Completionist',
+  combat_10: 'Fighter',
+  combat_30: 'Warrior',
+  combat_50: 'Champion',
+  combat_75: 'Elite',
+  combat_99: 'Hero',
+  combat_113: 'Max Combat',
+  quest_1: 'Quester',
+  quest_5: 'Dedicated',
+  quest_25: 'Quest Hound',
+  quest_50: 'Quest Master',
+  quest_all: 'Quest Champion',
+  pet_first: 'Animal Friend',
+  pet_all: 'Menagerie',
+  prestige_first: 'First Reset',
+  prestige_node_first: 'Branching Out',
+  prestige_path_complete: 'End of the Line',
+  prestige_tree_one: 'Mastered',
+  prestige_all_1: 'Clean Slate',
+  prestige_all_3: 'True Prestige',
+  town_first_upgrade: 'First Renovation',
+  town_all_tier1: 'Town Improver',
+  town_one_maxed: 'Master Builder',
+  town_all_maxed: 'Town of Legend',
+  tower_first_floor: 'First Step',
+  tower_floor_10: 'Tower Initiate',
+  tower_floor_50: 'Climbing Higher',
+  tower_floor_100: 'Century Climber',
+  tower_floor_250: 'Void Conqueror',
+  tower_all_milestones: 'Tower Legend',
+};
 
 export async function computeAchievements(
   playerState: PlayerState,
@@ -18,25 +60,15 @@ export async function computeAchievements(
   const towerMilestones = (raw.flags.tower_milestones as unknown[] | undefined) ?? [];
   const prestigeNodes = (raw.flags.prestige_nodes ?? {}) as Record<string, string[]>;
   const anyNodeOwned = Object.values(prestigeNodes).some((v) => v.length > 0);
-  const townKeys = [
-    'inn',
-    'guild_hall',
-    'church',
-    'fairgrounds',
-    'garden',
-    'queue_master',
-    'cape_rack',
-    'artisans_workshop',
-    'chronos_spire',
-  ];
+  const buildings = Object.values(await getBuildings());
 
   const bestSkillLevel = Math.max(0, ...SKILL_IDS.map((s) => levels[s] ?? 1));
   const skillsAt99 = SKILL_IDS.filter((s) => (levels[s] ?? 1) >= 99).length;
   const skillsPrestigedOnce = SKILL_IDS.filter((s) => (prestige[s] ?? 0) >= 1).length;
   const skillsPrestiged3x = SKILL_IDS.filter((s) => (prestige[s] ?? 0) >= 3).length;
   const nodesOwned = Object.values(prestigeNodes).reduce((sum, v) => sum + v.length, 0);
-  const townsUpgraded = townKeys.filter((k) => (townTiers[k] ?? 0) >= 1).length;
-  const townsMaxed = townKeys.filter((k) => (townTiers[k] ?? 0) >= 3).length;
+  const townsUpgraded = buildings.filter((b) => (townTiers[b.key] ?? 0) >= 1).length;
+  const townsMaxed = buildings.filter((b) => (townTiers[b.key] ?? 0) >= b.tiers.length).length;
 
   const prestigeTrees = await getPrestigePaths();
   const isEligiblePath = (pathKey: string) => !pathKey.startsWith('race_') || pathKey === `race_${playerState.race}`;
@@ -207,8 +239,8 @@ export async function computeAchievements(
     {
       id: 'town_all_tier1',
       label: 'Upgrade every town building at least once',
-      done: townsUpgraded >= townKeys.length,
-      detail: `${townsUpgraded} / ${townKeys.length}`,
+      done: townsUpgraded >= buildings.length,
+      detail: `${townsUpgraded} / ${buildings.length}`,
     },
     {
       id: 'town_one_maxed',
@@ -219,8 +251,8 @@ export async function computeAchievements(
     {
       id: 'town_all_maxed',
       label: 'Max every town building',
-      done: townsMaxed >= townKeys.length,
-      detail: `${townsMaxed} / ${townKeys.length}`,
+      done: townsMaxed >= buildings.length,
+      detail: `${townsMaxed} / ${buildings.length}`,
     },
     {
       id: 'tower_first_floor',
@@ -266,6 +298,11 @@ export async function computeAchievements(
     points: achievements.filter((i) => i.done).length,
     max: achievements.length,
     hasDrilldown: true,
-    items: achievements,
+    items: achievements.map((a) => ({
+      id: a.id,
+      label: ACHIEVEMENT_NAMES[a.id] ?? a.label,
+      done: a.done,
+      detail: a.label,
+    })),
   };
 }

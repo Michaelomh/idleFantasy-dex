@@ -5,9 +5,11 @@ export type ProgressItem = {
   detail?: string;
   section?: string;
   icon?: string;
-  locked?: boolean;
-  stats?: string;
   realm?: 'mainland' | 'elder';
+  level?: number;
+  current?: number;
+  cap?: number;
+  kills?: number;
 };
 
 export type ProgressCategory = {

@@ -11,8 +11,10 @@ import { OnboardingPage } from './components/onboarding-page.tsx';
 import { NoSavePage } from './components/no-save-page.tsx';
 import { SettingsPage } from './components/settings-page.tsx';
 import { ProgressOverviewPage } from './components/progress/progress-overview-page.tsx';
-import { ProgressCategoryPage } from './components/progress/category-page.tsx';
-import { BossDetailPage } from './components/progress/boss-detail-page.tsx';
+import { ProgressCategoryAwardPage } from './components/progress/progress-category-award-page.tsx';
+import { ProgressCategorySkillPage } from './components/progress/progress-category-skill-page.tsx';
+import { ProgressCategoryCombatPage } from './components/progress/progress-category-combat-page.tsx';
+import { ProgressCategoryCollectionPage } from './components/progress/progress-category-collection-page.tsx';
 import { CalculatorOverviewPage } from './components/calculator/calculator-overview-page.tsx';
 import { CalculatorSkillPage } from './components/calculator/calculator-skill-page.tsx';
 import { SimulatorOverviewPage } from './components/simulator/simulator-overview-page.tsx';
@@ -22,21 +24,6 @@ import { NotFoundPage } from './components/not-found-page.tsx';
 import { ROUTES } from './lib/app/routes.ts';
 import { ReloadPrompt } from './components/reload-prompt.tsx';
 import { Toaster } from './components/ui/sonner.tsx';
-
-const PROGRESS_CATEGORY_PATHS = new Set([
-  '/progress/quests',
-  '/progress/guilds',
-  '/progress/bosses',
-  '/progress/armoury',
-  '/progress/levels',
-  '/progress/pets',
-  '/progress/titles',
-  '/progress/expeditions',
-  '/progress/achievements',
-  '/progress/bestiary',
-  '/progress/inventory',
-  '/progress/heirloom-tools',
-]);
 
 const CALCULATOR_SKILL_PATHS = new Set([
   '/calculator/mining',
@@ -61,7 +48,18 @@ const ROUTE_OVERRIDES: Record<string, RouteObject['element']> = {
   '/no-save': <NoSavePage />,
   '/settings': <SettingsPage />,
   '/progress': <ProgressOverviewPage />,
-  '/progress/bosses/:bossId': <BossDetailPage />,
+  '/progress/levels': <ProgressCategorySkillPage />,
+  '/progress/guilds': <ProgressCategorySkillPage />,
+  '/progress/bosses': <ProgressCategoryCombatPage />,
+  '/progress/bestiary': <ProgressCategoryCombatPage />,
+  '/progress/armoury': <ProgressCategoryCollectionPage />,
+  '/progress/inventory': <ProgressCategoryCollectionPage />,
+  '/progress/pets': <ProgressCategoryCollectionPage />,
+  '/progress/heirloom-tools': <ProgressCategoryCollectionPage />,
+  '/progress/expeditions': <ProgressCategoryCollectionPage />,
+  '/progress/quests': <ProgressCategoryAwardPage />,
+  '/progress/achievements': <ProgressCategoryAwardPage />,
+  '/progress/titles': <ProgressCategoryAwardPage />,
   '/calculator': <CalculatorOverviewPage />,
   '/simulator': <SimulatorOverviewPage />,
   '/simulator/bosses': <SimulatorBossListPage />,
@@ -76,13 +74,7 @@ const routes: RouteObject[] = [
       if (route.path === '/') return { index: true, element: <DashboardPage /> };
       const element =
         ROUTE_OVERRIDES[route.path] ??
-        (PROGRESS_CATEGORY_PATHS.has(route.path) ? (
-          <ProgressCategoryPage />
-        ) : CALCULATOR_SKILL_PATHS.has(route.path) ? (
-          <CalculatorSkillPage />
-        ) : (
-          <RoutePage />
-        ));
+        (CALCULATOR_SKILL_PATHS.has(route.path) ? <CalculatorSkillPage /> : <RoutePage />);
       return { path: route.path.slice(1), element };
     }).concat({ path: '*', element: <NotFoundPage /> }),
   },

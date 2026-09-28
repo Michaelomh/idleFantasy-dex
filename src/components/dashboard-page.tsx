@@ -168,7 +168,7 @@ export function DashboardPage() {
 
       <CircularProgress value={completion ?? 0} size={280} strokeWidth={18} className="self-center">
         <span className="num-xl text-5xl">{completion != null ? `${completion.toFixed(1)}%` : '—'}</span>
-        <span className="label mt-1 text-text-secondary">Completion</span>
+        <span className="label mt-1 text-text-secondary">Overall Progress</span>
       </CircularProgress>
 
       <div className="flex flex-col items-center gap-1 text-center">
