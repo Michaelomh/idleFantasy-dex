@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, OctagonX } from 'lucide-react';
 import { SKILLS, CATEGORY_ORDER } from '@/lib/game/skills';
 import { skillIcon } from '@/lib/game/skill-icons';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { getPrestigePaths, type PrestigeSkillPaths } from '@/lib/progress/game-data';
+import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { SkillStatRow } from '@/components/skill-stat-row';
+import { WIP_MESSAGE } from '@/components/status-notice';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const CALCULATOR_SKILL_IDS = new Set(
   SKILLS.filter((s) => s.category === 'Gathering' || s.category === 'Crafting').map((s) => s.id),
@@ -37,6 +41,7 @@ export function CalculatorOverviewPage() {
   const navigate = useNavigate();
   const playerState = usePlayerState();
   const [prestigeTrees, setPrestigeTrees] = useState<Map<string, PrestigeSkillPaths> | null>(null);
+  const [includeElderIsle] = useIncludeElderIsle();
 
   useEffect(() => {
     void getPrestigePaths().then((trees) => setPrestigeTrees(new Map(trees.map((t) => [t.skill, t]))));
@@ -45,6 +50,25 @@ export function CalculatorOverviewPage() {
   return (
     <div className="flex flex-col gap-4 p-4">
       <h1 className="h1">Calculator</h1>
+
+      {includeElderIsle && (
+        <Tabs value="mainland">
+          <TabsList className="h-10 w-full">
+            <TabsTrigger value="mainland" className="capitalize">
+              Mainland
+            </TabsTrigger>
+            {/* Not selectable yet - the fixed Tabs value keeps it inactive; tapping explains why. */}
+            <Popover>
+              <PopoverTrigger render={<TabsTrigger value="elder" className="capitalize opacity-50" />}>
+                Elder Isle
+                <OctagonX className="text-destructive" />
+              </PopoverTrigger>
+              <PopoverContent>{WIP_MESSAGE}</PopoverContent>
+            </Popover>
+          </TabsList>
+        </Tabs>
+      )}
+
       {CATEGORY_ORDER.filter((category) => category !== 'Combat').map((category) => {
         const skills = SKILLS.filter((s) => s.category === category && CALCULATOR_SKILL_IDS.has(s.id));
         if (skills.length === 0) return null;

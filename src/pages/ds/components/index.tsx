@@ -5,7 +5,6 @@ import { Link } from 'react-router';
 import { Badge, type BadgeVariant } from '@/components/badge';
 import { Banner } from '@/components/banner';
 import { FloatingNavBar } from '@/components/floating-nav-bar';
-import { GoalCard } from '@/components/goal-card';
 import { GoalDetailHeader, TopStatusBar } from '@/components/headers';
 import { SkillRow } from '@/components/skill-row';
 import { Button } from '@/components/ui/button';
@@ -81,14 +80,6 @@ export function Component() {
           {(['kill-tracking', 'item-tracking', 'version-unknown'] as BadgeVariant[]).map((variant) => (
             <Badge key={variant} variant={variant} onClick={() => {}} />
           ))}
-        </div>
-      </Section>
-
-      <Section title="Goal card">
-        <div className="flex max-w-sm flex-col gap-3">
-          <GoalCard name="Quests" current={142} total={189} onClick={() => {}} />
-          <GoalCard name="Armoury" current={358} total={358} onClick={() => {}} />
-          <GoalCard name="Guilds" current={20} total={200} onClick={() => {}} />
         </div>
       </Section>
 

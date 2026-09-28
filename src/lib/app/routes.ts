@@ -30,7 +30,6 @@ export const ROUTES: RouteMeta[] = [
   { path: '/progress/bestiary', title: 'Bestiary', parent: '/progress', dockTab: 1 },
   { path: '/progress/inventory', title: 'Inventory', parent: '/progress', dockTab: 1 },
   { path: '/progress/heirloom-tools', title: 'Heirloom Tools', parent: '/progress', dockTab: 1 },
-  { path: '/progress/bosses/:bossId', title: 'Boss', parent: '/progress/bosses', dockTab: 1 },
 
   { path: '/simulator', title: 'Simulator', parent: null, dockTab: 2 },
   { path: '/simulator/bosses', title: 'Bosses', parent: '/simulator', dockTab: 2 },

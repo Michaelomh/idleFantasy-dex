@@ -4,6 +4,7 @@ import { getBosses, sortBossesForDisplay, type BossEntry } from '@/lib/progress/
 import { LoadingScreen } from '@/components/loading-screen';
 import { ELDER_ISLE_BOSS_IDS } from '@/lib/game/elder-isle';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
+import { ElderIsleBadge } from '@/components/elder-isle-badge';
 
 function BossRow({ boss, onSelect }: { boss: BossEntry; onSelect: () => void }) {
   return (
@@ -12,11 +13,8 @@ function BossRow({ boss, onSelect }: { boss: BossEntry; onSelect: () => void }) 
       onClick={onSelect}
       className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-left hover:bg-card"
     >
-      <span className="text-xl">{boss.emoji}</span>
       <span className="body flex-1">{boss.display_name}</span>
-      {ELDER_ISLE_BOSS_IDS.has(boss.id) && (
-        <span className="label rounded-full border border-border px-2 py-0.5 text-text-secondary">Elder Isle</span>
-      )}
+      {ELDER_ISLE_BOSS_IDS.has(boss.id) && <ElderIsleBadge label="Elder Isle Boss" />}
     </button>
   );
 }
