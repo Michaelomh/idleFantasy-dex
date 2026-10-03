@@ -66,12 +66,14 @@ function elderQuestItems(ps: PlayerState): ProgressItem[] {
 async function computeQuests(ps: PlayerState): Promise<ProgressCategory> {
   const quests = await getQuests();
   const completedIds = new Set(ps.raw.questProgress.filter((q) => q.completed).map((q) => q.questId));
-  const items: ProgressItem[] = Object.values(quests).map((q) => ({
-    id: q.id,
-    label: q.name,
-    done: completedIds.has(q.id),
-    detail: q.description,
-  }));
+  const items: ProgressItem[] = Object.values(quests)
+    .filter((q) => !q.requires_previous || completedIds.has(q.requires_previous) || completedIds.has(q.id))
+    .map((q) => ({
+      id: q.id,
+      label: q.name,
+      done: completedIds.has(q.id),
+      detail: q.description,
+    }));
   if (getIncludeElderIsle()) items.push(...elderQuestItems(ps));
   return {
     id: 'quests',
@@ -137,11 +139,13 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
   };
 }
 
+const formatOneIn = (chance?: number) => (chance ? `1/${formatNumber(Math.round(1 / chance))}` : '-');
+
 async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
   const bosses = await getBosses();
   const enemyKills = (ps.raw.flags.enemy_kills ?? {}) as Record<string, number>;
   const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
-
+  const ownedPets = new Set(ps.raw.pets.map((p) => p.id));
   const includeElderIsle = getIncludeElderIsle();
 
   let points = 0;
@@ -163,6 +167,24 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
         kills,
         current: dropsOwned,
         cap: drops.length,
+        drops: [
+          ...drops.map((d) => ({
+            id: d.item,
+            label: humanize(d.item),
+            chance: formatOneIn(d.chance),
+            obtained: seenItems.has(d.item),
+          })),
+          ...(boss.pet
+            ? [
+                {
+                  id: boss.pet.id,
+                  label: boss.pet.display_name,
+                  chance: formatOneIn(boss.pet.chance),
+                  obtained: ownedPets.has(boss.pet.id),
+                },
+              ]
+            : []),
+        ],
       };
     })
     .sort((a, b) => (a.section === b.section ? 0 : a.section === 'Solo' ? -1 : 1));
@@ -170,7 +192,20 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
   return { id: 'bosses', label: 'Bosses', points, max, hasDrilldown: true, items };
 }
 
-const ARMOURY_STYLE_ORDER = ['attack', 'strength', 'ranged', 'magic'] as const;
+const ARMOURY_GROUPS: Record<string, string[]> = {
+  Weapons: ['attack', 'strength', 'ranged', 'magic'],
+  Armour: ['head', 'body', 'legs', 'boots', 'shield'],
+  Accessories: ['cape', 'necklace', 'ring', 'signet'],
+  Tools: ['pickaxe', 'axe', 'fishing_rod', 'hoe', 'hammer', 'tinderbox', 'frying_pan', 'grappling_hook', 'lockpick'],
+};
+const ARMOURY_GROUP_ORDER = Object.keys(ARMOURY_GROUPS);
+
+// Weapons are split by combat style; everything else by slot. Unknown slots fall into Tools.
+function armouryPlacement(eq: EquipmentEntry): { group: string; sectionKey: string } {
+  const sectionKey = eq.slot === 'weapon' ? (eq.combat_style ?? 'weapon') : (eq.slot ?? 'other');
+  const group = ARMOURY_GROUP_ORDER.find((g) => ARMOURY_GROUPS[g].includes(sectionKey)) ?? 'Tools';
+  return { group, sectionKey };
+}
 const ARMOURY_STAT_LABELS: [keyof EquipmentEntry, string][] = [
   ['attack_bonus', 'ATK'],
   ['strength_bonus', 'STR'],
@@ -190,24 +225,33 @@ function armouryStats(eq: EquipmentEntry): string | undefined {
 
 async function computeArmoury(ps: PlayerState): Promise<ProgressCategory> {
   const equipment = await getEquipment();
-  const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
+  // The game counts held items too; `seen_item_keys` alone misses some owned ones.
+  const seenItems = new Set([
+    ...((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []),
+    ...Object.entries(ps.raw.inventory)
+      .filter(([, qty]) => qty > 0)
+      .map(([key]) => key),
+    ...Object.values(ps.raw.equipped ?? {}).filter((v): v is string => typeof v === 'string'),
+  ]);
   const includeElderIsle = getIncludeElderIsle();
   const items: ProgressItem[] = Object.entries(equipment)
     .filter(([key]) => includeElderIsle || !ELDER_ISLE_IDS.has(key))
-    .map(([key, eq]) => ({
-      id: key,
-      label: eq.display_name ?? humanize(key),
-      done: seenItems.has(key),
-      detail: armouryStats(eq),
-      section: eq.combat_style ? humanize(eq.combat_style) : 'Other',
-    }))
-    .sort((a, b) => {
-      const styleIndex = (s: string) => {
-        const i = ARMOURY_STYLE_ORDER.indexOf(s.toLowerCase() as (typeof ARMOURY_STYLE_ORDER)[number]);
-        return i === -1 ? ARMOURY_STYLE_ORDER.length : i;
+    .map(([key, eq]) => {
+      const { group, sectionKey } = armouryPlacement(eq);
+      return {
+        item: {
+          id: key,
+          label: eq.display_name ?? humanize(key),
+          done: seenItems.has(key),
+          detail: armouryStats(eq),
+          group,
+          section: humanize(sectionKey),
+        } satisfies ProgressItem,
+        order: ARMOURY_GROUP_ORDER.indexOf(group) * 100 + Math.max(0, ARMOURY_GROUPS[group].indexOf(sectionKey)),
       };
-      return styleIndex(a.section!) - styleIndex(b.section!);
-    });
+    })
+    .sort((a, b) => a.order - b.order)
+    .map(({ item }) => item);
   return {
     id: 'armoury',
     label: 'Armoury',
@@ -641,6 +685,8 @@ export const PROGRESS_SECTIONS: { label: string; categoryIds: (typeof CATEGORY_I
 export async function computeAllCategories(ps: PlayerState): Promise<ProgressCategory[]> {
   const [quests, pets] = await Promise.all([getQuests(), getPets()]);
   const totalQuests = Object.keys(quests).length;
+  // Save rows also include guild quests; the game only counts ones in quests.json.
+  const questsCompleted = ps.raw.questProgress.filter((q) => q.completed && q.questId in quests).length;
   const totalPets = Object.keys(pets).length;
 
   const results = await Promise.all([
@@ -655,7 +701,7 @@ export async function computeAllCategories(ps: PlayerState): Promise<ProgressCat
     computeBuilderWorkshop(ps),
     Promise.resolve(computeGrandMonument(ps)),
     Promise.resolve(computeExpeditions(ps)),
-    computeAchievements(ps, totalQuests, totalPets),
+    computeAchievements(ps, questsCompleted, totalQuests, totalPets),
     computeBestiary(ps),
     Promise.resolve(computeInfinityTower(ps)),
     computeInventory(ps),

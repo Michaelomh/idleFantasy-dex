@@ -11,6 +11,7 @@ import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { LoadingScreen } from '@/components/loading-screen';
 import { ProgressCategoryHeader } from '@/components/progress/progress-category-header';
 import { CollectionRow } from '@/components/progress/collection-row';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 const EMPTY_MESSAGES: Partial<Record<Filter, string>> = {
   done: 'Nothing done yet. 😢',
@@ -20,6 +21,8 @@ const EMPTY_MESSAGES: Partial<Record<Filter, string>> = {
 function emptyMessage(filter: Filter, query: string): string {
   return query ? 'No matches found.' : (EMPTY_MESSAGES[filter] ?? 'Nothing here yet.');
 }
+
+const ALL_GROUPS = 'All';
 
 const FRACTION_CAPTIONS: Record<string, string> = { expeditions: 'Notes' };
 
@@ -33,6 +36,7 @@ export function ProgressCategoryCollectionPage() {
   const [category, setCategory] = useState<ProgressCategory | null>(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>(getDefaultFilter);
+  const [group, setGroup] = useState(ALL_GROUPS);
 
   useEffect(() => {
     if (!playerState) return;
@@ -50,10 +54,16 @@ export function ProgressCategoryCollectionPage() {
     return category.items.filter((item) => {
       if (filter === 'done' && !item.done) return false;
       if (filter === 'missing' && item.done) return false;
+      if (group !== ALL_GROUPS && item.group !== group) return false;
       if (query && !item.label.toLowerCase().includes(query.toLowerCase())) return false;
       return true;
     });
-  }, [category, filter, query]);
+  }, [category, filter, query, group]);
+
+  const groups = useMemo(() => {
+    if (!category) return [];
+    return [...new Set(category.items.map((i) => i.group).filter((g): g is string => !!g))];
+  }, [category]);
 
   const sectionGroups = useMemo(() => {
     const map = new Map<string, ProgressItem[]>();
@@ -102,7 +112,29 @@ export function ProgressCategoryCollectionPage() {
         onQueryChange={setQuery}
         filter={filter}
         onFilterChange={setFilter}
-      />
+      >
+        {groups.length > 0 && (
+          <ToggleGroup
+            value={[group]}
+            onValueChange={(values) => {
+              const next = values[0];
+              if (next) setGroup(next);
+            }}
+            className="-mx-4 w-auto scrollbar-none justify-start gap-1 overflow-x-auto px-4 [&::-webkit-scrollbar]:hidden"
+          >
+            {[ALL_GROUPS, ...groups].map((g) => (
+              <ToggleGroupItem
+                key={g}
+                value={g}
+                size="sm"
+                className="h-8 shrink-0 rounded-full border border-border px-3 font-bold text-text-secondary data-pressed:bg-primary data-pressed:text-primary-foreground"
+              >
+                {g}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
+      </ProgressCategoryHeader>
 
       <div className="flex flex-col gap-6 p-4">
         {category.id === 'armoury' ? (

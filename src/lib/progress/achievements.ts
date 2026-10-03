@@ -48,10 +48,11 @@ const ACHIEVEMENT_NAMES: Record<string, string> = {
 
 export async function computeAchievements(
   playerState: PlayerState,
+  questsCompleted: number,
   totalQuests: number,
   totalPets: number,
 ): Promise<ProgressCategory> {
-  const { raw, totalLevel, combatLevel, questsCompleted } = playerState;
+  const { raw, totalLevel, combatLevel } = playerState;
   const levels = raw.skillLevels;
   const prestige = (raw.flags.skill_prestige ?? {}) as Record<string, number>;
   const petsOwned = raw.pets.length;

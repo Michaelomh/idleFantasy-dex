@@ -34,6 +34,7 @@ export function ProgressCategoryCombatPage() {
   const [category, setCategory] = useState<ProgressCategory | null>(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>(getDefaultFilter);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!playerState) return;
@@ -114,6 +115,9 @@ export function ProgressCategoryCombatPage() {
                   cap={item.cap}
                   done={item.done}
                   muted={(item.kills ?? 0) === 0}
+                  drops={item.drops}
+                  expanded={expandedId === item.id}
+                  onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
                 />
               ))}
             </div>

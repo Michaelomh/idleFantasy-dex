@@ -30,6 +30,7 @@ export type QuestEntry = {
   name: string;
   skill?: string;
   tier?: number;
+  requires_previous?: string | null;
   description?: string;
   amount?: number;
 };
@@ -48,12 +49,10 @@ export type BossEntry = {
   defensive_stats?: Record<string, number>;
   xp_rewards?: Record<string, number>;
   rare_drops?: { item: string; chance?: number; comment?: string }[];
+  pet?: { id: string; display_name: string; chance?: number };
   common_loot?: { coins_min?: number; coins_max?: number; items?: Record<string, { min: number; max: number }> };
-  /** Gated behind Grand Monument patronage rather than combat level, e.g. "Only patrons of the Grand Monument may face it." */
   requires_monument?: boolean;
-  /** Gated behind having built the Dock (see town_building_tiers.dock in the save). */
   requires_dock?: boolean;
-  /** Gated behind total skill level; 0 means no gate. */
   total_level_required?: number;
 };
 export const getBosses = () => load<Record<string, BossEntry>>('raid_bosses.json');
