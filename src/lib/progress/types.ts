@@ -3,6 +3,7 @@ export type ProgressItem = {
   label: string;
   done: boolean;
   detail?: string;
+  group?: string;
   section?: string;
   icon?: string;
   realm?: 'mainland' | 'elder';
@@ -10,6 +11,14 @@ export type ProgressItem = {
   current?: number;
   cap?: number;
   kills?: number;
+  drops?: ProgressDrop[];
+};
+
+export type ProgressDrop = {
+  id: string;
+  label: string;
+  chance: string;
+  obtained: boolean;
 };
 
 export type ProgressCategory = {
