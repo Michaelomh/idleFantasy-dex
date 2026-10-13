@@ -12,7 +12,7 @@ import {
 import { SESSION_FRAMES, expectedAndChance, gatheringFrameXpTotal } from '../frame-roll';
 import type { CalculatorInputs, SessionResult } from '../types';
 
-function tierFor(level: number, tiers: Record<string, unknown>): string {
+export function tierFor(level: number, tiers: Record<string, unknown>): string {
   const keys = Object.keys(tiers)
     .map(Number)
     .filter((n) => n <= level)
