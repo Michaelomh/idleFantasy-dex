@@ -33,7 +33,7 @@ const showExperimentalListeners = new Set<() => void>();
 
 export function getShowExperimental(): boolean {
   try {
-    return window.localStorage.getItem(SHOW_EXPERIMENTAL_KEY) === '1';
+    return window.localStorage.getItem(SHOW_EXPERIMENTAL_KEY) === 'true';
   } catch {
     return false;
   }
@@ -41,7 +41,7 @@ export function getShowExperimental(): boolean {
 
 export function setShowExperimental(show: boolean) {
   try {
-    if (show) window.localStorage.setItem(SHOW_EXPERIMENTAL_KEY, '1');
+    if (show) window.localStorage.setItem(SHOW_EXPERIMENTAL_KEY, 'true');
     else window.localStorage.removeItem(SHOW_EXPERIMENTAL_KEY);
   } catch {
     /* localStorage unavailable (private mode, etc.) - falls back to "hidden" next load */
@@ -59,7 +59,7 @@ const includeElderIsleListeners = new Set<() => void>();
 
 export function getIncludeElderIsle(): boolean {
   try {
-    return window.localStorage.getItem(INCLUDE_ELDER_ISLE_KEY) === '1';
+    return window.localStorage.getItem(INCLUDE_ELDER_ISLE_KEY) === 'true';
   } catch {
     return false;
   }
@@ -67,7 +67,7 @@ export function getIncludeElderIsle(): boolean {
 
 export function setIncludeElderIsle(include: boolean) {
   try {
-    if (include) window.localStorage.setItem(INCLUDE_ELDER_ISLE_KEY, '1');
+    if (include) window.localStorage.setItem(INCLUDE_ELDER_ISLE_KEY, 'true');
     else window.localStorage.removeItem(INCLUDE_ELDER_ISLE_KEY);
   } catch {
     /* localStorage unavailable (private mode, etc.) - falls back to "excluded" next load */

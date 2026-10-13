@@ -57,13 +57,6 @@ const routes: RouteObject[] = [
       return { path: route.path.slice(1), element };
     }).concat({ path: '*', element: <NotFoundPage /> }),
   },
-  // only for dev - design system overview
-  ...(import.meta.env.DEV
-    ? [
-        { path: '/ds/foundations', lazy: () => import('./pages/ds/foundations/index.tsx') },
-        { path: '/ds/components', lazy: () => import('./pages/ds/components/index.tsx') },
-      ]
-    : []),
 ];
 
 const router = createHashRouter(routes);

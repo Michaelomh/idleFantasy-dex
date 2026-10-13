@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, RefreshCw } from 'lucide-react';
+import { ChevronDown, Clock, RefreshCw } from 'lucide-react';
 import { cn } from 'cn';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { resolveAllSkillBonuses, type SkillBonus } from '@/lib/bonuses';
@@ -153,6 +153,7 @@ export function DashboardPage() {
       {showStaleBanner && (
         <Banner
           tone={stale.type as 'aging' | 'stale'}
+          icon={<Clock className={`size-4 shrink-0 ${stale.type === 'stale' ? 'text-stale' : 'text-aging'}`} />}
           className="mx-0 my-0"
           title={`Save is ${staleDays} ${staleDays === 1 ? 'day' : 'days'} old`}
           description="These numbers can differ from your game."
