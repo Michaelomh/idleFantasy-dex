@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowRight, FolderOpen, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button.tsx';
+import { InstallNotice } from './install-notice.tsx';
 import {
   getDirectoryHandle,
   ingestManualUpload,
@@ -97,11 +98,13 @@ export function OnboardingPage() {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-between px-6 pt-4 text-center">
-      <div className="flex flex-col items-center gap-2 pt-32">
+      <div className="flex flex-col items-center gap-2 pt-12">
         <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" className="size-20" />
         <h1 className="h1">IdleFantasy-Dex</h1>
         <p className="body text-text-secondary">Dashboard for tracking your IdleFantasy progress.</p>
       </div>
+
+      <InstallNotice />
 
       <div className="w-full">
         {error && <p className="body mb-2 text-destructive">{error}</p>}

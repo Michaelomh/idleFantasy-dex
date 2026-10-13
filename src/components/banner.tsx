@@ -25,7 +25,13 @@ export function Banner({
   className?: string;
 }) {
   return (
-    <div className={cn('mx-4 my-4 flex items-center gap-3 rounded-card border p-4', TONE_STYLES[tone], className)}>
+    <div
+      className={cn(
+        'mx-4 my-4 flex items-center gap-3 rounded-card border p-4 not-first:mt-0',
+        TONE_STYLES[tone],
+        className,
+      )}
+    >
       {icon}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="body font-bold text-white">{title}</span>

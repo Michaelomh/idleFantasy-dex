@@ -5,11 +5,13 @@ import { Calculator, House, Settings, Swords, TrendingUp } from 'lucide-react';
 import { FloatingNavBar } from './floating-nav-bar.tsx';
 import { ExploreBanner } from './explore-banner.tsx';
 import { DesktopNoticeBanner } from './desktop-notice-banner.tsx';
+import { InstallBanner } from './install-banner.tsx';
 import { DOCK_TABS, matchRoute } from '@/lib/app/routes.ts';
 import { resolveBootState, type BootState } from '@/lib/app/boot-state.ts';
 import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
 
 const PRE_BOOT_PATHS = new Set(['/welcome', '/onboarding', '/no-save']);
+const INSTALL_NOTICE_PATHS = new Set(['/welcome', '/onboarding']);
 const EXPERIMENTAL_DOCK_PATHS = new Set(['/calculator', '/simulator']);
 
 const DOCK_ICONS = [
@@ -100,6 +102,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col pb-24">
       <DesktopNoticeBanner />
+      {!INSTALL_NOTICE_PATHS.has(location.pathname) && <InstallBanner />}
       {bootState === 'explore' && <ExploreBanner />}
       <ScrollRestoration getKey={(location) => location.pathname} />
       <div className="flex flex-1 flex-col">

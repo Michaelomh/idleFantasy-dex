@@ -18,11 +18,11 @@ export function clearSelectedSlot(): void {
 }
 
 export function isExploring(): boolean {
-  return localStorage.getItem(EXPLORE_KEY) === '1';
+  return localStorage.getItem(EXPLORE_KEY) === 'true';
 }
 
 export function setExplore(): void {
-  localStorage.setItem(EXPLORE_KEY, '1');
+  localStorage.setItem(EXPLORE_KEY, 'true');
 }
 
 export function clearExplore(): void {

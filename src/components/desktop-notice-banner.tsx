@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import { Banner } from './banner.tsx';
 import { useLocalStorage } from '@/lib/hooks/use-local-storage';
 
-const DISMISSED_KEY = 'desktop-notice-dismissed';
+const DISMISSED_KEY = 'idlefantasy-dex:desktop-notice-dismissed';
 
 export function DesktopNoticeBanner() {
   const [dismissed, setDismissed] = useLocalStorage(DISMISSED_KEY, 'false');
