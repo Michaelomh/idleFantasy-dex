@@ -14,6 +14,7 @@ import {
 } from './game-data';
 import type { TargetOption } from './types';
 import { ELDER_ISLE_IDS } from '@/lib/game/elder-isle';
+import { elderLevel } from './elder-isle';
 
 const SMITHING_TIERS = ['runite', 'adamantite', 'mithril', 'steel', 'iron', 'bronze', 'platinum', 'gold', 'silver'];
 
@@ -237,4 +238,28 @@ export async function targetsForSkill(skillId: string, playerState: PlayerState)
 export function ashCatalystOptions(playerState: PlayerState): string[] {
   const ashKeys = ['ashes', 'oak_ashes', 'willow_ashes', 'maple_ashes', 'yew_ashes', 'magic_ashes', 'redwood_ashes'];
   return ashKeys.filter((k) => (playerState.raw.inventory[k] ?? 0) > 0);
+}
+
+function onlyElderIsle<T extends [string, unknown]>(entries: T[]): T[] {
+  return entries.filter(([key]) => ELDER_ISLE_IDS.has(key));
+}
+
+export async function elderTargetsForSkill(skillId: string, playerState: PlayerState): Promise<TargetOption[]> {
+  const level = elderLevel(playerState, skillId);
+
+  switch (skillId) {
+    case 'mining':
+      return toOptions(onlyElderIsle(Object.entries(await getOreEntries())), level);
+    case 'fishing':
+      return toOptions(onlyElderIsle(Object.entries(await getFishEntries())), level);
+    case 'woodcutting':
+      return toOptions(onlyElderIsle(Object.entries(await getTrees())), level);
+    case 'agility':
+      return toOptions(onlyElderIsle(Object.entries(await getAgilityCourses())), level);
+    case 'smithing':
+    case 'cooking':
+      return toOptions(onlyElderIsle(Object.entries(await getRecipes(skillId))), level);
+    default:
+      return [];
+  }
 }

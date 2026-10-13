@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, OctagonX } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { SKILLS, CATEGORY_ORDER } from '@/lib/game/skills';
 import { skillIcon } from '@/lib/game/skill-icons';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { getPrestigePaths, type PrestigeSkillPaths } from '@/lib/progress/game-data';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
+import { useSessionStorage } from '@/lib/hooks/use-session-storage';
+import { elderLevel } from '@/lib/calculator/elder-isle';
 import { SkillStatRow } from '@/components/skill-stat-row';
-import { WIP_MESSAGE } from '@/components/status-notice';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const CALCULATOR_SKILL_IDS = new Set(
   SKILLS.filter((s) => s.category === 'Gathering' || s.category === 'Crafting').map((s) => s.id),
 ).add('agility');
+
+/** Elder Isle's non-combat skills; the combat ones have no calculator yet. */
+const ELDER_CALCULATOR_SKILL_IDS = new Set(['mining', 'fishing', 'woodcutting', 'smithing', 'cooking', 'agility']);
 
 function skillDescription(
   playerState: ReturnType<typeof usePlayerState>,
@@ -42,6 +45,8 @@ export function CalculatorOverviewPage() {
   const playerState = usePlayerState();
   const [prestigeTrees, setPrestigeTrees] = useState<Map<string, PrestigeSkillPaths> | null>(null);
   const [includeElderIsle] = useIncludeElderIsle();
+  const [storedRegion, setRegion] = useSessionStorage<'mainland' | 'elder'>('calculator:region', 'mainland');
+  const isElder = includeElderIsle && storedRegion === 'elder';
 
   useEffect(() => {
     void getPrestigePaths().then((trees) => setPrestigeTrees(new Map(trees.map((t) => [t.skill, t]))));
@@ -52,25 +57,24 @@ export function CalculatorOverviewPage() {
       <h1 className="h1">Calculator</h1>
 
       {includeElderIsle && (
-        <Tabs value="mainland">
+        <Tabs
+          value={isElder ? 'elder' : 'mainland'}
+          onValueChange={(value) => setRegion(value as 'mainland' | 'elder')}
+        >
           <TabsList className="h-10 w-full">
             <TabsTrigger value="mainland" className="capitalize">
               Mainland
             </TabsTrigger>
-            {/* Not selectable yet - the fixed Tabs value keeps it inactive; tapping explains why. */}
-            <Popover>
-              <PopoverTrigger render={<TabsTrigger value="elder" className="capitalize opacity-50" />}>
-                Elder Isle
-                <OctagonX className="text-destructive" />
-              </PopoverTrigger>
-              <PopoverContent>{WIP_MESSAGE}</PopoverContent>
-            </Popover>
+            <TabsTrigger value="elder" className="capitalize">
+              Elder Isle
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       )}
 
       {CATEGORY_ORDER.filter((category) => category !== 'Combat').map((category) => {
-        const skills = SKILLS.filter((s) => s.category === category && CALCULATOR_SKILL_IDS.has(s.id));
+        const skillIds = isElder ? ELDER_CALCULATOR_SKILL_IDS : CALCULATOR_SKILL_IDS;
+        const skills = SKILLS.filter((s) => s.category === category && skillIds.has(s.id));
         if (skills.length === 0) return null;
 
         return (
@@ -78,7 +82,9 @@ export function CalculatorOverviewPage() {
             <span className="h3">{category}</span>
             <div className="flex flex-col gap-2">
               {skills.map((skill) => {
-                const description = skillDescription(playerState, prestigeTrees, skill.id);
+                const description = isElder
+                  ? playerState && `Level ${elderLevel(playerState, skill.id)}`
+                  : skillDescription(playerState, prestigeTrees, skill.id);
                 return (
                   <SkillStatRow
                     key={skill.id}
@@ -86,7 +92,7 @@ export function CalculatorOverviewPage() {
                     iconClassName="size-8"
                     label={skill.label}
                     description={description}
-                    onClick={() => navigate(`/calculator/${skill.id}`)}
+                    onClick={() => navigate(`/calculator/${isElder ? 'elder-isle/' : ''}${skill.id}`)}
                     right={<ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />}
                   />
                 );

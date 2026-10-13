@@ -48,6 +48,12 @@ export const ROUTES: RouteMeta[] = [
   { path: '/calculator/runecrafting', title: 'Runecrafting', parent: '/calculator' },
   { path: '/calculator/herblore', title: 'Herblore', parent: '/calculator' },
   { path: '/calculator/construction', title: 'Construction', parent: '/calculator' },
+  { path: '/calculator/elder-isle/mining', title: 'Elder Mining', parent: '/calculator' },
+  { path: '/calculator/elder-isle/fishing', title: 'Elder Fishing', parent: '/calculator' },
+  { path: '/calculator/elder-isle/woodcutting', title: 'Elder Woodcutting', parent: '/calculator' },
+  { path: '/calculator/elder-isle/agility', title: 'Elder Agility', parent: '/calculator' },
+  { path: '/calculator/elder-isle/smithing', title: 'Elder Smithing', parent: '/calculator' },
+  { path: '/calculator/elder-isle/cooking', title: 'Elder Cooking', parent: '/calculator' },
 
   { path: '/settings', title: 'Settings', parent: '/' },
   { path: '/welcome', title: 'Welcome', parent: null },

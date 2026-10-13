@@ -6,7 +6,9 @@ import { matchRoute } from '@/lib/app/routes';
 import { SKILLS } from '@/lib/game/skills';
 import {
   SESSION_CALCULATORS,
+  ELDER_SESSION_CALCULATORS,
   targetsForSkill,
+  elderTargetsForSkill,
   ashCatalystOptions,
   skillInputConfig,
   totalPatchCount,
@@ -47,8 +49,11 @@ const MATERIAL_SAVE_PRESTIGE_PATH: Partial<Record<string, { name: string; percen
 
 const MATERIAL_SAVE_SKILLS = ['smithing', 'crafting', 'construction', 'fletching', 'herblore', 'cooking'];
 
-function materialSaveInfo(skillId: string): string | undefined {
+function materialSaveInfo(skillId: string, isElder: boolean): string | undefined {
   if (!MATERIAL_SAVE_SKILLS.includes(skillId)) return undefined;
+  if (isElder) {
+    return "Materials required can be lower due to Artisan's Workshop (every material after the first one in the recipe, up to 15%).";
+  }
   const prestige = MATERIAL_SAVE_PRESTIGE_PATH[skillId];
   return (
     "Materials required can be lower due to Artisan's Workshop (secondary materials, up to 15%)" +
@@ -105,7 +110,8 @@ function BreakdownSection({ title, rows, defaultOpen }: { title: string; rows: M
 export function CalculatorSkillPage() {
   const location = useLocation();
   const match = matchRoute(location.pathname);
-  const skillId = match?.path.replace('/calculator/', '') ?? '';
+  const isElder = match?.path.startsWith('/calculator/elder-isle/') ?? false;
+  const skillId = match?.path.split('/').pop() ?? '';
   const playerState = usePlayerState();
   const [targets, setTargets] = useState<TargetOption[] | null>(null);
   const [targetKey, setTargetKey] = useState('');
@@ -120,14 +126,17 @@ export function CalculatorSkillPage() {
   const [sectionOrder, setSectionOrder] = useState<SectionId[]>(DEFAULT_SECTION_ORDER);
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string | undefined>>({});
   const [persistedInputs, setPersistedInputs] = useSessionStorage<PersistedCalculatorInputs>(
-    `calculator:${skillId}`,
+    `calculator:${isElder ? 'elder-isle:' : ''}${skillId}`,
     {},
   );
   const hydrating = useRef(true);
 
   const config = useMemo(() => skillInputConfig(skillId), [skillId]);
   const isGathering = SKILLS.find((s) => s.id === skillId)?.category === 'Gathering';
-  const filterGroups = useMemo(() => targetFilterGroupsForSkill(skillId, selectedFilters), [skillId, selectedFilters]);
+  const filterGroups = useMemo(
+    () => (isElder ? [] : targetFilterGroupsForSkill(skillId, selectedFilters)),
+    [isElder, skillId, selectedFilters],
+  );
 
   useEffect(() => {
     if (!playerState || !skillId) return;
@@ -135,7 +144,7 @@ export function CalculatorSkillPage() {
     let cancelled = false;
 
     Promise.all([
-      targetsForSkill(skillId, playerState),
+      (isElder ? elderTargetsForSkill : targetsForSkill)(skillId, playerState),
       totalPatchCount(playerState, playerState.raw.skillLevels.farming ?? 1),
       hasCropRotationBonus(playerState),
     ])
@@ -168,7 +177,7 @@ export function CalculatorSkillPage() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skillId, playerState]);
+  }, [isElder, skillId, playerState]);
 
   useEffect(() => {
     if (!skillId || hydrating.current) return;
@@ -181,7 +190,7 @@ export function CalculatorSkillPage() {
       timedBoostsEnabled,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skillId, targetKey, qty, cropCount, ashCatalystKey, cropRotated, timedBoostsEnabled]);
+  }, [isElder, skillId, targetKey, qty, cropCount, ashCatalystKey, cropRotated, timedBoostsEnabled]);
 
   const qtyValid = /^\d+$/.test(qty) && Number(qty) > 0;
 
@@ -211,7 +220,7 @@ export function CalculatorSkillPage() {
 
   useEffect(() => {
     if (!playerState || !inputs) return;
-    const calculate = SESSION_CALCULATORS[skillId];
+    const calculate = (isElder ? ELDER_SESSION_CALCULATORS : SESSION_CALCULATORS)[skillId];
     if (!calculate) return;
     let cancelled = false;
     calculate(playerState, inputs)
@@ -228,7 +237,7 @@ export function CalculatorSkillPage() {
     return () => {
       cancelled = true;
     };
-  }, [playerState, skillId, inputs]);
+  }, [playerState, isElder, skillId, inputs]);
 
   const filteredTargets = useMemo(
     () => applyTargetFilters(targets ?? [], filterGroups, selectedFilters),
@@ -237,7 +246,7 @@ export function CalculatorSkillPage() {
 
   function handleFilterChange(groupId: string, values: string[]) {
     const nextFilters: Record<string, string | undefined> = { ...selectedFilters, [groupId]: values[0] };
-    const nextGroups = targetFilterGroupsForSkill(skillId, nextFilters);
+    const nextGroups = isElder ? [] : targetFilterGroupsForSkill(skillId, nextFilters);
     for (const id of Object.keys(nextFilters)) {
       const group = nextGroups.find((g) => g.id === id);
       const value = nextFilters[id];
@@ -367,19 +376,21 @@ export function CalculatorSkillPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="timed-boosts" className="min-w-0 truncate">
-            Timed Boosts
-          </Label>
-          <Switch id="timed-boosts" checked={timedBoostsEnabled} onCheckedChange={setTimedBoostsEnabled} />
-        </div>
+        {!isElder && (
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor="timed-boosts" className="min-w-0 truncate">
+              Timed Boosts
+            </Label>
+            <Switch id="timed-boosts" checked={timedBoostsEnabled} onCheckedChange={setTimedBoostsEnabled} />
+          </div>
+        )}
 
         {result?.materialsRequired && result.materialsRequired.length > 0 && (
           <div className="flex flex-col items-baseline justify-between gap-2">
             <Label className="body flex min-w-0 items-center gap-1.5 truncate text-white">
               <span className="truncate">Materials required</span>
-              {materialSaveInfo(skillId) && (
-                <StatusNotice variant="info" className="size-3.5" message={materialSaveInfo(skillId)} />
+              {materialSaveInfo(skillId, isElder) && (
+                <StatusNotice variant="info" className="size-3.5" message={materialSaveInfo(skillId, isElder)} />
               )}
             </Label>
             <p className="data">
