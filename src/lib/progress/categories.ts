@@ -361,7 +361,7 @@ async function computePets(ps: PlayerState): Promise<ProgressCategory> {
 }
 
 // Names and unlock requirements copied from the game's res/values/strings.xml
-// (title_<id>_name / title_<id>_requirement), game version 1.15.5.
+// (title_<id>_name / title_<id>_requirement).
 const TITLE_INFO: Record<(typeof CHARACTER_TITLES)[number], { name: string; requirement: string }> = {
   master_smith: { name: 'Master Smith', requirement: 'Complete all Smithing quests' },
   head_chef: { name: 'Head Chef', requirement: 'Complete all Cooking quests' },

@@ -12,8 +12,8 @@ The app fetches them lazily at runtime; they are never bundled and never block f
 
 | | |
 | --- | --- |
-| Game version | 1.15.5 (`version_code` 155000) |
-| Upstream commit | `fa80c8152d805d512a6512dc2afc24cf2e010b2c` |
+| Game version | 1.15.8 (`version_code` 158000) |
+| Upstream commit | `28b97c6ffada68f73238fa456a23901e21bf4c89` |
 
 `manifest.json` is the source of truth: it records the version, the upstream commit, and a
 sha256 for every file.
