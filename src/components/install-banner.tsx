@@ -1,6 +1,6 @@
-import { X } from 'lucide-react';
-import { Banner } from './banner.tsx';
-import { Button } from './ui/button.tsx';
+import { ChevronDown, Info, X } from 'lucide-react';
+import { InstallSteps } from './install-notice.tsx';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useInstallPrompt } from '@/lib/hooks/use-install-prompt';
 import { useLocalStorage } from '@/lib/hooks/use-local-storage';
 
@@ -13,24 +13,25 @@ export function InstallBanner() {
   if (!install || dismissed === 'true') return null;
 
   return (
-    <Banner
-      title="Install IdleFantasy-Dex as an app."
-      description="Opens in its own window and works offline."
-      action={
-        <div className="flex items-center gap-2">
-          <Button variant="text" className="h-7" onClick={install}>
-            Install
-          </Button>
-          <button
-            type="button"
-            aria-label="Dismiss"
-            onClick={() => setDismissed('true')}
-            className="text-notice-text/80 hover:text-notice-text"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-      }
-    />
+    <Collapsible className="mx-4 my-2 flex flex-col gap-2 rounded-card border border-notice-border bg-notice-bg p-4 text-notice-text first:mt-4">
+      <div className="flex items-center gap-3">
+        <CollapsibleTrigger className="group/trigger flex min-w-0 flex-1 items-center gap-3 text-left">
+          <Info className="size-4 shrink-0 text-primary" />
+          <span className="body min-w-0 flex-1 font-bold text-white">Install IdleFantasy-Dex as an app.</span>
+          <ChevronDown className="size-4 shrink-0 text-text-secondary transition-transform group-data-open/trigger:rotate-180" />
+        </CollapsibleTrigger>
+        <button
+          type="button"
+          aria-label="Dismiss"
+          onClick={() => setDismissed('true')}
+          className="shrink-0 text-notice-text/80 hover:text-notice-text"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+      <CollapsibleContent>
+        <InstallSteps />
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

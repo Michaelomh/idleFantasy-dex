@@ -27,7 +27,7 @@ export function Banner({
   return (
     <div
       className={cn(
-        'mx-4 my-4 flex items-center gap-3 rounded-card border p-4 not-first:mt-0',
+        'mx-4 my-2 flex items-center gap-3 rounded-card border p-4 first:mt-4',
         TONE_STYLES[tone],
         className,
       )}

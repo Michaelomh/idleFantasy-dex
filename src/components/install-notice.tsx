@@ -1,8 +1,7 @@
-export function InstallNotice() {
+export function InstallSteps() {
   return (
-    <div className="rounded-card border border-notice-border bg-notice-bg p-4 text-left text-notice-text">
-      <p className="body text-center font-bold text-primary">Recommended: Install the app</p>
-      <p className="body mt-1">
+    <>
+      <p className="body">
         Installing opens the dashboard in its own window, like a normal app, and lets it work offline.
       </p>
       <ul className="body mt-1 list-disc space-y-1 pl-4">
@@ -14,6 +13,15 @@ export function InstallNotice() {
           "Install app".
         </li>
       </ul>
+    </>
+  );
+}
+
+export function InstallNotice() {
+  return (
+    <div className="rounded-card border border-notice-border bg-notice-bg p-4 text-left text-notice-text">
+      <p className="body mb-1 text-center font-bold text-primary">Recommended: Install the app</p>
+      <InstallSteps />
     </div>
   );
 }

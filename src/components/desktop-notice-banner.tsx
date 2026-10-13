@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Smartphone, X } from 'lucide-react';
 import { Banner } from './banner.tsx';
 import { useLocalStorage } from '@/lib/hooks/use-local-storage';
 
@@ -11,6 +11,7 @@ export function DesktopNoticeBanner() {
 
   return (
     <Banner
+      icon={<Smartphone className="size-4 shrink-0 text-primary" />}
       className="hidden md:flex"
       title="This app works best on mobile screens."
       action={
