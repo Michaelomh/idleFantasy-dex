@@ -74,6 +74,12 @@ export default defineConfig(({ command }) => ({
       devOptions: { enabled: false },
     }),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync('./package.json', 'utf8')).version),
+    __GAME_VERSION__: JSON.stringify(
+      JSON.parse(readFileSync('./public/game-data/manifest.json', 'utf8')).game.version_name,
+    ),
+  },
   server: { port: 3000 },
   resolve: {
     alias: { '@': path.resolve(import.meta.dirname, './src') },

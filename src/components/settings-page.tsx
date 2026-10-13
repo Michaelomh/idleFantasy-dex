@@ -18,6 +18,7 @@ import {
   ListFilter,
   FlaskConical,
   Waves,
+  Info,
   type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/lib/hooks/use-theme';
@@ -116,13 +117,12 @@ function AboutLink({
   icon: LucideIcon;
   label: string;
   value: string;
-  href: string;
+  href?: string;
 }) {
+  const Root = href ? 'a' : 'div';
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
+    <Root
+      {...(href && { href, target: '_blank', rel: 'noreferrer' })}
       className="flex items-center justify-between gap-2 rounded-card border border-border bg-card p-4"
     >
       <span className="body flex items-center gap-2">
@@ -131,9 +131,9 @@ function AboutLink({
       </span>
       <span className="data flex items-center gap-1.5 text-text-secondary">
         {value}
-        <ExternalLink className="size-3.5 shrink-0" />
+        {href && <ExternalLink className="size-3.5 shrink-0" />}
       </span>
-    </a>
+    </Root>
   );
 }
 
@@ -501,7 +501,9 @@ export function SettingsPage() {
 
       <div className="flex flex-col gap-2">
         <SectionHeading>About</SectionHeading>
+        <AboutLink icon={Info} label="IdleFantasy-dex Version" value={__APP_VERSION__} />
         <AboutLink icon={Gamepad2} label="Based on" value="IdleFantasy" href={GAME_URL} />
+        <AboutLink icon={RefreshCw} label="Synced to game version" value={__GAME_VERSION__} />
         <AboutLink icon={Code2} label="Source Code" value="Open" href={REPO_URL} />
         <AboutLink icon={ScrollText} label="License" value="GPL-3.0" href={LICENSE_URL} />
       </div>

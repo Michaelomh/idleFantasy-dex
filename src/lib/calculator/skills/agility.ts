@@ -32,7 +32,7 @@ export async function agility(playerState: PlayerState, inputs: CalculatorInputs
   const mods = await resolveModifiers(playerState, 'agility', inputs.timedBoostsEnabled, req);
   const levelDiff = mods.level - req;
   const levelBonusPct = levelDiff * 2;
-  const success = Math.min(0.95, 0.8 + levelDiff * 0.02);
+  const success = Math.min(0.95, Math.max(0, 0.8 + levelDiff * 0.02));
   const uncappedSuccessPct = 80 + levelBonusPct;
 
   const successBreakdown = [

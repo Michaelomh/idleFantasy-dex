@@ -214,12 +214,12 @@ export function simulateFight(
   }
 
   const mercDps = mercenaries.reduce(
-    (sum, _, i) => sum + ((mercMaxHits[i] / 2) * mercHitChances[i]) / BOSS_ATTACK_SPEED_SEC,
+    (sum, _, i) => (mercHp[i] > 0 ? sum + ((mercMaxHits[i] / 2) * mercHitChances[i]) / BOSS_ATTACK_SPEED_SEC : sum),
     0,
   );
-  const partyHp = player.maxHp + mercenaries.reduce((sum, m) => sum + m.hp * 10, 0);
+  const partyHpLeft = playerHp + mercHp.reduce((sum, hp) => sum + Math.max(0, hp), 0);
   const playerDps = ((playerHit / 2) * playerChance) / player.attackSpeedSec + mercDps;
   const bossDps = ((bossHit / 2) * bossChanceVsPlayer) / BOSS_ATTACK_SPEED_SEC;
-  const won = playerDps > 0 && bossDps > 0 ? boss.hp / playerDps <= partyHp / bossDps : playerDps >= bossDps;
+  const won = playerDps > 0 && bossDps > 0 ? bossHp / playerDps <= partyHpLeft / bossDps : playerDps >= bossDps;
   return { won, timedOut: true, timeSeconds: cap, foodEaten, playerHpRemaining: playerHp };
 }

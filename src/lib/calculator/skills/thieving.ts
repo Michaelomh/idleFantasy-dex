@@ -22,15 +22,15 @@ export async function thieving(playerState: PlayerState, inputs: CalculatorInput
 
   const levelDiff = mods.level - npcLevel;
   const levelBonus = levelDiff * 0.02 * lockpickEff;
-  const uncappedSuccess = 0.4 + levelBonus + mods.thievingSuccessBonus;
+  const uncappedSuccess = 0.5 + levelBonus + mods.thievingSuccessBonus;
   const success = Math.min(SUCCESS_MAX, Math.max(SUCCESS_MIN, uncappedSuccess));
 
-  // A failed attempt stuns the next frame, so a run of frames alternates attempt/stun on
-  // failure: expected frames consumed per attempt is 1 + (1 − success).
-  const attempts = SESSION_FRAMES / (2 - success);
+  const attempts = SESSION_FRAMES;
   const expectedSuccesses = attempts * success;
   const petMult = 1 + mods.petBoostPct / 100;
-  const baseXp = (npc?.base_xp ?? 0) * petMult;
+  // Game: floor(floor(base_xp * lockpickEff) * petMult) per success.
+  const lockpickXp = Math.floor((npc?.base_xp ?? 0) * lockpickEff);
+  const baseXp = Math.floor(lockpickXp * petMult);
   const coinMult = 1 + mods.thievingCoinPct / 100;
 
   const roundedAttempts = Math.round(attempts);
@@ -106,11 +106,13 @@ export async function thieving(playerState: PlayerState, inputs: CalculatorInput
   const rawXp = expectedSuccesses * baseXp;
   const rawBaseXp = npc?.base_xp ?? 0;
   const baseXpFormulaParts = [rawBaseXp.toLocaleString()];
+  if (lockpickEff !== 1) baseXpFormulaParts.push(lockpickEff.toFixed(2));
   if (mods.petBoostPct > 0) baseXpFormulaParts.push(`${mods.petBoostPct}%`);
   baseXpFormulaParts.push(Math.round(expectedSuccesses).toLocaleString());
 
   const xpBreakdown: ModifierRow[] = [
     { label: 'Target base XP', value: rawBaseXp.toLocaleString() },
+    ...(lockpickEff !== 1 ? [{ label: 'Lockpick Efficiency', value: `x${lockpickEff.toFixed(2)}` }] : []),
     ...(mods.petBoostPct > 0 ? [{ label: 'Pet XP Boost', value: `+${mods.petBoostPct}%` }] : []),
     { label: 'Base XP', value: `${Math.round(rawXp).toLocaleString()} (${baseXpFormulaParts.join(' x ')})` },
     ...mods.xpModifiers,
