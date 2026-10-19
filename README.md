@@ -8,8 +8,8 @@ Projections (time to completion, items per session, XP rates) come later.
 > (all 13 Gathering/Crafting skills plus Agility), a boss Simulator, and Settings are all
 > live at
 > [michaelomh.github.io/idleFantasy-dex](https://michaelomh.github.io/idleFantasy-dex/). The
-> Calculator and Simulator are experimental - turn on **Experimental Features** in Settings
-> to see them. See
+> Simulator is experimental - turn on **Experimental Features** in Settings
+> to see it. See
 > [CONTRIBUTING.md](./CONTRIBUTING.md) if you'd like to help. Alternatively, you can raise
 > an issue for anything you find while using the app.
 

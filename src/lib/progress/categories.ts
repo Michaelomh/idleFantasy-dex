@@ -512,8 +512,8 @@ function computeExpeditions(ps: PlayerState): ProgressCategory {
   return {
     id: 'expeditions',
     label: includeElderIsle ? 'Expeditions & Lore' : 'Expeditions',
-    points: items.filter((i) => i.done).length,
-    max: items.length,
+    points: items.reduce((sum, i) => sum + (i.current ?? 0), 0),
+    max: items.reduce((sum, i) => sum + (i.cap ?? 0), 0),
     hasDrilldown: true,
     items,
   };
