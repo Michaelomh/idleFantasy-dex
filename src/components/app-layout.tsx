@@ -12,7 +12,7 @@ import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
 
 const PRE_BOOT_PATHS = new Set(['/welcome', '/onboarding', '/no-save']);
 const INSTALL_NOTICE_PATHS = new Set(['/welcome', '/onboarding']);
-const EXPERIMENTAL_DOCK_PATHS = new Set(['/calculator', '/simulator']);
+const EXPERIMENTAL_DOCK_PATHS = new Set(['/simulator']);
 
 const DOCK_ICONS = [
   <House key="overview" className="size-5" />,

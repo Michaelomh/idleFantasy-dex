@@ -2,17 +2,13 @@ import { useEffect, useState } from 'react';
 import { ChevronDown, Clock, RefreshCw } from 'lucide-react';
 import { cn } from 'cn';
 import { usePlayerState } from '@/lib/player/use-player-state';
-import { resolveAllSkillBonuses, type SkillBonus } from '@/lib/bonuses';
 import { computeAllCategories, rollUp } from '@/lib/progress';
-import { CATEGORY_ORDER } from '@/lib/game/skills';
-import { SkillBonusRow } from '@/components/skill-bonus-row';
 import { CharacterSwitcherSheet } from '@/components/character-switcher-sheet';
 import { Banner } from '@/components/banner.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { CircularProgress } from '@/components/ui/circular-progress.tsx';
 import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
-import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { humanize } from '@/lib/utils/humanize';
 import {
@@ -37,11 +33,9 @@ const STATUS_COLORS: Record<StalenessType, { dot: string; text: string }> = {
 };
 
 export function DashboardPage() {
-  const [showExperimental] = useShowExperimental();
   const [includeElderIsle] = useIncludeElderIsle();
   const playerState = usePlayerState();
   const [override, setOverride] = useState<PlayerState | null>(null);
-  const [skillBonuses, setSkillBonuses] = useState<SkillBonus[] | null>(null);
   const [hasHandle, setHasHandle] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -53,17 +47,6 @@ export function DashboardPage() {
   useEffect(() => {
     void getDirectoryHandle().then((handle) => setHasHandle(!!handle));
   }, []);
-
-  useEffect(() => {
-    if (!effectivePlayerState) return;
-    let cancelled = false;
-    void resolveAllSkillBonuses(effectivePlayerState).then((result) => {
-      if (!cancelled) setSkillBonuses(result);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [effectivePlayerState]);
 
   useEffect(() => {
     if (!effectivePlayerState) return;
@@ -222,28 +205,6 @@ export function DashboardPage() {
           ))}
         </div>
       </div>
-
-      {showExperimental &&
-        (!skillBonuses ? (
-          <p className="body text-text-secondary">Loading bonuses…</p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {CATEGORY_ORDER.map((category) => {
-              const skillsInCategory = skillBonuses.filter((s) => s.category === category);
-              if (skillsInCategory.length === 0) return null;
-              return (
-                <div key={category} className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
-                  <span className="h3">{category}</span>
-                  <div className="flex flex-col">
-                    {skillsInCategory.map((skill) => (
-                      <SkillBonusRow key={skill.id} skill={skill} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
 
       <CharacterSwitcherSheet
         open={switcherOpen}

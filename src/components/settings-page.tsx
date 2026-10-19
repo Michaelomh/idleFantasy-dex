@@ -316,11 +316,7 @@ export function SettingsPage() {
           <PreferenceRow
             icon={FlaskConical}
             title="Experimental Features"
-            description={
-              showExperimental
-                ? 'Showing active boosts, skill overview, calculator, and simulator'
-                : 'Hiding active boosts, skill overview, calculator, and simulator'
-            }
+            description={showExperimental ? 'Showing simulator' : 'Hiding simulator'}
           >
             <Switch id="show-experimental" size="lg" checked={showExperimental} onCheckedChange={setShowExperimental} />
           </PreferenceRow>
