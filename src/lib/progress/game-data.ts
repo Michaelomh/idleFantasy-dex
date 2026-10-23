@@ -134,8 +134,17 @@ export type EnemyEntry = {
 export const getEnemies = () => load<Record<string, EnemyEntry>>('enemies.json');
 
 export type DungeonEntry = {
+  name: string;
   display_name: string;
-  enemy_spawns: { enemy: string }[];
+  description?: string;
+  recommended_level: number;
+  encounter_rate?: number;
+  lore_unlock_only?: boolean;
+  lore_hint?: string;
+  event_key?: string;
+  safe_zone?: boolean;
+  enemy_spawns: { enemy: string; weight: number }[];
+  rare_drops?: { item: string; chance: number }[];
 };
 export const getDungeons = () => load<Record<string, DungeonEntry>>('dungeons.json');
 
