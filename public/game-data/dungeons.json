@@ -1,449 +1,906 @@
 {
   "abyssal_depths": {
+    "name": "abyssal_depths",
     "display_name": "Abyssal Depths",
+    "description": "Flooded caldera below the volcano. Rarest gathering nodes on the isle, and the sealed chamber of the Last Elder.",
+    "recommended_level": 85,
+    "encounter_rate": 0.5,
     "enemy_spawns": [
       {
-        "enemy": "abyssal_horror"
+        "enemy": "abyssal_horror",
+        "weight": 3
       },
       {
-        "enemy": "void_seraph"
+        "enemy": "void_seraph",
+        "weight": 2
+      }
+    ],
+    "rare_drops": [
+      {
+        "chance": 1,
+        "comment": "guaranteed per clear",
+        "item": "ancient_sigil"
+      },
+      {
+        "chance": 0.2,
+        "comment": "20% chance for a bonus second sigil",
+        "item": "ancient_sigil"
       }
     ]
   },
   "abyssal_ruins": {
+    "name": "abyssal_ruins",
     "display_name": "Abyssal Ruins",
+    "description": "Ancient ruins that exist simultaneously above and below the water's surface. Abyssal leeches, deep horrors, and void guardians protect whatever the ruins were built to contain.",
+    "recommended_level": 55,
+    "encounter_rate": 0.3,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "abyssal_leech"
+        "enemy": "abyssal_leech",
+        "weight": 4
       },
       {
-        "enemy": "void_guardian"
+        "enemy": "void_guardian",
+        "weight": 3
       },
       {
-        "enemy": "deep_horror"
+        "enemy": "deep_horror",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "abyssal_rod",
+        "chance": 0.002
       }
     ]
   },
   "abyssal_throne": {
+    "name": "abyssal_throne",
     "display_name": "Abyssal Throne",
+    "description": "The deepest point in the known world — a vast cavern where void lords have held dominion since before recorded history. Few have entered. Fewer have returned.",
+    "recommended_level": 92,
+    "encounter_rate": 0.55,
     "enemy_spawns": [
       {
-        "enemy": "abyssal_lord"
+        "enemy": "abyssal_lord",
+        "weight": 3
       },
       {
-        "enemy": "eternal_sentinel"
+        "enemy": "eternal_sentinel",
+        "weight": 3
       },
       {
-        "enemy": "void_archon"
+        "enemy": "void_archon",
+        "weight": 4
       },
       {
-        "enemy": "abyssal_guardian"
+        "enemy": "abyssal_guardian",
+        "weight": 2
       },
       {
-        "enemy": "elder_lich"
+        "enemy": "elder_lich",
+        "weight": 1
       }
     ]
   },
   "ancient_forest": {
+    "name": "ancient_forest",
     "display_name": "Ancient Forest",
+    "description": "Overgrown ruins under a canopy of abyssal trees. The Elders' buried library sleeps here.",
+    "recommended_level": 30,
+    "encounter_rate": 0.5,
     "enemy_spawns": [
       {
-        "enemy": "grove_stalker"
+        "enemy": "grove_stalker",
+        "weight": 3
       },
       {
-        "enemy": "grove_dryad"
+        "enemy": "grove_dryad",
+        "weight": 2
+      }
+    ],
+    "rare_drops": [
+      {
+        "chance": 0.4,
+        "comment": "40% chance per clear",
+        "item": "ancient_sigil"
       }
     ]
   },
   "ancient_forest_ruins": {
+    "name": "ancient_forest_ruins",
     "display_name": "Ancient Forest Ruins",
+    "description": "Stone ruins swallowed by the primeval forest, now haunted by corrupted druids, vine beasts, and forest spirits who guard the grove's ancient secrets.",
+    "recommended_level": 20,
+    "encounter_rate": 0.28,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "corrupted_druid"
+        "enemy": "corrupted_druid",
+        "weight": 4
       },
       {
-        "enemy": "vine_beast"
+        "enemy": "vine_beast",
+        "weight": 3
       },
       {
-        "enemy": "forest_spirit"
+        "enemy": "forest_spirit",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "ironwood_axe",
+        "chance": 0.02
       }
     ]
   },
   "ancient_forge": {
+    "name": "ancient_forge",
     "display_name": "Ancient Forge",
+    "description": "A vast dwarven forge that has burned for centuries without tending. Iron golems and forge demons guard its secrets, and dwarven guardians stand ready to repel any intruder.",
+    "recommended_level": 55,
+    "encounter_rate": 0.32,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "dwarven_guardian"
+        "enemy": "dwarven_guardian",
+        "weight": 4
       },
       {
-        "enemy": "iron_golem"
+        "enemy": "iron_golem",
+        "weight": 3
       },
       {
-        "enemy": "forge_demon"
+        "enemy": "forge_demon",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "forge_pickaxe",
+        "chance": 0.002
       }
     ]
   },
   "ancient_temple": {
+    "name": "ancient_temple",
     "display_name": "Ancient Temple",
+    "description": "An ancient temple guarded by the most powerful creatures in the realm. Only the strongest warriors dare enter.",
+    "recommended_level": 65,
+    "encounter_rate": 0.48,
     "enemy_spawns": [
       {
-        "enemy": "ancient_guardian"
+        "enemy": "ancient_guardian",
+        "weight": 5
       },
       {
-        "enemy": "lich"
+        "enemy": "lich",
+        "weight": 3
       },
       {
-        "enemy": "dragon"
+        "enemy": "dragon",
+        "weight": 2
       }
     ]
   },
   "arcane_ruins": {
+    "name": "arcane_ruins",
     "display_name": "Arcane Ruins",
+    "description": "The functional underground chambers of a destroyed wizard's tower. Arcane constructs follow their last orders with no master left to countermand them. Corrupted mages drawn to the residual magic make the ruins doubly dangerous.",
+    "recommended_level": 55,
+    "encounter_rate": 0.3,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "arcane_construct"
+        "enemy": "arcane_construct",
+        "weight": 4
       },
       {
-        "enemy": "corrupted_mage"
+        "enemy": "corrupted_mage",
+        "weight": 3
       },
       {
-        "enemy": "void_guardian"
+        "enemy": "void_guardian",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "arcane_staff",
+        "chance": 0.002
+      },
+      {
+        "item": "arcane_grappling_hook",
+        "chance": 0.002
       }
     ]
   },
   "bandit_camp": {
+    "name": "bandit_camp",
     "display_name": "Bandit Camp",
+    "description": "A hideout of thieves and rogues in the wilderness. Watch your coin purse!",
+    "recommended_level": 8,
+    "encounter_rate": 0.26,
     "enemy_spawns": [
       {
-        "enemy": "rogue"
+        "enemy": "rogue",
+        "weight": 6
       },
       {
-        "enemy": "bandit"
+        "enemy": "bandit",
+        "weight": 4
       }
     ]
   },
   "beach_and_cliffs": {
+    "name": "beach_and_cliffs",
     "display_name": "Beach & Cliffs",
+    "description": "The isle's landing zone. Coastal enemies fresh off the wreck of prior voyages.",
+    "recommended_level": 1,
+    "encounter_rate": 0.5,
     "enemy_spawns": [
       {
-        "enemy": "beach_marauder"
+        "enemy": "beach_marauder",
+        "weight": 3
       },
       {
-        "enemy": "beach_leviathan"
+        "enemy": "beach_leviathan",
+        "weight": 2
+      }
+    ],
+    "rare_drops": [
+      {
+        "chance": 0.4,
+        "comment": "40% chance per clear",
+        "item": "ancient_sigil"
       }
     ]
   },
   "blightwood": {
+    "name": "blightwood",
     "display_name": "The Blightwood",
+    "description": "A rotting forest deep past the Hollowfen, where the Gloomharvest's strongest horrors gather. Part of the Gloomharvest event.",
+    "recommended_level": 62,
+    "encounter_rate": 0.38,
     "enemy_spawns": [
       {
-        "enemy": "shade_stalker"
+        "enemy": "shade_stalker",
+        "weight": 8
       },
       {
-        "enemy": "bone_colossus"
+        "enemy": "bone_colossus",
+        "weight": 4
       },
       {
-        "enemy": "dread_dullahan"
+        "enemy": "dread_dullahan",
+        "weight": 1
       }
-    ]
+    ],
+    "event_key": "gloomharvest"
   },
   "cloud_kingdom": {
+    "name": "cloud_kingdom",
     "display_name": "Cloud Kingdom",
+    "description": "A realm above the clouds, reached by climbing a legendary beanstalk. Giants roam vast floating islands, sky serpents drift between the cloudbanks, and storm imps crackle with restless energy. Few have seen it. Fewer still have returned to speak of it.",
+    "recommended_level": 55,
+    "encounter_rate": 0.28,
+    "lore_unlock_only": true,
+    "lore_hint": "A rare seed is said to hold the way...",
     "enemy_spawns": [
       {
-        "enemy": "storm_imp"
+        "enemy": "storm_imp",
+        "weight": 4
       },
       {
-        "enemy": "sky_serpent"
+        "enemy": "sky_serpent",
+        "weight": 3
       },
       {
-        "enemy": "cloud_giant"
+        "enemy": "cloud_giant",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "golden_wheat",
+        "chance": 0.06
+      },
+      {
+        "item": "gold_bar",
+        "chance": 0.1
       }
     ]
   },
   "collapsed_mine": {
+    "name": "collapsed_mine",
     "display_name": "Collapsed Mine",
+    "description": "A vast cavern beneath the copper mines. Cave trolls and rock golems haunt the rubble, and giant spiders spin webs across the collapsed shafts.",
+    "recommended_level": 20,
+    "encounter_rate": 0.3,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "mine_spider"
+        "enemy": "mine_spider",
+        "weight": 4
       },
       {
-        "enemy": "cave_troll"
+        "enemy": "cave_troll",
+        "weight": 3
       },
       {
-        "enemy": "rock_golem"
+        "enemy": "rock_golem",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "deep_iron_pickaxe",
+        "chance": 0.02
       }
     ]
   },
   "corrupted_sanctum": {
+    "name": "corrupted_sanctum",
     "display_name": "Corrupted Sanctum",
+    "description": "A shadow-drenched sanctum at the heart of the corrupted canopy. Shadow beasts stalk the halls, twisted treants block the passages, and corrupted mages channel the darkness.",
+    "recommended_level": 55,
+    "encounter_rate": 0.32,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "shadow_beast"
+        "enemy": "shadow_beast",
+        "weight": 3
       },
       {
-        "enemy": "twisted_treant"
+        "enemy": "twisted_treant",
+        "weight": 3
       },
       {
-        "enemy": "corrupted_mage"
+        "enemy": "corrupted_mage",
+        "weight": 4
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "sanctum_axe",
+        "chance": 0.002
       }
     ]
   },
   "dragon_lair": {
+    "name": "dragon_lair",
     "display_name": "Dragon's Lair",
+    "description": "The legendary home of green dragons. Only master warriors survive this challenge.",
+    "recommended_level": 40,
+    "encounter_rate": 0.38,
     "enemy_spawns": [
       {
-        "enemy": "dragon"
+        "enemy": "dragon",
+        "weight": 5
       },
       {
-        "enemy": "demon"
+        "enemy": "demon",
+        "weight": 3
       },
       {
-        "enemy": "knight"
+        "enemy": "knight",
+        "weight": 2
       }
     ]
   },
   "drowned_temple": {
+    "name": "drowned_temple",
     "display_name": "Drowned Temple",
+    "description": "A sunken temple beneath the sea grotto, its halls filled with brine and ancient sorrow. Drowned cultists drift through the corridors alongside sea spirits and cursed fishermen.",
+    "recommended_level": 20,
+    "encounter_rate": 0.28,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "drowned_cultist"
+        "enemy": "drowned_cultist",
+        "weight": 4
       },
       {
-        "enemy": "sea_spirit"
+        "enemy": "sea_spirit",
+        "weight": 3
       },
       {
-        "enemy": "cursed_fisherman"
+        "enemy": "cursed_fisherman",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "blessed_fishing_rod",
+        "chance": 0.02
       }
     ]
   },
   "farm": {
+    "name": "farm",
     "display_name": "Farm",
+    "description": "A peaceful farm with livestock. Great for beginners looking to gather food!",
+    "recommended_level": 1,
+    "encounter_rate": 0.75,
+    "safe_zone": true,
     "enemy_spawns": [
       {
-        "enemy": "chicken"
+        "enemy": "chicken",
+        "weight": 4
       },
       {
-        "enemy": "sheep"
+        "enemy": "sheep",
+        "weight": 4
       },
       {
-        "enemy": "cow"
+        "enemy": "cow",
+        "weight": 2
       }
     ]
   },
   "fortress_ruins": {
+    "name": "fortress_ruins",
     "display_name": "Fortress Ruins",
+    "description": "The crumbling remains of an ancient castle, now guarded by knights and soldiers.",
+    "recommended_level": 18,
+    "encounter_rate": 0.3,
     "enemy_spawns": [
       {
-        "enemy": "guard"
+        "enemy": "guard",
+        "weight": 5
       },
       {
-        "enemy": "knight"
+        "enemy": "knight",
+        "weight": 3
       },
       {
-        "enemy": "dark_wizard"
+        "enemy": "dark_wizard",
+        "weight": 2
       }
     ]
   },
   "frozen_citadel": {
+    "name": "frozen_citadel",
     "display_name": "Frozen Citadel",
+    "description": "A fortress entombed beneath a glacier for a thousand years. Its halls are preserved in perfect silence, and the ancient defenders still patrol their posts.",
+    "recommended_level": 82,
+    "encounter_rate": 0.52,
     "enemy_spawns": [
       {
-        "enemy": "frost_giant"
+        "enemy": "frost_giant",
+        "weight": 4
       },
       {
-        "enemy": "ice_golem"
+        "enemy": "ice_golem",
+        "weight": 3
       },
       {
-        "enemy": "glacial_mage"
+        "enemy": "glacial_mage",
+        "weight": 3
       },
       {
-        "enemy": "frost_wyvern"
+        "enemy": "frost_wyvern",
+        "weight": 2
       }
     ]
   },
-  "goblin_cave": {
-    "display_name": "Goblin Cave",
+  "glacier_hollows": {
+    "name": "glacier_hollows",
+    "display_name": "The Glacier Hollows",
+    "description": "Blue-lit caverns carved through the glacier, home to the Frostfall's fiercest beasts. Part of the Frostfall event.",
+    "recommended_level": 62,
+    "encounter_rate": 0.38,
     "enemy_spawns": [
       {
-        "enemy": "giant_rat"
+        "enemy": "glacier_yeti",
+        "weight": 8
       },
       {
-        "enemy": "goblin"
+        "enemy": "rime_giant",
+        "weight": 4
+      },
+      {
+        "enemy": "frostbound_jarl",
+        "weight": 1
+      }
+    ],
+    "event_key": "frostfall"
+  },
+  "goblin_cave": {
+    "name": "goblin_cave",
+    "display_name": "Goblin Cave",
+    "description": "A dark cave infested with goblins and giant rats. A good place for new adventurers to train.",
+    "recommended_level": 3,
+    "encounter_rate": 0.22,
+    "enemy_spawns": [
+      {
+        "enemy": "giant_rat",
+        "weight": 3
+      },
+      {
+        "enemy": "goblin",
+        "weight": 7
       }
     ]
   },
   "guild_of_shadows": {
+    "name": "guild_of_shadows",
     "display_name": "Guild of Shadows",
+    "description": "The innermost sanctum of the thieves' guild — a place few have found and fewer have left. The guild's most elite enforcers protect its deepest secrets.",
+    "recommended_level": 58,
+    "encounter_rate": 0.38,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "shadow_assassin"
+        "enemy": "shadow_assassin",
+        "weight": 4
       },
       {
-        "enemy": "vault_guardian"
+        "enemy": "vault_guardian",
+        "weight": 3
       },
       {
-        "enemy": "guild_master"
+        "enemy": "guild_master",
+        "weight": 3
       },
       {
-        "enemy": "shadow_thief"
+        "enemy": "shadow_thief",
+        "weight": 2
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "shadow_signet",
+        "chance": 0.002
+      },
+      {
+        "item": "shadow_lockpick",
+        "chance": 0.002
       }
     ]
   },
   "hollowfen": {
+    "name": "hollowfen",
     "display_name": "The Hollowfen",
+    "description": "A mist-drowned marsh of sunken barrows where the harvest dead walk. Part of the Gloomharvest event.",
+    "recommended_level": 45,
+    "encounter_rate": 0.38,
     "enemy_spawns": [
       {
-        "enemy": "will_o_wisp"
+        "enemy": "will_o_wisp",
+        "weight": 8
       },
       {
-        "enemy": "grave_ghoul"
+        "enemy": "grave_ghoul",
+        "weight": 5
       },
       {
-        "enemy": "husk_horror"
+        "enemy": "husk_horror",
+        "weight": 3
       },
       {
-        "enemy": "barrow_wight"
+        "enemy": "barrow_wight",
+        "weight": 1
       }
-    ]
+    ],
+    "event_key": "gloomharvest"
   },
   "imp_cavern": {
+    "name": "imp_cavern",
     "display_name": "Imp Cavern",
+    "description": "A shallow cave filled with mischievous imps. Perfect for absolute beginners!",
+    "recommended_level": 1,
+    "encounter_rate": 0.2,
     "enemy_spawns": [
       {
-        "enemy": "imp"
+        "enemy": "imp",
+        "weight": 7
       },
       {
-        "enemy": "giant_rat"
+        "enemy": "giant_rat",
+        "weight": 3
       }
     ]
   },
   "infernal_stronghold": {
+    "name": "infernal_stronghold",
     "display_name": "Infernal Stronghold",
+    "description": "A fortress of fire and brimstone, ruled by demons and hellhounds. The heat alone can kill the unprepared.",
+    "recommended_level": 50,
+    "encounter_rate": 0.42,
     "enemy_spawns": [
       {
-        "enemy": "fire_giant"
+        "enemy": "fire_giant",
+        "weight": 4
       },
       {
-        "enemy": "demon"
+        "enemy": "demon",
+        "weight": 4
       },
       {
-        "enemy": "hellhound"
+        "enemy": "hellhound",
+        "weight": 2
       }
     ]
   },
   "orc_stronghold": {
+    "name": "orc_stronghold",
     "display_name": "Orc Stronghold",
+    "description": "A fortified orc settlement deep in the mountains. Only the brave dare enter.",
+    "recommended_level": 22,
+    "encounter_rate": 0.32,
     "enemy_spawns": [
       {
-        "enemy": "orc_warrior"
+        "enemy": "orc_warrior",
+        "weight": 7
       },
       {
-        "enemy": "troll"
+        "enemy": "troll",
+        "weight": 3
       }
     ]
   },
-  "rogue_sanctum": {
-    "display_name": "Rogue Sanctum",
+  "rimewaste": {
+    "name": "rimewaste",
+    "display_name": "The Rimewaste",
+    "description": "A wind-scoured snowfield where the Frostfall's creatures drift down from the peaks. Part of the Frostfall event.",
+    "recommended_level": 45,
+    "encounter_rate": 0.38,
     "enemy_spawns": [
       {
-        "enemy": "rogue"
+        "enemy": "frost_sprite",
+        "weight": 8
       },
       {
-        "enemy": "cutpurse"
+        "enemy": "snow_wolf",
+        "weight": 5
       },
       {
-        "enemy": "assassin"
+        "enemy": "ice_troll",
+        "weight": 3
+      },
+      {
+        "enemy": "rime_revenant",
+        "weight": 1
+      }
+    ],
+    "event_key": "frostfall"
+  },
+  "rogue_sanctum": {
+    "name": "rogue_sanctum",
+    "display_name": "Rogue Sanctum",
+    "description": "The guild's inner refuge — a fortified hideout accessible only to proven members. Trespassers are dealt with swiftly and without mercy.",
+    "recommended_level": 25,
+    "encounter_rate": 0.32,
+    "lore_unlock_only": true,
+    "enemy_spawns": [
+      {
+        "enemy": "rogue",
+        "weight": 3
+      },
+      {
+        "enemy": "cutpurse",
+        "weight": 4
+      },
+      {
+        "enemy": "assassin",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "shadow_dagger",
+        "chance": 0.015
+      },
+      {
+        "item": "rogues_lockpick",
+        "chance": 0.02
       }
     ]
   },
   "shadow_den": {
+    "name": "shadow_den",
     "display_name": "Shadow Den",
+    "description": "A network of underground chambers used by the region's thieves and cutpurses as a base of operations. The rogues here are well-armed and very hostile to uninvited guests.",
+    "recommended_level": 15,
+    "encounter_rate": 0.26,
+    "lore_unlock_only": true,
     "enemy_spawns": [
       {
-        "enemy": "rogue"
+        "enemy": "rogue",
+        "weight": 4
       },
       {
-        "enemy": "cutpurse"
+        "enemy": "cutpurse",
+        "weight": 3
       },
       {
-        "enemy": "dark_wizard"
+        "enemy": "dark_wizard",
+        "weight": 3
+      }
+    ],
+    "rare_drops": [
+      {
+        "item": "shadow_dagger",
+        "chance": 0.02
+      },
+      {
+        "item": "shadow_grappling_hook",
+        "chance": 0.02
       }
     ]
   },
   "spider_den": {
+    "name": "spider_den",
     "display_name": "Spider Den",
+    "description": "A web-filled cavern crawling with venomous spiders. Bring antivenom!",
+    "recommended_level": 6,
+    "encounter_rate": 0.24,
     "enemy_spawns": [
       {
-        "enemy": "spider"
+        "enemy": "spider",
+        "weight": 8
       },
       {
-        "enemy": "wild_monkey"
+        "enemy": "wild_monkey",
+        "weight": 2
       }
     ]
   },
   "sunspire": {
+    "name": "sunspire",
     "display_name": "The Sunspire",
+    "description": "A sun-tower ruin cracked open by the solstice, spilling heat spirits into the region. Part of the Sunspire Solstice event.",
+    "recommended_level": 40,
+    "encounter_rate": 0.38,
     "enemy_spawns": [
       {
-        "enemy": "sun_wisp"
+        "enemy": "sun_wisp",
+        "weight": 8
       },
       {
-        "enemy": "ember_hound"
+        "enemy": "ember_hound",
+        "weight": 5
       },
       {
-        "enemy": "cinder_colossus"
+        "enemy": "cinder_colossus",
+        "weight": 1
       }
-    ]
+    ],
+    "event_key": "sunspire_solstice"
+  },
+  "thornmeadow": {
+    "name": "thornmeadow",
+    "display_name": "The Thornmeadow",
+    "description": "A meadow gone wild with the spring thaw, its flowers hiding thorns and teeth. Part of the Bloomtide event.",
+    "recommended_level": 45,
+    "encounter_rate": 0.38,
+    "enemy_spawns": [
+      {
+        "enemy": "pollen_sprite",
+        "weight": 8
+      },
+      {
+        "enemy": "bramble_boar",
+        "weight": 5
+      },
+      {
+        "enemy": "briar_beast",
+        "weight": 3
+      },
+      {
+        "enemy": "verdant_drake",
+        "weight": 1
+      }
+    ],
+    "event_key": "bloomtide"
   },
   "undead_crypt": {
+    "name": "undead_crypt",
     "display_name": "Undead Crypt",
+    "description": "An ancient burial ground where the dead refuse to rest. Beware the dark magic!",
+    "recommended_level": 12,
+    "encounter_rate": 0.28,
     "enemy_spawns": [
       {
-        "enemy": "skeleton"
+        "enemy": "skeleton",
+        "weight": 5
       },
       {
-        "enemy": "zombie"
+        "enemy": "zombie",
+        "weight": 4
       },
       {
-        "enemy": "dark_wizard"
+        "enemy": "dark_wizard",
+        "weight": 2
       }
     ]
   },
   "void_rift": {
+    "name": "void_rift",
     "display_name": "Void Rift",
+    "description": "A tear in reality that bleeds void creatures into the mortal world. The air crackles with chaotic energy and the ground shimmers with otherworldly light.",
+    "recommended_level": 72,
+    "encounter_rate": 0.5,
     "enemy_spawns": [
       {
-        "enemy": "void_stalker"
+        "enemy": "void_stalker",
+        "weight": 4
       },
       {
-        "enemy": "rift_guardian"
+        "enemy": "rift_guardian",
+        "weight": 3
       },
       {
-        "enemy": "chaos_elemental"
+        "enemy": "chaos_elemental",
+        "weight": 3
       }
     ]
   },
   "volcanic_depths": {
+    "name": "volcanic_depths",
     "display_name": "Volcanic Depths",
+    "description": "A scorching cavern inhabited by hellhounds and lesser demons. The heat is unbearable!",
+    "recommended_level": 28,
+    "encounter_rate": 0.35,
     "enemy_spawns": [
       {
-        "enemy": "hellhound"
+        "enemy": "hellhound",
+        "weight": 6
       },
       {
-        "enemy": "demon"
+        "enemy": "demon",
+        "weight": 4
       }
     ]
   },
   "volcano_peak": {
+    "name": "volcano_peak",
     "display_name": "Volcano Peak",
+    "description": "Ash slopes and lava vents. Only cooked Deepwater Ray keeps you upright at these vents.",
+    "recommended_level": 60,
+    "encounter_rate": 0.5,
     "enemy_spawns": [
       {
-        "enemy": "ash_beast"
+        "enemy": "ash_beast",
+        "weight": 3
       },
       {
-        "enemy": "lava_wraith"
+        "enemy": "lava_wraith",
+        "weight": 2
+      }
+    ],
+    "rare_drops": [
+      {
+        "chance": 0.8,
+        "comment": "80% chance per clear",
+        "item": "ancient_sigil"
       }
     ]
+  },
+  "wildgrove": {
+    "name": "wildgrove",
+    "display_name": "The Wildgrove",
+    "description": "An ancient grove past the Thornmeadow where the Thorn Queen's court takes root. Part of the Bloomtide event.",
+    "recommended_level": 62,
+    "encounter_rate": 0.38,
+    "enemy_spawns": [
+      {
+        "enemy": "thorn_stalker",
+        "weight": 8
+      },
+      {
+        "enemy": "blossom_treant",
+        "weight": 4
+      },
+      {
+        "enemy": "bramble_titan",
+        "weight": 1
+      }
+    ],
+    "event_key": "bloomtide"
   }
 }

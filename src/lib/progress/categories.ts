@@ -404,20 +404,23 @@ async function computeTitles(ps: PlayerState): Promise<ProgressCategory> {
     detail: TITLE_INFO[id].requirement,
   }));
 
-  // Seasonal-event titles (e.g. "seasonal_sunspire_solstice_2026") are a new one per event,
-  // unbounded and not in the hand-copied CHARACTER_TITLES catalogue. Shown for visibility,
-  // excluded from both numerator and denominator rather than silently dropped or miscounted.
+  // Seasonal-event titles (e.g. "seasonal_sunspire_solstice_2026") are one per yearly run of
+  // an event, unbounded and not in the hand-copied CHARACTER_TITLES catalogue. Since 1.16.0
+  // seasonal_events.json keys are year-less templates ("sunspire_solstice"), so titles come
+  // from the save only, and the template is found by stripping the "_YYYY" suffix. Shown for
+  // visibility, excluded from both numerator and denominator rather than silently dropped or
+  // miscounted.
 
   const banners = (ps.raw.flags.seasonal_banners_earned as { event_id: string; event_display_name?: string }[]) ?? [];
   const seasonalIds = new Set([
     ...unlocked.filter((id) => id.startsWith('seasonal_')),
-    ...Object.keys(events).map((eventId) => `seasonal_${eventId}`),
+    ...banners.map((b) => `seasonal_${b.event_id}`),
   ]);
   for (const id of seasonalIds) {
     const eventId = id.slice('seasonal_'.length);
     const eventName =
       banners.find((b) => b.event_id === eventId)?.event_display_name ||
-      events[eventId]?.display_name ||
+      events[eventId.replace(/_\d{4}$/, '')]?.display_name ||
       humanize(eventId);
     items.push({
       id,

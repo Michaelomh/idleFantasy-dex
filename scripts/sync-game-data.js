@@ -59,6 +59,7 @@ const FILES = [
   'recipes/herblore.json',
   'recipes/construction.json',
   'mercenaries.json',
+  'spells.json',
 ];
 
 /**
@@ -95,10 +96,7 @@ function buildDungeonsJson(source) {
   const dungeons = {};
   for (const file of files) {
     const d = JSON.parse(readFileSync(join(dungeonsDir, file), 'utf8'));
-    dungeons[d.name] = {
-      display_name: d.display_name,
-      enemy_spawns: (d.enemy_spawns ?? []).map((s) => ({ enemy: s.enemy })),
-    };
+    dungeons[d.name] = d;
   }
   return JSON.stringify(dungeons, null, 2) + '\n';
 }
