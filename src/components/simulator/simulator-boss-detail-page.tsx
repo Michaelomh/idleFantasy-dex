@@ -1,139 +1,86 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
-import { ChevronDown } from 'lucide-react';
 import { usePlayerState } from '@/lib/player/use-player-state';
-import {
-  getBosses,
-  getEquipment,
-  getBlessings,
-  getPrestigePaths,
-  getMercenaries,
-  type BossEntry,
-  type EquipmentEntry,
-  type BlessingEntry,
-  type PrestigeSkillPaths,
-  type MercenaryEntry,
-} from '@/lib/progress/game-data';
-import { getRecipes, type RecipeEntry } from '@/lib/calculator/game-data';
-import { activeNodesForSkill } from '@/lib/bonuses/prestige';
+import { getBosses, getSeasonalEvents, type BossEntry, type SeasonalEventEntry } from '@/lib/progress/game-data';
 import { LoadingScreen } from '@/components/loading-screen';
-import { BossStatsPanel } from '@/components/progress/boss-stats-panel';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import type { CombatStyle } from '@/lib/simulator/combat-engine';
-import { savedActiveWeaponSlot, savedArrowKey, savedHiredMercenaryIds, savedSpellKey } from '@/lib/simulator/loadout';
+import { RAID_FULL_PARTY } from '@/lib/simulator/combat-engine';
 import {
-  buildBossCombatProfile,
-  buildMercCombatant,
-  buildPlayerCombatProfile,
-  listFoodOptions,
-  resolveCombatInputs,
-} from '@/lib/simulator/combat-profile';
-import { LoadoutSection } from './loadout-section';
-import { CombatSummarySection } from './combat-summary-section';
-import { SimulationSection } from './simulation-section';
+  bossTarget,
+  bossWinsToday,
+  collectionContext,
+  defaultSelections,
+  displayNames,
+  ISLE_BOSS_IDS,
+  loadSimData,
+  resolveCombat,
+  sessionMs,
+  type Selections,
+  type SimData,
+} from '@/lib/simulator/resolve-inputs';
+import type { SimulationJob } from '@/lib/simulator/run-simulation';
+import { BossInfoSection } from './boss-info-section';
+import { CombatInputsSection } from './combat-inputs-section';
+import { SimulationResultsSection } from './simulation-results-section';
 import { MAX_MERCENARIES } from './mercenary-picker';
-
-const PRESTIGE_SKILL_IDS = ['attack', 'strength', 'defense', 'ranged', 'magic', 'hitpoints', 'herblore'];
-
-type PageData = {
-  equipment: Record<string, EquipmentEntry>;
-  herblore: Record<string, RecipeEntry>;
-  cooking: Record<string, RecipeEntry>;
-  blessings: BlessingEntry[];
-  prestigeTrees: Map<string, PrestigeSkillPaths>;
-  mercenaries: MercenaryEntry[];
-};
 
 export function SimulatorBossDetailPage() {
   const { bossId } = useParams<{ bossId: string }>();
   const playerState = usePlayerState();
   const [boss, setBoss] = useState<BossEntry | null>(null);
-  const [data, setData] = useState<PageData | null>(null);
-
-  const [style, setStyle] = useState<CombatStyle>('attack');
-  const [arrowKey, setArrowKey] = useState<string | null>(null);
-  const [spellKey, setSpellKey] = useState<string | null>(null);
-  const [potionKey, setPotionKey] = useState<string | null>(null);
-  const [foodKey, setFoodKey] = useState<string | null>(null);
-  const [mercIds, setMercIds] = useState<string[]>([]);
-  const initialized = useRef(false);
+  const [data, setData] = useState<SimData | null>(null);
+  const [edited, setSel] = useState<Selections | null>(null);
+  const [events, setEvents] = useState<Record<string, SeasonalEventEntry>>({});
 
   useEffect(() => {
     void getBosses().then((all) => setBoss((bossId && all[bossId]) || null));
   }, [bossId]);
 
   useEffect(() => {
-    void Promise.all([
-      getEquipment(),
-      getRecipes('herblore'),
-      getRecipes('cooking'),
-      getBlessings(),
-      getPrestigePaths(),
-      getMercenaries(),
-    ]).then(([equipment, herblore, cooking, blessings, prestigePaths, mercenaries]) => {
-      setData({
-        equipment,
-        herblore,
-        cooking,
-        blessings,
-        prestigeTrees: new Map(prestigePaths.map((t) => [t.skill, t])),
-        mercenaries,
-      });
-    });
+    void loadSimData().then(setData);
+    void getSeasonalEvents().then(setEvents);
   }, []);
 
-  useEffect(() => {
-    if (initialized.current || !playerState || !data) return;
-    initialized.current = true;
-    setStyle(savedActiveWeaponSlot(playerState));
-    setArrowKey(savedArrowKey(playerState));
-    setSpellKey(savedSpellKey(playerState));
-    const activePotionKey = (playerState.raw.flags.active_potion_key as string | undefined) ?? null;
-    setPotionKey(activePotionKey);
-    const equippedFoodKeys = Object.keys((playerState.raw.flags.equipped_food as Record<string, number>) ?? {});
-    const foodOptions = listFoodOptions(data.cooking);
-    const bestFood = foodOptions
-      .filter((f) => equippedFoodKeys.includes(f.key))
-      .reduce<(typeof foodOptions)[number] | null>(
-        (best, f) => (!best || f.healingValue > best.healingValue ? f : best),
-        null,
-      );
-    setFoodKey(bestFood?.key ?? null);
-    setMercIds(savedHiredMercenaryIds(playerState).slice(0, MAX_MERCENARIES));
-  }, [playerState, data]);
-
-  const activeNodesBySkill = useMemo(() => {
+  const isle = !!boss && ISLE_BOSS_IDS.has(boss.id);
+  const defaults = useMemo(() => {
     if (!playerState || !data) return null;
-    return new Map(PRESTIGE_SKILL_IDS.map((id) => [id, activeNodesForSkill(playerState, data.prestigeTrees.get(id))]));
-  }, [playerState, data]);
+    const d = defaultSelections(playerState, data, isle);
+    return { ...d, mercIds: d.mercIds.slice(0, MAX_MERCENARIES) };
+  }, [playerState, data, isle]);
+  const sel = edited ?? defaults;
 
-  if (!playerState || !boss || !bossId || !data || !activeNodesBySkill) {
-    return <LoadingScreen />;
-  }
+  const names = useMemo(() => (data ? displayNames(data) : {}), [data]);
+  const hidden = useMemo(
+    () =>
+      new Set([
+        ...(data ? Object.keys(data.pets) : []),
+        ...(boss?.rare_drops ?? []).map((r) => r.item),
+        ...(boss?.pet ? [boss.pet.id] : []),
+      ]),
+    [data, boss],
+  );
 
-  const resolvedInputs = resolveCombatInputs({
-    playerState,
-    equipment: data.equipment,
-    herblore: data.herblore,
-    cooking: data.cooking,
-    blessings: data.blessings,
-    style,
-    potionKey,
-    foodKey,
+  if (!playerState || !boss || !data || !sel) return <LoadingScreen />;
+
+  const resolved = resolveCombat(playerState, data, sel, isle);
+  const mercCount = boss.raid ? sel.mercIds.length : 0;
+  const partyScale = boss.raid ? RAID_FULL_PARTY / (1 + mercCount) : 1;
+
+  const runSessionMs = sessionMs(playerState, data, isle);
+
+  const buildJob = (samples: number): SimulationJob => ({
+    kind: 'boss',
+    inputs: resolved.inputs,
+    usesPotion: !!sel.potionKey,
+    eatOrder: sel.eatOrder,
+    boss: bossTarget(playerState, data, boss, sel.mercIds),
+    collection: collectionContext(playerState, data, 'boss', isle),
+    sessionMs: runSessionMs,
+    samples,
+    seed: 1,
+    bossWinsToday: isle ? 0 : bossWinsToday(playerState, boss.id),
   });
-  const { profile: playerProfile } = buildPlayerCombatProfile({
-    playerState,
-    style,
-    arrowKey,
-    spellKey,
-    activeNodesBySkill,
-    ...resolvedInputs,
-  });
-  const bossProfile = buildBossCombatProfile(boss);
-  const mercCombatants = mercIds
-    .map((id) => data.mercenaries.find((m) => m.id === id))
-    .filter((m): m is MercenaryEntry => !!m)
-    .map(buildMercCombatant);
+
+  const magicWithoutSpell = resolved.style === 'magic' && !resolved.spell;
 
   return (
     <div className="flex flex-col gap-3 p-4">
@@ -143,51 +90,38 @@ export function SimulatorBossDetailPage() {
           {boss.raid ? 'Raid' : 'Solo'}
         </span>
       </div>
+      {isle && (
+        <p className="body text-sm text-text-secondary">
+          Fought on Elder Isle: uses your Elder levels, and XP goes to your Elder skills.
+        </p>
+      )}
 
-      <Collapsible defaultOpen={false} className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
-        <CollapsibleTrigger className="group/trigger flex items-center justify-between gap-2 text-left">
-          <span className="h3">Boss stats</span>
-          <ChevronDown className="size-4 shrink-0 text-text-secondary transition-transform group-data-open/trigger:rotate-180" />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <BossStatsPanel boss={boss} playerState={playerState} />
-        </CollapsibleContent>
-      </Collapsible>
-
-      <LoadoutSection
+      <BossInfoSection
+        boss={boss}
         playerState={playerState}
-        equipment={data.equipment}
-        prestigeTrees={data.prestigeTrees}
-        style={style}
-        onStyleChange={setStyle}
-        arrowKey={arrowKey}
-        onArrowKeyChange={setArrowKey}
-        spellKey={spellKey}
-        onSpellKeyChange={setSpellKey}
+        events={events}
+        sessionMs={runSessionMs}
+        partyScale={partyScale}
+        mercCount={mercCount}
+        names={names}
       />
 
-      <CombatSummarySection
+      <CombatInputsSection
         playerState={playerState}
-        equipment={data.equipment}
-        herblore={data.herblore}
-        cooking={data.cooking}
-        blessings={data.blessings}
-        activeNodesBySkill={activeNodesBySkill}
-        style={style}
-        onStyleChange={setStyle}
-        arrowKey={arrowKey}
-        spellKey={spellKey}
-        potionKey={potionKey}
-        onPotionKeyChange={setPotionKey}
-        foodKey={foodKey}
-        onFoodKeyChange={setFoodKey}
+        data={data}
+        sel={sel}
+        onChange={setSel}
+        resolved={resolved}
         isRaid={!!boss.raid}
-        mercenaryRoster={data.mercenaries}
-        selectedMercIds={mercIds}
-        onSelectedMercIdsChange={setMercIds}
       />
 
-      <SimulationSection player={playerProfile} boss={bossProfile} mercenaries={mercCombatants} />
+      <SimulationResultsSection
+        buildJob={buildJob}
+        kind="boss"
+        names={names}
+        hidden={hidden}
+        disabledReason={magicWithoutSpell ? 'Pick a spell first.' : (resolved.invalid ?? undefined)}
+      />
     </div>
   );
 }

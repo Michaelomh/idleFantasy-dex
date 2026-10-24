@@ -316,7 +316,7 @@ export function SettingsPage() {
           <PreferenceRow
             icon={FlaskConical}
             title="Experimental Features"
-            description={showExperimental ? 'Showing simulator' : 'Hiding simulator'}
+            description={showExperimental ? 'Showing experimental features' : 'Hiding experimental features'}
           >
             <Switch id="show-experimental" size="lg" checked={showExperimental} onCheckedChange={setShowExperimental} />
           </PreferenceRow>

@@ -24,9 +24,11 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { formatNumber } from '@/lib/utils/format-number';
+import { parseQty } from '@/lib/utils/parse-qty';
 import { LoadingScreen } from '@/components/loading-screen';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Input } from '@/components/ui/input';
+import { QtyInput } from '@/components/qty-input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -192,7 +194,7 @@ export function CalculatorSkillPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isElder, skillId, targetKey, qty, cropCount, ashCatalystKey, cropRotated, timedBoostsEnabled]);
 
-  const qtyValid = /^\d+$/.test(qty) && Number(qty) > 0;
+  const qtyValid = parseQty(qty) !== null;
 
   const inputs: CalculatorInputs | null = useMemo(() => {
     if (!targetKey || !playerState) return null;
@@ -314,14 +316,7 @@ export function CalculatorSkillPage() {
             <Label htmlFor="qty" className="min-w-0 truncate">
               Qty
             </Label>
-            <Input
-              id="qty"
-              type="number"
-              min={1}
-              className={`w-20 ${qtyValid ? '' : 'border-destructive'}`}
-              value={qty}
-              onChange={(e) => setQty(e.target.value)}
-            />
+            <QtyInput id="qty" className="w-20" value={qty} onChange={setQty} />
           </div>
         )}
 

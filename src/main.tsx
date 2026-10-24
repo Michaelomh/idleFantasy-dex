@@ -19,6 +19,9 @@ import { CalculatorSkillPage } from './components/calculator/calculator-skill-pa
 import { SimulatorOverviewPage } from './components/simulator/simulator-overview-page.tsx';
 import { SimulatorBossListPage } from './components/simulator/simulator-boss-list-page.tsx';
 import { SimulatorBossDetailPage } from './components/simulator/simulator-boss-detail-page.tsx';
+import { SimulatorDungeonListPage } from './components/simulator/simulator-dungeon-list-page.tsx';
+import { SimulatorDungeonDetailPage } from './components/simulator/simulator-dungeon-detail-page.tsx';
+import { SimulatorTowerPage } from './components/simulator/simulator-tower-page.tsx';
 import { NotFoundPage } from './components/not-found-page.tsx';
 import { ROUTES } from './lib/app/routes.ts';
 import { ReloadPrompt } from './components/reload-prompt.tsx';
@@ -45,6 +48,9 @@ const ROUTE_OVERRIDES: Record<string, RouteObject['element']> = {
   '/simulator': <SimulatorOverviewPage />,
   '/simulator/bosses': <SimulatorBossListPage />,
   '/simulator/bosses/:bossId': <SimulatorBossDetailPage />,
+  '/simulator/dungeon': <SimulatorDungeonListPage />,
+  '/simulator/dungeon/:dungeonId': <SimulatorDungeonDetailPage />,
+  '/simulator/infinity-tower': <SimulatorTowerPage />,
 };
 
 const routes: RouteObject[] = [
