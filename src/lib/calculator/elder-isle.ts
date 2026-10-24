@@ -1,13 +1,15 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getBuildings } from '@/lib/progress/game-data';
 import { formatMinSec } from '@/lib/utils/duration';
+import { sigilRows } from './modifiers';
 import type { ModifierRow } from './types';
 
 /**
  * Elder Isle sessions ignore every mainland modifier (tools, pets, capes, blessings, prestige,
  * 2x XP, Chronos Spire, mainland Agility). Only the Elder skill levels matter - mirrors the game's
  * SkillSimulator.elderSessionDurationMs and PlayerRepository.isleXpMult (game 1.15.8, 28b97c6f).
- * Elder Sigil stones are not modelled yet.
+ * Sapphire and Emerald Sigil stones still apply (game 37317af6); the other stones only touch
+ * combat drops or coins, so they don't show up here.
  */
 export function elderLevel(playerState: PlayerState, skillId: string): number {
   const levels = (playerState.raw.flags.elder_skill_levels ?? {}) as Record<string, number>;
@@ -23,11 +25,11 @@ export function elderXpMultiplier(level: number): number {
   return 1 + (Math.max(level, 1) - 1) * 0.05;
 }
 
-export function applyElderXp(rawXp: number, level: number): number {
-  return Math.floor(rawXp * elderXpMultiplier(level));
+export function applyElderXp(rawXp: number, level: number, sapphire: number): number {
+  return Math.floor(rawXp * elderXpMultiplier(level) * sapphire);
 }
 
-export function elderXpRows(rawXp: number, level: number): ModifierRow[] {
+export function elderXpRows(rawXp: number, level: number, sapphire: number): ModifierRow[] {
   return [
     { label: 'Base XP', value: Math.round(rawXp).toLocaleString() },
     {
@@ -35,6 +37,7 @@ export function elderXpRows(rawXp: number, level: number): ModifierRow[] {
       value: `x${elderXpMultiplier(level).toFixed(2)}`,
       info: 'On Elder Isle, XP gets +5% per Elder level above 1, using your level when the session is collected. Mainland boosts (pets, capes, blessings, prestige, 2x XP) do not apply.',
     },
+    ...sigilRows(sapphire, 'XP bonus (Sapphire Sigil)'),
   ];
 }
 
