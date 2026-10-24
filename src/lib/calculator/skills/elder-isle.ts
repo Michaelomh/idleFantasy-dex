@@ -13,9 +13,20 @@ import {
 import { binomialRange, expectedAndChance, SESSION_FRAMES } from '../frame-roll';
 import { elderLevel, applyElderXp, elderXpRows, elderSessionLength, artisanSaveChance } from '../elder-isle';
 import { tierFor } from './fishing';
+import { sigilMultiplier } from '@/lib/bonuses/sigils';
+import { sigilRows } from '../modifiers';
 import type { BonusItem, CalculatorInputs, SessionResult } from '../types';
 
 type ElderCalculator = (playerState: PlayerState, inputs: CalculatorInputs) => Promise<SessionResult>;
+
+function sigils(playerState: PlayerState) {
+  return {
+    sapphire: sigilMultiplier(playerState.raw.flags, 'elder_sapphire'),
+    emerald: sigilMultiplier(playerState.raw.flags, 'elder_emerald'),
+  };
+}
+
+const emeraldRows = (emerald: number) => sigilRows(emerald, 'Yield Bonus (Emerald Sigil)');
 
 /** Isle gathering: exactly one item and one flat XP grant per frame, 60 frames. */
 function gatheringResult(
@@ -26,14 +37,20 @@ function gatheringResult(
   bonusItems: BonusItem[] = [],
 ): SessionResult {
   const level = elderLevel(playerState, skillId);
+  const { sapphire, emerald } = sigils(playerState);
   const rawXp = SESSION_FRAMES * xpPerAction;
   const { minutes, breakdown } = elderSessionLength(playerState);
   return {
-    xp: { value: applyElderXp(rawXp, level) },
-    guaranteedItems: [{ ...item, qty: SESSION_FRAMES }],
-    bonusItems,
-    yieldBreakdown: [],
-    xpBreakdown: elderXpRows(rawXp, level),
+    xp: { value: applyElderXp(rawXp, level, sapphire) },
+    guaranteedItems: [{ ...item, qty: Math.round(SESSION_FRAMES * emerald) }],
+    bonusItems: bonusItems.map((b) => ({
+      ...b,
+      expected: b.expected * emerald,
+      rangeMin: Math.round(b.rangeMin * emerald),
+      rangeMax: Math.round(b.rangeMax * emerald),
+    })),
+    yieldBreakdown: emeraldRows(emerald),
+    xpBreakdown: elderXpRows(rawXp, level, sapphire),
     sessionMinutes: minutes,
     sessionBreakdown: breakdown,
   };
@@ -84,6 +101,7 @@ const elderFishing: ElderCalculator = async (playerState, inputs) => {
       bonusItems,
     ),
     yieldBreakdown: [
+      ...emeraldRows(sigils(playerState).emerald),
       {
         label: 'Bonus Roll Rate',
         value: '20.0%',
@@ -97,6 +115,7 @@ const elderAgility: ElderCalculator = async (playerState, inputs) => {
   const course = (await getAgilityCourses())[inputs.targetKey];
   const req = course?.level_required ?? 1;
   const level = elderLevel(playerState, 'agility');
+  const { sapphire } = sigils(playerState);
   const levelDiff = level - req;
   const success = Math.min(0.95, Math.max(0, 0.8 + levelDiff * 0.02));
   const totalLaps = SESSION_FRAMES * 2;
@@ -107,9 +126,9 @@ const elderAgility: ElderCalculator = async (playerState, inputs) => {
 
   return {
     xp: {
-      value: applyElderXp(rawXp, level),
-      min: applyElderXp(lapsLow * xpPerSuccess, level),
-      max: applyElderXp(lapsHigh * xpPerSuccess, level),
+      value: applyElderXp(rawXp, level, sapphire),
+      min: applyElderXp(lapsLow * xpPerSuccess, level, sapphire),
+      max: applyElderXp(lapsHigh * xpPerSuccess, level, sapphire),
     },
     guaranteedItems: [],
     bonusItems: [],
@@ -120,7 +139,7 @@ const elderAgility: ElderCalculator = async (playerState, inputs) => {
         label: 'Base XP range',
         value: `${formatNumber(rawXp)} (${formatNumber(lapsLow * xpPerSuccess)} - ${formatNumber(lapsHigh * xpPerSuccess)})`,
       },
-      ...elderXpRows(rawXp, level).slice(1),
+      ...elderXpRows(rawXp, level, sapphire).slice(1),
     ],
     sessionMinutes: minutes,
     sessionBreakdown: breakdown,
@@ -142,13 +161,15 @@ function elderCraft(skillId: 'smithing' | 'cooking'): ElderCalculator {
     const recipe = recipes[inputs.targetKey];
     const qty = inputs.qty ?? 1;
     const level = elderLevel(playerState, skillId);
+    const { sapphire, emerald } = sigils(playerState);
     const rawXp = qty * (recipe?.xp_per_item ?? 0);
-    const outputQty = (recipe?.output_quantity ?? 1) * qty;
+    const baseOutputQty = (recipe?.output_quantity ?? 1) * qty;
+    const outputQty = Math.max(baseOutputQty, Math.round(baseOutputQty * emerald));
     const materials = recipe?.materials ?? (recipe?.raw_item ? { [recipe.raw_item]: 1 } : {});
     const { minutes, breakdown } = elderSessionLength(playerState, qty);
 
     return {
-      xp: { value: applyElderXp(rawXp, level) },
+      xp: { value: applyElderXp(rawXp, level, sapphire) },
       guaranteedItems: [
         {
           key: recipe?.cooked_item ?? inputs.targetKey,
@@ -157,8 +178,8 @@ function elderCraft(skillId: 'smithing' | 'cooking'): ElderCalculator {
         },
       ],
       bonusItems: [],
-      yieldBreakdown: [{ label: 'Base Yield', value: outputQty.toLocaleString() }],
-      xpBreakdown: elderXpRows(rawXp, level),
+      yieldBreakdown: [{ label: 'Base Yield', value: baseOutputQty.toLocaleString() }, ...emeraldRows(emerald)],
+      xpBreakdown: elderXpRows(rawXp, level, sapphire),
       sessionMinutes: minutes,
       sessionBreakdown: breakdown,
       materialsRequired: Object.entries(materials).map(([key, perItem], i) => ({

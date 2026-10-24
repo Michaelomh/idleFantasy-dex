@@ -4,6 +4,7 @@ import { resolveAllSkillBonuses, type SkillBonus } from '@/lib/bonuses';
 import { activeNodesForSkill, effectTotal } from '@/lib/bonuses/prestige';
 import { resolveActiveBlessing } from '@/lib/bonuses/blessings';
 import { resolveCapeBonus } from '@/lib/bonuses/cape';
+import { sigilMultiplier } from '@/lib/bonuses/sigils';
 import { toolEfficiency } from './tool-efficiency';
 import { sessionLength } from './session-duration';
 import { prestigeNodeLabel } from '@/lib/bonuses/prestige-node-label';
@@ -22,6 +23,7 @@ export type ResolvedModifiers = {
   xpPct: number;
   petBoostPct: number;
   xpCapeMultiplier: number;
+  sigilXpMultiplier: number;
   yieldPct: number;
   yieldMultiplier: number;
   ironman: boolean;
@@ -37,6 +39,11 @@ export type ResolvedModifiers = {
 
 function pct(v: number): string {
   return `${v >= 0 ? '+' : ''}${v}%`;
+}
+
+/** One breakdown row for a sigil stack, or none when no stones of that colour are embedded. */
+export function sigilRows(mult: number, label: string): ModifierRow[] {
+  return mult > 1 ? [{ label, value: pct(Math.round((mult - 1) * 100)) }] : [];
 }
 
 export function yieldSourceNames(rows: ModifierRow[]): string {
@@ -138,12 +145,15 @@ export async function resolveModifiers(
   const blessingMultiplier = blessing ? 1 + blessingReadyXpPct / 100 : 1;
 
   const session = await sessionLength(playerState);
-  const yieldMultiplier = bonus.yieldSources.reduce((product, s) => product * (1 + s.pct / 100), 1);
+  // Emerald stones scale every collected item on top of the other yield sources.
+  const emeraldMult = sigilMultiplier(flags, 'elder_emerald');
+  const yieldMultiplier = bonus.yieldSources.reduce((product, s) => product * (1 + s.pct / 100), 1) * emeraldMult;
   const yieldModifiers: ModifierRow[] = [];
   const capeYieldSource = bonus.yieldSources.find((s) => s.label !== 'Prestige');
   if (capeYieldSource)
     yieldModifiers.push({ label: `Yield Bonus (${capeYieldSource.label})`, value: pct(capeYieldSource.pct) });
   yieldModifiers.push(...prestigeBreakdownRows(activeNodes, skillId, 'yield_pct', 'Yield Bonus'));
+  yieldModifiers.push(...sigilRows(emeraldMult, 'Yield Bonus (Emerald Sigil)'));
   const gemModifiers: ModifierRow[] = [
     ...prestigeBreakdownRows(activeNodes, skillId, 'bonus_roll_pct', 'Gem chance bonus', ' Gem'),
   ];
@@ -232,6 +242,8 @@ export async function resolveModifiers(
         'Live testing shows this doesn’t currently add XP for Agility, even though it’s implemented in the game files - not counted in the total shown.',
     });
   }
+  const sigilXpMultiplier = sigilMultiplier(flags, 'elder_sapphire');
+  xpModifiers.push(...sigilRows(sigilXpMultiplier, 'XP bonus (Sapphire Sigil)'));
   if (purchasedBoostReady) {
     xpModifiers.push({ label: 'XP Boost (Purchased)', value: 'x2', disabled: !purchasedBoostActive });
   }
@@ -259,6 +271,7 @@ export async function resolveModifiers(
     xpPct,
     petBoostPct: isGatheringTool || isCraftFamily || isAgility || isThieving ? petBoostPct : 0,
     xpCapeMultiplier,
+    sigilXpMultiplier,
     yieldPct: bonus.yieldPct,
     yieldMultiplier,
     ironman,
@@ -285,7 +298,12 @@ export function bucketedCraftXp(qty: number, xpPerItem: number, toolEff: number,
 
 export function applyXpMultipliers(rawXp: number, mods: ResolvedModifiers): number {
   return Math.floor(
-    rawXp * (1 + mods.xpPct / 100) * mods.xpBoostFactor * mods.blessingMultiplier * mods.xpCapeMultiplier,
+    rawXp *
+      (1 + mods.xpPct / 100) *
+      mods.xpBoostFactor *
+      mods.blessingMultiplier *
+      mods.xpCapeMultiplier *
+      mods.sigilXpMultiplier,
   );
 }
 

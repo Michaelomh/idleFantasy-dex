@@ -2,7 +2,8 @@ import type { PlayerState } from '@/lib/save-source/types';
 import { getEquipment, getBuildings, getPrestigePaths } from '@/lib/progress/game-data';
 import { getCropEntries } from '../game-data';
 import { humanize } from '@/lib/utils/humanize';
-import { resolveModifiers, applyXpMultipliers, withBaseRow } from '../modifiers';
+import { resolveModifiers, applyXpMultipliers, withBaseRow, sigilRows } from '../modifiers';
+import { sigilMultiplier } from '@/lib/bonuses/sigils';
 import { activeNodesForSkill, effectTotal } from '@/lib/bonuses/prestige';
 import { resolveCapeBonus } from '@/lib/bonuses/cape';
 import type { ModifierRow } from '../types';
@@ -80,6 +81,8 @@ export async function farming(playerState: PlayerState, inputs: CalculatorInputs
   const yieldMax = rollMax * capeFlatMult;
   const rollExpected = Math.round((((crop?.yield_min ?? 0) + (crop?.yield_max ?? 0)) / 2) * rollMult) * patchCount;
   const yieldExpected = rollExpected * capeFlatMult;
+  // Emerald stones scale the harvested crop at collection, after harvest XP is computed from the roll.
+  const emeraldMult = sigilMultiplier(playerState.raw.flags, 'elder_emerald');
 
   const plantXp = (crop?.planting_xp ?? 0) * patchCount;
   const harvestXpPerYield = crop?.harvest_xp ?? 0;
@@ -122,13 +125,13 @@ export async function farming(playerState: PlayerState, inputs: CalculatorInputs
       {
         key: inputs.targetKey,
         label: crop?.display_name ?? humanize(inputs.targetKey),
-        qty: yieldExpected,
-        qtyMin: yieldMin,
-        qtyMax: yieldMax,
+        qty: Math.round(yieldExpected * emeraldMult),
+        qtyMin: Math.round(yieldMin * emeraldMult),
+        qtyMax: Math.round(yieldMax * emeraldMult),
       },
     ],
     bonusItems: [],
-    yieldBreakdown: [yieldBaseRow, ...yieldRows],
+    yieldBreakdown: [yieldBaseRow, ...yieldRows, ...sigilRows(emeraldMult, 'Yield Bonus (Emerald Sigil)')],
     xpBreakdown: withBaseRow('Base XP', plantXp + harvestXpPerYield * baseYield, [...yieldRows, ...mods.xpModifiers]),
     sessionMinutes: (crop?.growth_time_hours ?? 0) * 60,
     sessionBreakdown: [],

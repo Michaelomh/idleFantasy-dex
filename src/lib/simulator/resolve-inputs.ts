@@ -27,6 +27,7 @@ import { getRecipes, type RecipeEntry } from '@/lib/calculator/game-data';
 import { activeNodesForSkill, effectTotal } from '@/lib/bonuses/prestige';
 import { resolveActiveBlessing } from '@/lib/bonuses/blessings';
 import { resolveCapeBonus } from '@/lib/bonuses/cape';
+import { sigilMultiplier } from '@/lib/bonuses/sigils';
 import { levelForXp, MAX_ITEM_LEVEL_XP } from '@/lib/utils/xp-table';
 import { parseQty } from '@/lib/utils/parse-qty';
 import {
@@ -539,8 +540,7 @@ export function collectionContext(
         (coinBlessing ? Math.fround(1 + Math.fround(coinBlessing.magnitude * capeMult)) : 1) * Math.fround(gooseMult),
       );
 
-  const stones = Object.values((flags.embedded_sigils ?? {}) as Record<string, string>);
-  const stack = (id: string) => 1 + stones.filter((s) => s === id).length * 0.05;
+  const stack = (id: string) => sigilMultiplier(flags, id);
 
   const elder = combatLevels(ps, true);
   return {
