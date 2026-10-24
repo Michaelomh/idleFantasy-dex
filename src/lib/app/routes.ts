@@ -32,6 +32,9 @@ export const ROUTES: RouteMeta[] = [
   { path: '/simulator', title: 'Simulator', parent: null },
   { path: '/simulator/bosses', title: 'Bosses', parent: '/simulator' },
   { path: '/simulator/bosses/:bossId', title: 'Bosses', parent: '/simulator/bosses' },
+  { path: '/simulator/dungeon', title: 'Dungeons', parent: '/simulator' },
+  { path: '/simulator/dungeon/:dungeonId', title: 'Dungeons', parent: '/simulator/dungeon' },
+  { path: '/simulator/infinity-tower', title: 'Infinity Tower', parent: '/simulator' },
 
   { path: '/calculator', title: 'Calculator', parent: null },
   { path: '/calculator/mining', title: 'Mining', parent: '/calculator' },

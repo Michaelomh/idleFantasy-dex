@@ -21,6 +21,7 @@ export type EquipmentEntry = {
   magic_damage_bonus?: number;
   attack_speed?: number;
   infinite_runes?: string;
+  heirloom_base?: Record<string, number>;
   [key: string]: unknown;
 };
 export const getEquipment = () => load<Record<string, EquipmentEntry>>('equipment.json');
@@ -54,6 +55,7 @@ export type BossEntry = {
   requires_monument?: boolean;
   requires_dock?: boolean;
   total_level_required?: number;
+  event_key?: string;
 };
 export const getBosses = () => load<Record<string, BossEntry>>('raid_bosses.json');
 
@@ -110,7 +112,11 @@ export type PetEntry = {
 };
 export const getPets = () => load<Record<string, PetEntry>>('pets.json');
 
-export type BuildingTier = { construction_level_required?: number; coin_cost?: number };
+export type BuildingTier = {
+  construction_level_required?: number;
+  coin_cost?: number;
+  bonuses?: Record<string, number>;
+};
 export type BuildingEntry = { key: string; tiers: BuildingTier[] };
 export const getBuildings = () => load<Record<string, BuildingEntry>>('buildings.json');
 
@@ -128,8 +134,12 @@ export const getBlessings = () => load<BlessingEntry[]>('blessings.json');
 export type EnemyEntry = {
   name: string;
   display_name: string;
-  drop_table?: { item: string }[];
-  always_drops?: { item: string }[];
+  hp: number;
+  combat_stats: { attack_level: number; strength_level: number; attack_bonus: number; strength_bonus: number };
+  defensive_stats: { attack_defense: number; strength_defense: number; ranged_defense: number; magic_defense: number };
+  xp_drops: Record<string, number>;
+  drop_table?: { item: string; chance: number; quantity_min: number; quantity_max: number }[];
+  always_drops?: { item: string; quantity: number }[];
 };
 export const getEnemies = () => load<Record<string, EnemyEntry>>('enemies.json');
 
@@ -147,6 +157,16 @@ export type DungeonEntry = {
   rare_drops?: { item: string; chance: number }[];
 };
 export const getDungeons = () => load<Record<string, DungeonEntry>>('dungeons.json');
+
+export type SpellEntry = {
+  display_name: string;
+  rune_type: string;
+  magic_level_required: number;
+  max_hit: number;
+  rune_cost: number;
+  description?: string;
+};
+export const getSpells = () => load<Record<string, SpellEntry>>('spells.json');
 
 export type FishEntry = { id?: string; display_name?: string; [key: string]: unknown };
 export const getFish = () => load<Record<string, FishEntry>>('fish.json');

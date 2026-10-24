@@ -11,3 +11,8 @@ export function formatNumber(n: number, decimals = 1): string {
   const fixed = (n / divisor).toFixed(decimals);
   return `${decimals > 0 ? fixed.replace(/\.?0+$/, '') : fixed}${suffix}`;
 }
+
+export const fmt = (v: number, digits = 0) =>
+  v.toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+
+export const pct = (v: number, digits = 1) => `${(v * 100).toFixed(digits)}%`;
