@@ -3,21 +3,9 @@ import { cn } from 'cn';
 import type { PlayerState } from '@/lib/save-source/types';
 import type { BossEntry, SeasonalEventEntry } from '@/lib/progress/game-data';
 import { humanize } from '@/lib/utils/humanize';
-import { formatMinSec } from '@/lib/utils/duration';
 import { pct } from '@/lib/utils/format-number';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { StatRows } from './stat-rows';
-
-const ELDER_PIECE_KEYS = [
-  'elder_helm',
-  'elder_platebody',
-  'elder_platelegs',
-  'elder_boots',
-  'elder_cape',
-  'elder_shield',
-  'elder_signet_ring',
-  'elder_amulet',
-];
 
 type Requirement = { label: string; met: boolean };
 
@@ -35,12 +23,6 @@ function requirements(boss: BossEntry, ps: PlayerState, events: Record<string, S
   if (boss.requires_monument) {
     out.push({ label: 'Grand Monument complete', met: Number(flags.monument_tier ?? 0) >= 5 });
   }
-  if (boss.id === 'last_elder') {
-    out.push({
-      label: 'Full Elder set owned',
-      met: ELDER_PIECE_KEYS.every((k) => (ps.raw.inventory[k] ?? 0) >= 1),
-    });
-  }
   const eventKey = boss.event_key;
   if (eventKey) {
     out.push({
@@ -55,7 +37,6 @@ export function BossInfoSection({
   boss,
   playerState,
   events,
-  sessionMs,
   partyScale,
   mercCount,
   names,
@@ -63,7 +44,6 @@ export function BossInfoSection({
   boss: BossEntry;
   playerState: PlayerState;
   events: Record<string, SeasonalEventEntry>;
-  sessionMs: number;
   partyScale: number;
   mercCount: number;
   names: Record<string, string>;
@@ -93,7 +73,10 @@ export function BossInfoSection({
             {reqs.map((r) => (
               <div key={r.label} className="flex items-center gap-2">
                 {r.met ? <Check className="size-4 text-fresh" /> : <X className="size-4 text-text-secondary" />}
-                <span className={cn('body text-sm', !r.met && 'text-text-secondary')}>{r.label}</span>
+                <span className={cn('body text-sm', !r.met && 'text-text-secondary')}>
+                  <span className="sr-only">{r.met ? 'Met: ' : 'Not met: '}</span>
+                  {r.label}
+                </span>
               </div>
             ))}
           </div>
@@ -105,7 +88,6 @@ export function BossInfoSection({
             {
               label: 'Time limit',
               value: `${duration} min`,
-              hint: `About ${formatMinSec((duration * sessionMs) / 60 / 60_000)} in real time`,
             },
             ...(boss.raid
               ? [

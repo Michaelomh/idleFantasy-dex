@@ -1,15 +1,16 @@
-import { SunSnow, Waves } from 'lucide-react';
+import { Compass, SunSnow, Waves } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 
-type ContentVariant = 'elder-isle' | 'seasonal';
+type ContentVariant = 'elder-isle' | 'seasonal' | 'lore-unlock';
 
 const VARIANTS: Record<ContentVariant, { icon: typeof Waves; defaultLabel: string }> = {
   'elder-isle': { icon: Waves, defaultLabel: 'Elder Isle' },
   seasonal: { icon: SunSnow, defaultLabel: 'Seasonal Event' },
+  'lore-unlock': { icon: Compass, defaultLabel: 'Lore unlock. Found through expeditions' },
 };
 
-/** Marks where a piece of content comes from (Elder Isle, a seasonal event). */
+/** Marks where a piece of content comes from (Elder Isle, a seasonal event, a lore unlock). */
 export function ContentBadge({ variant, label }: { variant: ContentVariant; label?: string }) {
   const [includeElderIsle] = useIncludeElderIsle();
   if (variant === 'elder-isle' && !includeElderIsle) return null;

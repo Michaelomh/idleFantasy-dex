@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SimulationJob, SimulationSummary } from '@/lib/simulator/run-simulation';
+import { useSessionStorage } from './use-session-storage';
 
-/** Runs a simulation job off the main thread. A new run cancels the one in flight. */
-export function useSimulation() {
+export function useSimulation(storageKey: string) {
   const workerRef = useRef<Worker | null>(null);
-  const [summary, setSummary] = useState<SimulationSummary | null>(null);
+  const [summary, setSummary] = useSessionStorage<SimulationSummary | null>(storageKey, null);
   const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const stop = useCallback(() => {
     workerRef.current?.terminate();
@@ -20,19 +21,22 @@ export function useSimulation() {
       const worker = new Worker(new URL('../simulator/simulation.worker.ts', import.meta.url), { type: 'module' });
       workerRef.current = worker;
       setIsRunning(true);
+      setError(null);
       worker.onmessage = (e: MessageEvent<SimulationSummary>) => {
         setSummary(e.data);
         setIsRunning(false);
         stop();
       };
-      worker.onerror = () => {
+      worker.onerror = (e) => {
+        console.error('[simulator] simulation worker failed', e);
+        setError(e.message || 'Something went wrong while simulating.');
         setIsRunning(false);
         stop();
       };
       worker.postMessage(job);
     },
-    [stop],
+    [stop, setSummary],
   );
 
-  return { summary, isRunning, run, clear: () => setSummary(null) };
+  return { summary, isRunning, error, run, clear: () => setSummary(null) };
 }

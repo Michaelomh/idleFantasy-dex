@@ -35,12 +35,12 @@ export function StatRows({ rows, title, plain = false }: { rows: StatRow[]; titl
 }
 
 /** A value with its 5th to 95th percentile range in lighter text beside it. */
-export type RangedValue = { value: string; range?: string };
+export type RangedValue = { value: string; range?: string; valueClassName?: string };
 
-function Ranged({ value, range }: RangedValue) {
+function Ranged({ value, range, valueClassName }: RangedValue) {
   return (
     <span className="whitespace-nowrap">
-      <span className="data font-semibold">{value}</span>
+      <span className={cn('data font-semibold', valueClassName)}>{value}</span>
       {range && <span className="body text-text-secondary"> ({range})</span>}
     </span>
   );
@@ -60,7 +60,7 @@ export function CompactRows({ rows, title }: { rows: CompactRow[]; title?: strin
             <span className="body">{r.label}</span>
             {r.hint && <span className="body text-xs text-text-secondary">{r.hint}</span>}
           </span>
-          <Ranged value={r.value} range={r.range} />
+          <Ranged value={r.value} range={r.range} valueClassName={r.valueClassName} />
         </div>
       ))}
     </div>

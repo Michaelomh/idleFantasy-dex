@@ -10,11 +10,12 @@ const STYLE_LABELS: Record<CombatStyle, string> = {
 
 export function CombatStyleTabs({ style, onChange }: { style: CombatStyle; onChange: (style: CombatStyle) => void }) {
   return (
-    <div className="flex gap-1 rounded-md border border-border p-1">
+    <div role="group" aria-label="Combat style" className="flex gap-1 rounded-md border border-border p-1">
       {(Object.keys(STYLE_LABELS) as CombatStyle[]).map((s) => (
         <button
           key={s}
           type="button"
+          aria-pressed={s === style}
           onClick={() => onChange(s)}
           className={cn(
             'label flex-1 rounded-sm px-2 py-1.5 text-center transition-colors',
