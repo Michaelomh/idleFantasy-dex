@@ -1,6 +1,6 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getGems } from '@/lib/progress/game-data';
-import { getOreEntries } from '../game-data';
+import { getOreEntries } from '@/lib/calculator/game-data';
 import { humanize } from '@/lib/utils/humanize';
 import {
   resolveModifiers,
@@ -8,9 +8,9 @@ import {
   applyYieldMultiplier,
   withBaseRow,
   toolEfficiencyRows,
-} from '../modifiers';
-import { expectedAndChance, gatheringFrameXpTotal, SESSION_FRAMES } from '../frame-roll';
-import type { CalculatorInputs, SessionResult } from '../types';
+} from '@/lib/calculator/modifiers';
+import { expectedAndChance, gatheringFrameXpTotal, SESSION_FRAMES } from '@/lib/calculator/frame-roll';
+import type { CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 
 export async function mining(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
   const [ores, gems] = await Promise.all([getOreEntries(), getGems()]);

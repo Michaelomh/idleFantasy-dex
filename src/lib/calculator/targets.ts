@@ -207,7 +207,6 @@ export async function targetsForSkill(skillId: string, playerState: PlayerState)
     case 'agility':
       return toOptions(excludeElderIsle(Object.entries(await getAgilityCourses())), level);
     case 'farming':
-      // exclude magic_bean from the target list.
       return toOptions(
         Object.entries(await getCropEntries())
           .filter(([k]) => k !== 'magic_bean')

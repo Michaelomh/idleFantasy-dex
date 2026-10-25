@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { cn } from 'cn';
-import type { PlayerState } from '@/lib/save-source/types';
-import type { BossEntry } from '@/lib/progress/game-data';
+import type { PlayerState } from '@/lib/save-source';
+import type { BossEntry } from '@/lib/progress';
 import { humanize } from '@/lib/utils/humanize';
 
 export function BossStatsPanel({ boss, playerState }: { boss: BossEntry; playerState: PlayerState }) {

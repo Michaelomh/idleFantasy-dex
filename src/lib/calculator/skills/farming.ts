@@ -1,15 +1,15 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getEquipment, getBuildings, getPrestigePaths } from '@/lib/progress/game-data';
-import { getCropEntries } from '../game-data';
+import { getCropEntries } from '@/lib/calculator/game-data';
 import { humanize } from '@/lib/utils/humanize';
-import { resolveModifiers, applyXpMultipliers, withBaseRow, sigilRows } from '../modifiers';
+import { resolveModifiers, applyXpMultipliers, withBaseRow, sigilRows } from '@/lib/calculator/modifiers';
 import { sigilMultiplier } from '@/lib/bonuses/sigils';
 import { activeNodesForSkill, effectTotal } from '@/lib/bonuses/prestige';
 import { resolveCapeBonus } from '@/lib/bonuses/cape';
-import type { ModifierRow } from '../types';
-import { toolEfficiency } from '../tool-efficiency';
-import { rollSumRange } from '../frame-roll';
-import type { CalculatorInputs, SessionResult } from '../types';
+import type { ModifierRow } from '@/lib/calculator/types';
+import { toolEfficiency } from '@/lib/calculator/tool-efficiency';
+import { rollSumRange } from '@/lib/calculator/frame-roll';
+import type { CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 
 const ASH_FARMING_MULT: Record<string, number> = {
   ashes: 1.1,

@@ -1,5 +1,5 @@
 import type { PlayerState } from '@/lib/save-source/types';
-import type { CalculatorInputs, SessionResult } from '../types';
+import type { CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 import { mining } from './mining';
 import { woodcutting } from './woodcutting';
 import { fishing } from './fishing';

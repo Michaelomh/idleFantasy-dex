@@ -9,13 +9,19 @@ import {
   getFishingSkillData,
   getAgilityCourses,
   getRecipes,
-} from '../game-data';
-import { binomialRange, expectedAndChance, SESSION_FRAMES } from '../frame-roll';
-import { elderLevel, applyElderXp, elderXpRows, elderSessionLength, artisanSaveChance } from '../elder-isle';
+} from '@/lib/calculator/game-data';
+import { binomialRange, expectedAndChance, SESSION_FRAMES } from '@/lib/calculator/frame-roll';
+import {
+  elderLevel,
+  applyElderXp,
+  elderXpRows,
+  elderSessionLength,
+  artisanSaveChance,
+} from '@/lib/calculator/elder-isle';
 import { tierFor } from './fishing';
 import { sigilMultiplier } from '@/lib/bonuses/sigils';
-import { sigilRows } from '../modifiers';
-import type { BonusItem, CalculatorInputs, SessionResult } from '../types';
+import { sigilRows } from '@/lib/calculator/modifiers';
+import type { BonusItem, CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 
 type ElderCalculator = (playerState: PlayerState, inputs: CalculatorInputs) => Promise<SessionResult>;
 

@@ -1,30 +1,23 @@
-import { cn } from 'cn';
 import type { CombatStyle } from '@/lib/simulator/combat-engine';
+import { IconToggleGroup } from '@/components/icon-toggle-group';
 
-const STYLE_LABELS: Record<CombatStyle, string> = {
-  attack: 'Attack',
-  strength: 'Strength',
-  ranged: 'Ranged',
-  magic: 'Magic',
-};
+const STYLE_OPTIONS: { value: CombatStyle; label: string }[] = [
+  { value: 'attack', label: 'Attack' },
+  { value: 'strength', label: 'Strength' },
+  { value: 'ranged', label: 'Ranged' },
+  { value: 'magic', label: 'Magic' },
+];
 
 export function CombatStyleTabs({ style, onChange }: { style: CombatStyle; onChange: (style: CombatStyle) => void }) {
   return (
-    <div role="group" aria-label="Combat style" className="flex gap-1 rounded-md border border-border p-1">
-      {(Object.keys(STYLE_LABELS) as CombatStyle[]).map((s) => (
-        <button
-          key={s}
-          type="button"
-          aria-pressed={s === style}
-          onClick={() => onChange(s)}
-          className={cn(
-            'label flex-1 rounded-sm px-2 py-1.5 text-center transition-colors',
-            s === style ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:bg-card',
-          )}
-        >
-          {STYLE_LABELS[s]}
-        </button>
-      ))}
+    <div role="group" aria-label="Combat style">
+      <IconToggleGroup
+        value={style}
+        onValueChange={onChange}
+        options={STYLE_OPTIONS}
+        showLabel="always"
+        className="w-full *:flex-1"
+      />
     </div>
   );
 }

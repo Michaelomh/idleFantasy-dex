@@ -33,6 +33,19 @@ const STATUS_COLORS: Record<StalenessType, { dot: string; text: string }> = {
   unknown: { dot: 'bg-muted-foreground', text: 'text-muted-foreground' },
 };
 
+function StatTiles({ stats }: { stats: { label: string; value: string | null }[] }) {
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {stats.map(({ label, value }) => (
+        <div key={label} className="flex flex-col items-start gap-0.5 rounded-card border border-border p-3 text-left">
+          <p className="data text-sm">{value ?? '-'}</p>
+          <p className="description whitespace-normal text-text-secondary">{label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function DashboardPage() {
   const [includeElderIsle] = useIncludeElderIsle();
   const [includeSeasonalEvents] = useIncludeSeasonalEvents();
@@ -110,6 +123,13 @@ export function DashboardPage() {
       label: 'Slayer pts',
       value: playerStateForRender.slayerPoints != null ? formatNumber(playerStateForRender.slayerPoints) : null,
     },
+  ];
+
+  const inventory = playerStateForRender.raw.inventory;
+  const elderStats: { label: string; value: string | null }[] = [
+    { label: 'Ancient Sigils', value: formatNumber(inventory.ancient_sigil ?? 0) },
+    { label: 'Elder Essence', value: formatNumber(inventory.elder_essence ?? 0) },
+    { label: 'Elder Bones', value: formatNumber(inventory.elder_bone ?? 0) },
   ];
 
   return (
@@ -195,17 +215,8 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {bottomStats.map(({ label, value }) => (
-            <div
-              key={label}
-              className="flex flex-col items-start gap-0.5 rounded-card border border-border p-3 text-left"
-            >
-              <p className="data text-sm">{value ?? '-'}</p>
-              <p className="description whitespace-normal text-text-secondary">{label}</p>
-            </div>
-          ))}
-        </div>
+        <StatTiles stats={bottomStats} />
+        {includeElderIsle && <StatTiles stats={elderStats} />}
       </div>
 
       <CharacterSwitcherSheet

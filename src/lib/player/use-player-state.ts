@@ -14,7 +14,9 @@ export function usePlayerState(): PlayerState | null {
     if (isExploring()) return;
 
     const identity = getSelectedSlot();
-    if (!identity) return;
+    // A memory-cache hit already seeded state; re-reading IndexedDB would hand back an equal but new
+    // object and rerun every [playerState] effect. Every ingest in this tab updates the memory cache.
+    if (!identity || peekCachedSave(identity)) return;
 
     let cancelled = false;
     void getCachedSave(identity).then((cached) => {

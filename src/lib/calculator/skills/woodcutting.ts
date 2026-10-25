@@ -1,5 +1,5 @@
 import type { PlayerState } from '@/lib/save-source/types';
-import { getTrees } from '../game-data';
+import { getTrees } from '@/lib/calculator/game-data';
 import { humanize } from '@/lib/utils/humanize';
 import {
   resolveModifiers,
@@ -7,9 +7,9 @@ import {
   applyYieldMultiplier,
   withBaseRow,
   toolEfficiencyRows,
-} from '../modifiers';
-import { gatheringFrameXpTotal, SESSION_FRAMES } from '../frame-roll';
-import type { CalculatorInputs, SessionResult } from '../types';
+} from '@/lib/calculator/modifiers';
+import { gatheringFrameXpTotal, SESSION_FRAMES } from '@/lib/calculator/frame-roll';
+import type { CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 
 export async function woodcutting(playerState: PlayerState, inputs: CalculatorInputs): Promise<SessionResult> {
   const trees = await getTrees();

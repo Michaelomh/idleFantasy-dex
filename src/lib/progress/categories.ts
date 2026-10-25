@@ -140,7 +140,6 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
   };
 }
 
-/** Seasonal IDs to leave out of Progress, or null when seasonal events are included. */
 const excludedSeasonalIds = async () => (getIncludeSeasonalEvents() ? null : getSeasonalIds());
 
 const formatOneIn = (chance?: number) => (chance ? `1/${formatNumber(Math.round(1 / chance))}` : '-');
@@ -206,7 +205,6 @@ const ARMOURY_GROUPS: Record<string, string[]> = {
 };
 const ARMOURY_GROUP_ORDER = Object.keys(ARMOURY_GROUPS);
 
-// Weapons are split by combat style; everything else by slot. Unknown slots fall into Tools.
 function armouryPlacement(eq: EquipmentEntry): { group: string; sectionKey: string } {
   const sectionKey = eq.slot === 'weapon' ? (eq.combat_style ?? 'weapon') : (eq.slot ?? 'other');
   const group = ARMOURY_GROUP_ORDER.find((g) => ARMOURY_GROUPS[g].includes(sectionKey)) ?? 'Tools';

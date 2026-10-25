@@ -50,7 +50,7 @@ export function ProgressCategoryAwardPage() {
     });
   }, [category, filter, query]);
 
-  useScrollRestoration(category?.id ?? null, !!category);
+  useScrollRestoration(categoryId, category?.id === categoryId);
 
   if (!playerState || !category) {
     return <LoadingScreen />;

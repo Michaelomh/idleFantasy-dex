@@ -21,10 +21,9 @@ import { Button } from '@/components/ui/button';
 import { CombatInputsSection } from './combat-inputs-section';
 import { QtyInput } from '@/components/qty-input';
 import { SimulationResultsSection } from './simulation-results-section';
-import { SimulatorHeader } from './simulator-header';
+import { PageHeader } from '@/components/page-header';
 import { StatRows } from './stat-rows';
 
-/** Enemy scaling past floor 100, as short rows; nothing below that. */
 function combatModifiers(floor: number) {
   const hp = towerHpMult(floor);
   if (hp <= 1) return [{ label: 'Enemy scaling', value: 'None' }];
@@ -51,7 +50,8 @@ export function SimulatorTowerPage() {
     () => (playerState && data ? defaultSelections(playerState, data) : null),
     [playerState, data],
   );
-  const sel = edited ?? defaults;
+  // Merge over the defaults so a stored object from an older Selections shape still has every field.
+  const sel = edited && defaults ? { ...defaults, ...edited } : defaults;
   const names = useMemo(() => (data ? displayNames(data) : {}), [data]);
   const hidden = useMemo(() => new Set(data ? Object.keys(data.pets) : []), [data]);
 
@@ -85,7 +85,7 @@ export function SimulatorTowerPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <SimulatorHeader title="Infinity Tower" backLabel="Back to simulator" backPath="/simulator" />
+      <PageHeader title="Infinity Tower" backLabel="Back to simulator" backPath="/simulator" />
 
       <div className="flex flex-col gap-4 rounded-card border border-border bg-card p-4">
         <span className="h3">Tower</span>

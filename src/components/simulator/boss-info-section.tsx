@@ -1,7 +1,7 @@
 import { Check, ChevronDown, X } from 'lucide-react';
 import { cn } from 'cn';
-import type { PlayerState } from '@/lib/save-source/types';
-import type { BossEntry, SeasonalEventEntry } from '@/lib/progress/game-data';
+import type { PlayerState } from '@/lib/save-source';
+import type { BossEntry, SeasonalEventEntry } from '@/lib/progress';
 import { humanize } from '@/lib/utils/humanize';
 import { pct } from '@/lib/utils/format-number';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';

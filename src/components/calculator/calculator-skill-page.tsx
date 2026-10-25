@@ -33,6 +33,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { StatusNotice } from '@/components/status-notice';
+import { PageHeader } from '@/components/page-header';
 
 function defaultTarget(targets: TargetOption[]): string {
   const unlocked = targets.filter((t) => !t.locked);
@@ -124,6 +125,8 @@ export function CalculatorSkillPage() {
   const [cropRotated, setCropRotated] = useState(false);
   const [timedBoostsEnabled, setTimedBoostsEnabled] = useState(true);
   const [result, setResult] = useState<SessionResult | null>(null);
+  /** Bumped each time targets finish loading, to rerun the calculation. */
+  const [loadCount, setLoadCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [sectionOrder, setSectionOrder] = useState<SectionId[]>(DEFAULT_SECTION_ORDER);
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string | undefined>>({});
@@ -165,6 +168,9 @@ export function CalculatorSkillPage() {
         setSelectedFilters({});
         setResult(null);
         setError(null);
+        // A calculation that finished before the targets arrived (Elder Isle's are quick) was just
+        // cleared above, so always run it again once loading is done.
+        setLoadCount((n) => n + 1);
         setSectionOrder(DEFAULT_SECTION_ORDER);
       })
       .catch((e: unknown) => {
@@ -239,7 +245,7 @@ export function CalculatorSkillPage() {
     return () => {
       cancelled = true;
     };
-  }, [playerState, isElder, skillId, inputs]);
+  }, [playerState, isElder, skillId, inputs, loadCount]);
 
   const filteredTargets = useMemo(
     () => applyTargetFilters(targets ?? [], filterGroups, selectedFilters),
@@ -271,7 +277,7 @@ export function CalculatorSkillPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <h1 className="h1">{match?.title ?? 'Calculator'}</h1>
+      <PageHeader title={match?.title ?? 'Calculator'} backLabel="Back to calculator" backPath="/calculator" />
       <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
         <span className="h3">Inputs</span>
 
@@ -388,7 +394,7 @@ export function CalculatorSkillPage() {
                 <StatusNotice variant="info" className="size-3.5" message={materialSaveInfo(skillId, isElder)} />
               )}
             </Label>
-            <p className="data">
+            <p className="body">
               {result.materialsRequired.map((m) => `${m.label} x${formatNumber(m.qty)}`).join(', ')}
             </p>
           </div>

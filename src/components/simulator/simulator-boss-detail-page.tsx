@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { usePlayerState } from '@/lib/player/use-player-state';
-import { getBosses, getSeasonalEvents, type BossEntry, type SeasonalEventEntry } from '@/lib/progress/game-data';
+import { getBosses, getSeasonalEvents, type BossEntry, type SeasonalEventEntry } from '@/lib/progress';
 import { LoadingScreen } from '@/components/loading-screen';
 import { RAID_FULL_PARTY } from '@/lib/simulator/combat-engine';
 import {
@@ -23,13 +23,12 @@ import { BossInfoSection } from './boss-info-section';
 import { CombatInputsSection } from './combat-inputs-section';
 import { SimulationResultsSection } from './simulation-results-section';
 import { SimulatorNotFound } from './simulator-not-found';
-import { SimulatorHeader } from './simulator-header';
+import { PageHeader } from '@/components/page-header';
 import { MAX_MERCENARIES, MercenaryPicker } from './mercenary-picker';
 
 export function SimulatorBossDetailPage() {
   const { bossId } = useParams<{ bossId: string }>();
   const playerState = usePlayerState();
-  // undefined while loading, null when the id matches no boss.
   const [boss, setBoss] = useState<BossEntry | null | undefined>(undefined);
   const [data, setData] = useState<SimData | null>(null);
   const [edited, setSel] = useSessionStorage<Selections | null>(`simulator:boss:${bossId}`, null);
@@ -50,7 +49,8 @@ export function SimulatorBossDetailPage() {
     const d = defaultSelections(playerState, data, isle);
     return { ...d, mercIds: d.mercIds.slice(0, MAX_MERCENARIES) };
   }, [playerState, data, isle]);
-  const sel = edited ?? defaults;
+  // Merge over the defaults so a stored object from an older Selections shape still has every field.
+  const sel = edited && defaults ? { ...defaults, ...edited } : defaults;
 
   const names = useMemo(() => (data ? displayNames(data) : {}), [data]);
   const hidden = useMemo(
@@ -91,8 +91,9 @@ export function SimulatorBossDetailPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <SimulatorHeader
-        title={boss.display_name}
+      <PageHeader
+        // "Sol Invictus, the Sundered Flame" -> "Sol Invictus": the title after the comma is too long for the header.
+        title={boss.display_name.split(',')[0]}
         backLabel="Back to bosses"
         backPath="/simulator/bosses"
         badge={boss.raid ? 'Raid' : 'Solo'}

@@ -12,7 +12,6 @@ export const BASE_ATTACK_SPEED_SEC = 2.4;
 /** Ticks per frame at the base attack speed; also the floor used for death/boss-end timing. */
 export const TICKS_PER_FRAME = 25;
 export const DUNGEON_FRAMES = 60;
-/** The most food a run can eat. */
 export const FOOD_EAT_CAP = 300;
 /** Full raid party (player + 3 mercenaries); raid bosses scale up against smaller parties. */
 export const RAID_FULL_PARTY = 4;
@@ -151,7 +150,6 @@ const add = (map: Record<string, number>, key: string, qty: number) => {
   map[key] = (map[key] ?? 0) + qty;
 };
 
-/** Shared per-run consumable state: food in eat order, arrow stacks, runes. */
 function consumables(p: EngineInputs) {
   const food = p.food.map((f) => ({ ...f }));
   let foodEaten = 0;

@@ -15,6 +15,7 @@ export function Banner({
   title,
   description,
   action,
+  compact = false,
   className,
 }: {
   tone?: BannerTone;
@@ -22,19 +23,21 @@ export function Banner({
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
+  compact?: boolean;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        'mx-4 my-2 flex items-center gap-3 rounded-card border p-4 first:mt-4',
+        'flex items-center gap-3 rounded-card border',
+        compact ? 'p-3' : 'mx-4 my-2 p-4 first:mt-4',
         TONE_STYLES[tone],
         className,
       )}
     >
       {icon}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="body font-bold text-white">{title}</span>
+        <span className={compact ? 'body' : 'body font-bold text-white'}>{title}</span>
         {description && <span className="body text-text-secondary">{description}</span>}
       </div>
       {action && <div className="shrink-0">{action}</div>}

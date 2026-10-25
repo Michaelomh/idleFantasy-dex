@@ -32,7 +32,6 @@ export async function getSeasonalIds(): Promise<SeasonalIds> {
   };
 }
 
-/** Whether a progress item comes from a seasonal event, for showing the seasonal badge. */
 export function isSeasonalItem(ids: SeasonalIds, categoryId: string, itemId: string): boolean {
   switch (categoryId) {
     case 'bosses':

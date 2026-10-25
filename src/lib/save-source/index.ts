@@ -11,6 +11,7 @@ export {
   getCachedSave,
   peekCachedSave,
   getAllCachedSaves,
+  getCachedSaveIdentities,
   deleteCachedSave,
   getDirectoryHandle,
   clearDirectoryHandle,

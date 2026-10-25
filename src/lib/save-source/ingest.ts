@@ -71,5 +71,8 @@ async function commit(
     ingestedAt: Date.now(),
   };
   await putCachedSave(identity, record);
+  // Without this the browser may evict IndexedDB under storage pressure (or, in Safari, after 7 days
+  // unused when not installed), silently dropping every cached save.
+  void navigator.storage?.persist?.();
   return record;
 }

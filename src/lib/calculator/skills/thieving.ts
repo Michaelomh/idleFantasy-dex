@@ -1,11 +1,11 @@
 import type { PlayerState } from '@/lib/save-source/types';
 import { getEquipment } from '@/lib/progress/game-data';
-import { getThievingNpcs } from '../game-data';
+import { getThievingNpcs } from '@/lib/calculator/game-data';
 import { humanize } from '@/lib/utils/humanize';
-import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier } from '../modifiers';
-import { toolEfficiency } from '../tool-efficiency';
-import { SESSION_FRAMES, binomialRange, uniformIntVariance, compoundRollRange } from '../frame-roll';
-import type { CalculatorInputs, ModifierRow, SessionResult } from '../types';
+import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier } from '@/lib/calculator/modifiers';
+import { toolEfficiency } from '@/lib/calculator/tool-efficiency';
+import { SESSION_FRAMES, binomialRange, uniformIntVariance, compoundRollRange } from '@/lib/calculator/frame-roll';
+import type { CalculatorInputs, ModifierRow, SessionResult } from '@/lib/calculator/types';
 
 const SUCCESS_MIN = 0.1;
 const SUCCESS_MAX = 0.98;

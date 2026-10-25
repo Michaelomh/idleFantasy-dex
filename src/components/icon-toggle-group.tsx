@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 export type IconToggleOption<T extends string> = {
   value: T;
   label: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
 };
 
 export function IconToggleGroup<T extends string>({
@@ -46,7 +46,7 @@ export function IconToggleGroup<T extends string>({
               iconOnly ? 'size-8' : 'h-8 gap-1.5 px-3 font-bold',
             )}
           >
-            <Icon className={iconOnly ? 'size-4' : 'size-3.5'} />
+            {Icon && <Icon className={iconOnly ? 'size-4' : 'size-3.5'} />}
             {showText && label}
           </ToggleGroupItem>
         );

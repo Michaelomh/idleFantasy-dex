@@ -66,6 +66,41 @@ Default to no comments. Only write one when the WHY is non-obvious - a hidden co
 workaround for a specific bug, or behavior that would surprise a reader. Don't explain WHAT
 the code does; a well-named function or variable already does that.
 
+Write a comment for:
+
+- **Game provenance** - the Kotlin file/function a port mirrors, and the game version or commit
+  it was pulled from (e.g. the header of `combat-engine.ts`). This is what you diff against on
+  the next game sync.
+- **Game rules the code can't show** - ordering, caps and exceptions that look arbitrary
+  without the game's source (`// Death is checked before eating, so food cannot revive a
+player at 0 HP.`).
+- **Deliberate deviations** - where we override vendored data or skip a game mechanic on
+  purpose (the farming cape's 2x in `cape.ts`, `// Ignoring flow-state` in `modifiers.ts`).
+- **Platform / framework gotchas** - browser, React or storage behavior a reader wouldn't
+  expect (the layout-effect timing in `use-scroll-restoration.ts`, IndexedDB eviction in
+  `ingest.ts`). An empty `catch` always gets one saying why swallowing is safe.
+- **A value's meaning when it's set far from where it's declared** - e.g. `runes: null` means
+  unlimited, but that `null` is decided in `resolve-inputs.ts`, not next to the type.
+
+Don't write a comment for:
+
+- **Anything readable from the next few lines** - restating a function name
+  (`/** Whether a progress item belongs to Elder Isle */` on `isElderIsleItem`), a prop that's
+  plainly optional, or a tri-state like `undefined` = loading / `null` = not found when the
+  initializer and the `=== null` check are on the same screen.
+- **Section labels** - `// PWA Loading Screen`, `/* motion */`. If a block needs a label,
+  extract it into a named function or component.
+- **Cross-references to other UI** - "Same icon as the Elder Isle badge", "spaced like the
+  Settings rows", "the Calculator's filter pill". They don't keep anything in sync and go stale
+  silently. If two things must match, share a constant instead.
+- **Where something is used** - "switch on the Calculator, Progress and Dungeons pages",
+  "Goal card names, Settings group titles". The list is wrong the moment a new caller is added;
+  grep answers it accurately.
+- **Commented-out code** - delete it; git history keeps it.
+
+When the same comment would be needed at every call site, move it once onto the thing being
+called (e.g. the `[key]` rule on `useScrollRestoration`, not each page that calls it).
+
 ## Error handling
 
 Async UI actions (button clicks, syncs) follow the pattern in `handleSync`
@@ -113,11 +148,16 @@ install size matters.
   `player/`, `app/`), not by technical layer. A subfolder with more than one internal file
   gets an `index.ts` barrel that re-exports its public surface explicitly (named, not
   `export *`, except `save-source/index.ts` re-exporting `types.ts` wholesale) - see
-  `lib/bonuses/index.ts`. Import from the folder (`@/lib/bonuses`), never from an internal
-  file inside it (`@/lib/bonuses/resolve-skill-bonuses`); nothing in the repo does the latter
-  today, so a new import reaching past a barrel is a regression, not a precedent.
-- `src/pages/ds/` is a dev-only design-system gallery, wired into `main.tsx` behind
-  `import.meta.env.DEV`. Don't treat it as a real route or import from it.
+  `lib/bonuses/index.ts`. Today that's `bonuses/`, `calculator/`, `progress/` and
+  `save-source/`.
+  - Components import from the folder (`@/lib/bonuses`), never from an internal file inside it
+    (`@/lib/bonuses/resolve-skill-bonuses`). If a component needs something the barrel doesn't
+    export, add it to the barrel.
+  - Inside `src/lib/`, a module may import another domain's internal file directly
+    (`@/lib/progress/game-data`, `@/lib/save-source/types`). Going through a barrel there pulls
+    in the whole folder and invites import cycles between domains.
+  - Folders without a barrel (`simulator/`, `game/`, `hooks/`, `utils/`, `app/`, `player/`) are
+    imported file by file.
 
 ## Testing
 
