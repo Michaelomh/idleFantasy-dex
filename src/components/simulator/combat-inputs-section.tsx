@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Info } from 'lucide-react';
 import type { PlayerState } from '@/lib/save-source/types';
 import { humanize } from '@/lib/utils/humanize';
 import { FOOD_EAT_CAP, playerAttackRoll, type CombatStyle, type EngineInputs } from '@/lib/simulator/combat-engine';
@@ -6,10 +6,10 @@ import { KNOWN_ARROWS } from '@/lib/simulator/combat-tables';
 import { ARMOR_SLOTS } from '@/lib/simulator/loadout';
 import { foodHealValues, type ResolvedCombat, type Selections, type SimData } from '@/lib/simulator/resolve-inputs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Label } from '@/components/ui/label';
 import { CombatStyleTabs } from './combat-style-tabs';
-import { MercenaryPicker } from './mercenary-picker';
 import { QtyInput } from '@/components/qty-input';
 import { StatRows } from './stat-rows';
 
@@ -35,10 +35,31 @@ function finalStats(p: EngineInputs) {
   ];
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/** [htmlFor] is the id of the select or input the label names. [info] adds an info icon with a popover. */
+function Field({
+  label,
+  htmlFor,
+  info,
+  children,
+}: {
+  label: string;
+  htmlFor?: string;
+  info?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+      <span className="flex items-center gap-1.5">
+        <Label htmlFor={htmlFor}>{label}</Label>
+        {info && (
+          <Popover>
+            <PopoverTrigger className="inline-flex cursor-pointer text-text-secondary" aria-label={`About ${label}`}>
+              <Info className="size-4" />
+            </PopoverTrigger>
+            <PopoverContent>{info}</PopoverContent>
+          </Popover>
+        )}
+      </span>
       {children}
     </div>
   );
@@ -50,14 +71,15 @@ export function CombatInputsSection({
   sel,
   onChange,
   resolved,
-  isRaid = false,
+  combatStyleInfo,
 }: {
   playerState: PlayerState;
   data: SimData;
   sel: Selections;
   onChange: (sel: Selections) => void;
   resolved: ResolvedCombat;
-  isRaid?: boolean;
+  /** Shown in an info popover beside the Combat style label. */
+  combatStyleInfo?: string;
 }) {
   const set = <K extends keyof Selections>(key: K, value: Selections[K]) => onChange({ ...sel, [key]: value });
   const inv = (key: string) => playerState.raw.inventory[key] ?? 0;
@@ -73,13 +95,13 @@ export function CombatInputsSection({
   const spells = Object.entries(data.spells).sort(([, a], [, b]) => a.magic_level_required - b.magic_level_required);
 
   return (
-    <Collapsible defaultOpen className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
+    <Collapsible defaultOpen={false} className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
       <CollapsibleTrigger className="group/trigger flex items-center justify-between gap-2 text-left">
         <span className="h3">Setup</span>
         <ChevronDown className="size-4 shrink-0 text-text-secondary transition-transform group-data-open/trigger:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent className="flex flex-col gap-5">
-        <Field label="Weapon slot">
+        <Field label="Combat style" info={combatStyleInfo}>
           <CombatStyleTabs style={sel.weaponSlot} onChange={(s: CombatStyle) => set('weaponSlot', s)} />
         </Field>
 
@@ -92,17 +114,24 @@ export function CombatInputsSection({
           ))}
         </div>
 
-        <StatRows
-          title="Gear"
-          plain
-          rows={[
-            { label: 'Weapon', value: resolved.weapon?.item.display_name ?? 'None' },
-            ...ARMOR_SLOTS.map((slot) => {
-              const g = resolved.armour.find((p) => p.slot === slot);
-              return { label: humanize(slot), value: g ? (g.item.display_name ?? humanize(g.id)) : 'None' };
-            }),
-          ]}
-        />
+        <Collapsible defaultOpen={false} className="flex flex-col gap-1.5">
+          <CollapsibleTrigger className="group/gear flex items-center justify-between gap-2 text-left">
+            <span className="label text-text-secondary">Gear</span>
+            <ChevronDown className="size-4 shrink-0 text-text-secondary transition-transform group-data-open/gear:rotate-180" />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <StatRows
+              plain
+              rows={[
+                { label: 'Weapon', value: resolved.weapon?.item.display_name ?? 'None' },
+                ...ARMOR_SLOTS.map((slot) => {
+                  const g = resolved.armour.find((p) => p.slot === slot);
+                  return { label: humanize(slot), value: g ? (g.item.display_name ?? humanize(g.id)) : 'None' };
+                }),
+              ]}
+            />
+          </CollapsibleContent>
+        </Collapsible>
 
         {resolved.warnings.map((w) => (
           <p key={w} className="body rounded-md border border-border bg-primary/10 px-3 py-2 text-sm">
@@ -110,9 +139,10 @@ export function CombatInputsSection({
           </p>
         ))}
 
-        <Field label="Potion">
+        <Field label="Potion" htmlFor="sim-potion">
           <div>
             <NativeSelect
+              id="sim-potion"
               className="w-full min-w-0"
               value={sel.potionKey ?? ''}
               onChange={(e) => {
@@ -131,8 +161,9 @@ export function CombatInputsSection({
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Eat below HP %">
+          <Field label="Eat below HP %" htmlFor="sim-eat-threshold">
             <NativeSelect
+              id="sim-eat-threshold"
               className="w-full"
               value={sel.eatThresholdPct}
               onChange={(e) => set('eatThresholdPct', Number(e.target.value))}
@@ -144,8 +175,13 @@ export function CombatInputsSection({
               ))}
             </NativeSelect>
           </Field>
-          <Field label="Eat order">
-            <NativeSelect className="w-full" value={sel.eatOrder} onChange={(e) => set('eatOrder', e.target.value)}>
+          <Field label="Eat order" htmlFor="sim-eat-order">
+            <NativeSelect
+              id="sim-eat-order"
+              className="w-full"
+              value={sel.eatOrder}
+              onChange={(e) => set('eatOrder', e.target.value)}
+            >
               {EAT_ORDERS.map((o) => (
                 <NativeSelectOption key={o.key} value={o.key}>
                   {o.label}
@@ -156,9 +192,10 @@ export function CombatInputsSection({
         </div>
 
         {resolved.style === 'ranged' && (
-          <Field label="Arrows">
+          <Field label="Arrows" htmlFor="sim-arrows">
             <div className="flex gap-2">
               <NativeSelect
+                id="sim-arrows"
                 className="w-full min-w-0"
                 value={sel.arrowKey ?? ''}
                 onChange={(e) => {
@@ -184,9 +221,10 @@ export function CombatInputsSection({
         )}
 
         {resolved.style === 'magic' && (
-          <Field label="Spell">
+          <Field label="Spell" htmlFor="sim-spell">
             <div className="flex gap-2">
               <NativeSelect
+                id="sim-spell"
                 className="w-full min-w-0"
                 value={sel.spellKey ?? ''}
                 onChange={(e) => {
@@ -212,16 +250,9 @@ export function CombatInputsSection({
           </Field>
         )}
 
-        {isRaid && (
-          <MercenaryPicker
-            mercenaries={data.mercenaries}
-            selectedIds={sel.mercIds}
-            onChange={(ids) => set('mercIds', ids)}
-          />
-        )}
-
-        <Field label="Food">
+        <Field label="Food" htmlFor="sim-food">
           <NativeSelect
+            id="sim-food"
             className="w-full min-w-0"
             value={selectedFood ?? ''}
             onChange={(e) => {
@@ -233,7 +264,7 @@ export function CombatInputsSection({
             <NativeSelectOption value="">None</NativeSelectOption>
             {foods.map((f) => (
               <NativeSelectOption key={f.key} value={f.key}>
-                {f.name} (heals {resolved.foodHeal[f.key]}, {inv(f.key).toLocaleString()} owned)
+                {f.name.replace(/^Cooked /, '')} (heals {resolved.foodHeal[f.key]})
               </NativeSelectOption>
             ))}
           </NativeSelect>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
+import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { getBosses, getSeasonalEvents, type BossEntry, type SeasonalEventEntry } from '@/lib/progress/game-data';
 import { LoadingScreen } from '@/components/loading-screen';
@@ -21,14 +22,17 @@ import type { SimulationJob } from '@/lib/simulator/run-simulation';
 import { BossInfoSection } from './boss-info-section';
 import { CombatInputsSection } from './combat-inputs-section';
 import { SimulationResultsSection } from './simulation-results-section';
-import { MAX_MERCENARIES } from './mercenary-picker';
+import { SimulatorNotFound } from './simulator-not-found';
+import { SimulatorHeader } from './simulator-header';
+import { MAX_MERCENARIES, MercenaryPicker } from './mercenary-picker';
 
 export function SimulatorBossDetailPage() {
   const { bossId } = useParams<{ bossId: string }>();
   const playerState = usePlayerState();
-  const [boss, setBoss] = useState<BossEntry | null>(null);
+  // undefined while loading, null when the id matches no boss.
+  const [boss, setBoss] = useState<BossEntry | null | undefined>(undefined);
   const [data, setData] = useState<SimData | null>(null);
-  const [edited, setSel] = useState<Selections | null>(null);
+  const [edited, setSel] = useSessionStorage<Selections | null>(`simulator:boss:${bossId}`, null);
   const [events, setEvents] = useState<Record<string, SeasonalEventEntry>>({});
 
   useEffect(() => {
@@ -59,6 +63,9 @@ export function SimulatorBossDetailPage() {
     [data, boss],
   );
 
+  if (boss === null) {
+    return <SimulatorNotFound title="Boss not found" backLabel="Back to bosses" backPath="/simulator/bosses" />;
+  }
   if (!playerState || !boss || !data || !sel) return <LoadingScreen />;
 
   const resolved = resolveCombat(playerState, data, sel, isle);
@@ -84,23 +91,17 @@ export function SimulatorBossDetailPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <div className="flex items-center gap-2">
-        <span className="h1">{boss.display_name}</span>
-        <span className="label rounded-full border border-border px-2 py-0.5 text-text-secondary">
-          {boss.raid ? 'Raid' : 'Solo'}
-        </span>
-      </div>
-      {isle && (
-        <p className="body text-sm text-text-secondary">
-          Fought on Elder Isle: uses your Elder levels, and XP goes to your Elder skills.
-        </p>
-      )}
+      <SimulatorHeader
+        title={boss.display_name}
+        backLabel="Back to bosses"
+        backPath="/simulator/bosses"
+        badge={boss.raid ? 'Raid' : 'Solo'}
+      />
 
       <BossInfoSection
         boss={boss}
         playerState={playerState}
         events={events}
-        sessionMs={runSessionMs}
         partyScale={partyScale}
         mercCount={mercCount}
         names={names}
@@ -112,12 +113,21 @@ export function SimulatorBossDetailPage() {
         sel={sel}
         onChange={setSel}
         resolved={resolved}
-        isRaid={!!boss.raid}
+        combatStyleInfo={isle ? 'Elder Isle: uses your Elder levels, and XP goes to your Elder skills.' : undefined}
       />
+
+      {boss.raid && (
+        <MercenaryPicker
+          mercenaries={data.mercenaries}
+          selectedIds={sel.mercIds}
+          onChange={(mercIds) => setSel({ ...sel, mercIds })}
+        />
+      )}
 
       <SimulationResultsSection
         buildJob={buildJob}
         kind="boss"
+        storageKey={`simulator:boss:${bossId}`}
         names={names}
         hidden={hidden}
         disabledReason={magicWithoutSpell ? 'Pick a spell first.' : (resolved.invalid ?? undefined)}

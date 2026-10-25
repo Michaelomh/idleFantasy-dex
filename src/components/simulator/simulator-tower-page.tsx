@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { Minus, Plus } from 'lucide-react';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { pct } from '@/lib/utils/format-number';
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { CombatInputsSection } from './combat-inputs-section';
 import { QtyInput } from '@/components/qty-input';
 import { SimulationResultsSection } from './simulation-results-section';
+import { SimulatorHeader } from './simulator-header';
 import { StatRows } from './stat-rows';
 
 /** Enemy scaling past floor 100, as short rows; nothing below that. */
@@ -38,8 +40,8 @@ function combatModifiers(floor: number) {
 export function SimulatorTowerPage() {
   const playerState = usePlayerState();
   const [data, setData] = useState<SimData | null>(null);
-  const [edited, setSel] = useState<Selections | null>(null);
-  const [floorText, setFloorText] = useState<string | null>(null);
+  const [edited, setSel] = useSessionStorage<Selections | null>('simulator:tower', null);
+  const [floorText, setFloorText] = useSessionStorage<string | null>('simulator:tower:floor', null);
 
   useEffect(() => {
     void loadSimData().then(setData);
@@ -83,7 +85,7 @@ export function SimulatorTowerPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <span className="h1">Infinity Tower</span>
+      <SimulatorHeader title="Infinity Tower" backLabel="Back to simulator" backPath="/simulator" />
 
       <div className="flex flex-col gap-4 rounded-card border border-border bg-card p-4">
         <span className="h3">Tower</span>
@@ -117,6 +119,7 @@ export function SimulatorTowerPage() {
       <SimulationResultsSection
         buildJob={buildJob}
         kind="tower"
+        storageKey="simulator:tower"
         names={names}
         hidden={hidden}
         disabledReason={

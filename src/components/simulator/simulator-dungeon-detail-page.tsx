@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
+import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { ChevronDown } from 'lucide-react';
 import { usePlayerState } from '@/lib/player/use-player-state';
-import { getDungeons, getSeasonalEvents, type DungeonEntry, type SeasonalEventEntry } from '@/lib/progress/game-data';
+import { getDungeons, type DungeonEntry } from '@/lib/progress/game-data';
 import { ELDER_ISLE_DUNGEON_IDS } from '@/lib/game/elder-isle';
 import { humanize } from '@/lib/utils/humanize';
 import { fmt, pct } from '@/lib/utils/format-number';
 import {
   collectionContext,
-  combatLevelFor,
   defaultSelections,
   displayNames,
   dungeonTarget,
-  DUNGEON_LEVEL_GRACE,
   loadSimData,
   resolveCombat,
   sessionMs,
@@ -24,15 +23,17 @@ import { LoadingScreen } from '@/components/loading-screen';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CombatInputsSection } from './combat-inputs-section';
 import { SimulationResultsSection } from './simulation-results-section';
+import { SimulatorNotFound } from './simulator-not-found';
+import { SimulatorHeader } from './simulator-header';
 import { StatRows, type StatRow } from './stat-rows';
 
 export function SimulatorDungeonDetailPage() {
   const { dungeonId } = useParams<{ dungeonId: string }>();
   const playerState = usePlayerState();
-  const [dungeon, setDungeon] = useState<DungeonEntry | null>(null);
-  const [events, setEvents] = useState<Record<string, SeasonalEventEntry>>({});
+  // undefined while loading, null when the id matches no dungeon.
+  const [dungeon, setDungeon] = useState<DungeonEntry | null | undefined>(undefined);
   const [data, setData] = useState<SimData | null>(null);
-  const [edited, setSel] = useState<Selections | null>(null);
+  const [edited, setSel] = useSessionStorage<Selections | null>(`simulator:dungeon:${dungeonId}`, null);
 
   useEffect(() => {
     void getDungeons().then((all) => setDungeon((dungeonId && all[dungeonId]) || null));
@@ -40,7 +41,6 @@ export function SimulatorDungeonDetailPage() {
 
   useEffect(() => {
     void loadSimData().then(setData);
-    void getSeasonalEvents().then(setEvents);
   }, []);
 
   const isle = !!dungeon && ELDER_ISLE_DUNGEON_IDS.has(dungeon.name);
@@ -55,29 +55,16 @@ export function SimulatorDungeonDetailPage() {
     [data, dungeon],
   );
 
+  if (dungeon === null) {
+    return <SimulatorNotFound title="Dungeon not found" backLabel="Back to dungeons" backPath="/simulator/dungeon" />;
+  }
   if (!playerState || !dungeon || !data || !sel) return <LoadingScreen />;
 
   const resolved = resolveCombat(playerState, data, sel, isle);
-  const level = combatLevelFor(playerState, isle);
-  const levelNeeded = dungeon.recommended_level - DUNGEON_LEVEL_GRACE;
-  const loreUnlocked = ((playerState.raw.flags.unlocked_dungeons as string[] | undefined) ?? []).includes(dungeon.name);
-
   const totalWeight = dungeon.enemy_spawns.reduce((n, s) => n + s.weight, 0);
   const spawns = dungeon.enemy_spawns
     .map((s) => ({ ...s, enemy: data.enemies[s.enemy], key: s.enemy }))
     .filter((s) => !!s.enemy);
-
-  const notices = [
-    level < levelNeeded
-      ? `Locked: needs combat level ${levelNeeded}${isle ? ' (Elder levels)' : ''}, you have ${level}. Simulated anyway.`
-      : null,
-    dungeon.lore_unlock_only && !loreUnlocked ? 'Unlocked through lore. Your save has not unlocked it yet.' : null,
-    dungeon.event_key
-      ? `Seasonal - ${events[dungeon.event_key]?.display_name ?? humanize(dungeon.event_key)}. Only open during the event.`
-      : null,
-    isle ? 'Elder Isle: uses your Elder levels, XP goes to your Elder skills, and dying keeps all XP and loot.' : null,
-    dungeon.safe_zone ? 'Safe zone: you cannot die here.' : null,
-  ].filter((n): n is string => !!n);
 
   const spawnRows: StatRow[] = spawns.map((s) => ({
     label: s.enemy.display_name,
@@ -105,17 +92,12 @@ export function SimulatorDungeonDetailPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <div className="flex items-center gap-2">
-        <span className="h1">{dungeon.display_name}</span>
-        <span className="label rounded-full border border-border px-2 py-0.5 text-text-secondary">
-          Lv {dungeon.recommended_level}
-        </span>
-      </div>
-      {notices.map((n) => (
-        <p key={n} className="body text-sm text-text-secondary">
-          {n}
-        </p>
-      ))}
+      <SimulatorHeader
+        title={dungeon.display_name}
+        backLabel="Back to dungeons"
+        backPath="/simulator/dungeon"
+        badge={`Lv ${dungeon.recommended_level}`}
+      />
 
       <Collapsible defaultOpen={false} className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
         <CollapsibleTrigger className="group/trigger flex items-center justify-between gap-2 text-left">
@@ -128,11 +110,23 @@ export function SimulatorDungeonDetailPage() {
         </CollapsibleContent>
       </Collapsible>
 
-      <CombatInputsSection playerState={playerState} data={data} sel={sel} onChange={setSel} resolved={resolved} />
+      <CombatInputsSection
+        playerState={playerState}
+        data={data}
+        sel={sel}
+        onChange={setSel}
+        resolved={resolved}
+        combatStyleInfo={
+          isle
+            ? 'Elder Isle: uses your Elder levels, XP goes to your Elder skills, and dying keeps all XP and loot.'
+            : undefined
+        }
+      />
 
       <SimulationResultsSection
         buildJob={buildJob}
         kind="dungeon"
+        storageKey={`simulator:dungeon:${dungeonId}`}
         names={names}
         hidden={hidden}
         disabledReason={
