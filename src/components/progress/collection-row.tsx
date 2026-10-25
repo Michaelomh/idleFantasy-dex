@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { cn } from 'cn';
-import { ElderIsleBadge } from '@/components/elder-isle-badge';
+import { ContentBadge } from '@/components/content-badge';
 
 export function CollectionRow({
   label,
@@ -11,6 +11,7 @@ export function CollectionRow({
   done,
   muted,
   elderIsle,
+  seasonal,
 }: {
   label: string;
   detail?: string;
@@ -20,13 +21,15 @@ export function CollectionRow({
   done: boolean;
   muted?: boolean;
   elderIsle?: boolean;
+  seasonal?: boolean;
 }) {
   return (
     <div className={cn('flex items-center gap-3 border-b border-border py-3 last:border-b-0', muted && 'opacity-50')}>
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="flex min-w-0 items-center gap-1.5">
           <span className="body truncate leading-tight font-normal text-white">{label}</span>
-          {elderIsle && <ElderIsleBadge />}
+          {elderIsle && <ContentBadge variant="elder-isle" />}
+          {seasonal && <ContentBadge variant="seasonal" />}
         </span>
         {detail && <span className="description truncate leading-tight text-muted-foreground">{detail}</span>}
       </div>

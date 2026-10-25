@@ -10,6 +10,7 @@ import { CircularProgress } from '@/components/ui/circular-progress.tsx';
 import { formatNumber } from '@/lib/utils/format-number';
 import { LoadingScreen } from '@/components/loading-screen';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
+import { useIncludeSeasonalEvents } from '@/lib/hooks/use-include-seasonal-events';
 import { humanize } from '@/lib/utils/humanize';
 import {
   getCachedSave,
@@ -34,6 +35,7 @@ const STATUS_COLORS: Record<StalenessType, { dot: string; text: string }> = {
 
 export function DashboardPage() {
   const [includeElderIsle] = useIncludeElderIsle();
+  const [includeSeasonalEvents] = useIncludeSeasonalEvents();
   const playerState = usePlayerState();
   const [override, setOverride] = useState<PlayerState | null>(null);
   const [hasHandle, setHasHandle] = useState(false);
@@ -57,7 +59,7 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [effectivePlayerState, includeElderIsle]);
+  }, [effectivePlayerState, includeElderIsle, includeSeasonalEvents]);
 
   async function handleSync() {
     setSyncError(null);

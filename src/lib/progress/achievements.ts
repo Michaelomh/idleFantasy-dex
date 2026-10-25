@@ -50,12 +50,14 @@ export async function computeAchievements(
   playerState: PlayerState,
   questsCompleted: number,
   totalQuests: number,
-  totalPets: number,
+  /** Pets that count towards Menagerie - excludes seasonal pets when they're toggled off. */
+  countedPetIds: Set<string>,
 ): Promise<ProgressCategory> {
   const { raw, totalLevel, combatLevel } = playerState;
   const levels = raw.skillLevels;
   const prestige = (raw.flags.skill_prestige ?? {}) as Record<string, number>;
   const petsOwned = raw.pets.length;
+  const countedPetsOwned = raw.pets.filter((p) => countedPetIds.has(p.id)).length;
   const townTiers = (raw.flags.town_building_tiers ?? {}) as Record<string, number>;
   const towerBestFloor = Number(raw.flags.tower_best_floor ?? 0);
   const towerMilestones = (raw.flags.tower_milestones as unknown[] | undefined) ?? [];
@@ -192,8 +194,8 @@ export async function computeAchievements(
     {
       id: 'pet_all',
       label: 'Obtain every pet',
-      done: petsOwned >= totalPets,
-      detail: `${petsOwned} / ${totalPets}`,
+      done: countedPetsOwned >= countedPetIds.size,
+      detail: `${countedPetsOwned} / ${countedPetIds.size}`,
     },
     {
       id: 'prestige_first',

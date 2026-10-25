@@ -116,6 +116,7 @@ export function ProgressCategoryCombatPage() {
                   done={item.done}
                   muted={(item.kills ?? 0) === 0}
                   drops={item.drops}
+                  seasonal={item.seasonal}
                   expanded={expandedId === item.id}
                   onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
                 />
@@ -125,7 +126,13 @@ export function ProgressCategoryCombatPage() {
         ) : (
           <div className="flex flex-col">
             {filteredItems.map((item) => (
-              <CombatRow key={item.id} label={item.label} detail={item.detail} done={item.done} />
+              <CombatRow
+                key={item.id}
+                label={item.label}
+                detail={item.detail}
+                done={item.done}
+                seasonal={item.seasonal}
+              />
             ))}
           </div>
         )}

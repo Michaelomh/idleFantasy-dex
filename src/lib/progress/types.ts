@@ -7,6 +7,7 @@ export type ProgressItem = {
   section?: string;
   icon?: string;
   realm?: 'mainland' | 'elder';
+  seasonal?: boolean;
   level?: number;
   current?: number;
   cap?: number;

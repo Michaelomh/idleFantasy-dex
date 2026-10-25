@@ -2,6 +2,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { cn } from 'cn';
 import type { ProgressDrop } from '@/lib/progress';
+import { ContentBadge } from '@/components/content-badge';
 
 export function CombatRow({
   label,
@@ -13,6 +14,7 @@ export function CombatRow({
   onClick,
   drops,
   expanded,
+  seasonal,
 }: {
   label: string;
   detail?: string;
@@ -23,6 +25,7 @@ export function CombatRow({
   onClick?: () => void;
   drops?: ProgressDrop[];
   expanded?: boolean;
+  seasonal?: boolean;
 }) {
   return (
     <div className="border-b border-border last:border-b-0">
@@ -35,7 +38,10 @@ export function CombatRow({
         )}
       >
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="body truncate leading-tight font-normal text-white">{label}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="body truncate leading-tight font-normal text-white">{label}</span>
+            {seasonal && <ContentBadge variant="seasonal" />}
+          </span>
           {detail && <span className="description truncate leading-tight text-muted-foreground">{detail}</span>}
         </div>
         <div className="flex min-h-10 shrink-0 flex-col items-end justify-center">
