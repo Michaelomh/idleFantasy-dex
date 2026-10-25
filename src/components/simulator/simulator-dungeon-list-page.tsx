@@ -7,6 +7,7 @@ import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { combatLevelFor, DUNGEON_LEVEL_GRACE } from '@/lib/simulator/resolve-inputs';
 import { humanize } from '@/lib/utils/humanize';
 import { LoadingScreen } from '@/components/loading-screen';
+import { ContentBadge } from '@/components/content-badge';
 
 function DungeonRow({
   dungeon,
@@ -29,7 +30,10 @@ function DungeonRow({
       className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-left hover:bg-card"
     >
       <span className="flex flex-1 flex-col">
-        <span className="body">{dungeon.display_name}</span>
+        <span className="flex items-center gap-1.5">
+          <span className="body">{dungeon.display_name}</span>
+          {eventName && <ContentBadge variant="seasonal" label="Seasonal Dungeon" />}
+        </span>
         {/* Always rendered so every row is the same height, tagged or not. */}
         <span className="body text-xs text-text-secondary">{tags.length > 0 ? tags.join(' · ') : '\u00a0'}</span>
       </span>

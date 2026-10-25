@@ -120,7 +120,14 @@ export type BuildingTier = {
 export type BuildingEntry = { key: string; tiers: BuildingTier[] };
 export const getBuildings = () => load<Record<string, BuildingEntry>>('buildings.json');
 
-export type SeasonalEventEntry = { id?: string; display_name?: string; [key: string]: unknown };
+type SeasonalReward = { items?: Record<string, number>; pet_id?: string };
+export type SeasonalEventEntry = {
+  id?: string;
+  display_name?: string;
+  reward_tiers?: SeasonalReward[];
+  night_market?: SeasonalReward[];
+  [key: string]: unknown;
+};
 export const getSeasonalEvents = () => load<Record<string, SeasonalEventEntry>>('seasonal_events.json');
 
 export type BlessingEntry = {

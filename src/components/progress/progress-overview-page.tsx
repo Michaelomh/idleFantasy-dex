@@ -6,6 +6,7 @@ import { computeAllCategories, rollUp, PROGRESS_SECTIONS, type ProgressCategory 
 import type { PlayerState } from '@/lib/save-source';
 import { useScrollRestoration } from '@/lib/hooks/use-scroll-restoration';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
+import { useIncludeSeasonalEvents } from '@/lib/hooks/use-include-seasonal-events';
 import { LoadingScreen } from '@/components/loading-screen';
 import { ProgressRing } from './progress-ring';
 import { ProgressRow } from './progress-row';
@@ -15,14 +16,22 @@ const CATEGORY_STATUS: Partial<Record<string, 'wip' | 'unvalidated' | 'unconfide
   inventory: 'info',
 };
 
-let categoriesCache: { playerState: PlayerState; includeElderIsle: boolean; categories: ProgressCategory[] } | null =
-  null;
+let categoriesCache: {
+  playerState: PlayerState;
+  includeElderIsle: boolean;
+  includeSeasonalEvents: boolean;
+  categories: ProgressCategory[];
+} | null = null;
 
 export function ProgressOverviewPage() {
   const playerState = usePlayerState();
   const [includeElderIsle] = useIncludeElderIsle();
+  const [includeSeasonalEvents] = useIncludeSeasonalEvents();
   const [categories, setCategories] = useState<ProgressCategory[] | null>(() =>
-    playerState && categoriesCache?.playerState === playerState && categoriesCache.includeElderIsle === includeElderIsle
+    playerState &&
+    categoriesCache?.playerState === playerState &&
+    categoriesCache.includeElderIsle === includeElderIsle &&
+    categoriesCache.includeSeasonalEvents === includeSeasonalEvents
       ? categoriesCache.categories
       : null,
   );
@@ -32,13 +41,13 @@ export function ProgressOverviewPage() {
     if (!playerState) return;
     let cancelled = false;
     void computeAllCategories(playerState).then((result) => {
-      categoriesCache = { playerState, includeElderIsle, categories: result };
+      categoriesCache = { playerState, includeElderIsle, includeSeasonalEvents, categories: result };
       if (!cancelled) setCategories(result);
     });
     return () => {
       cancelled = true;
     };
-  }, [playerState, includeElderIsle]);
+  }, [playerState, includeElderIsle, includeSeasonalEvents]);
 
   useScrollRestoration('progress-overview', !!categories);
 

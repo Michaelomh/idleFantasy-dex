@@ -99,6 +99,7 @@ export function ProgressCategoryCollectionPage() {
       done={item.done}
       muted={item.cap != null && (item.current ?? 0) === 0}
       elderIsle={isElderIsleItem(category.id, item.id)}
+      seasonal={item.seasonal}
     />
   );
 

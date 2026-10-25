@@ -22,7 +22,8 @@ import {
   ELDER_LORE_FRAGMENTS,
   ELDER_SKILL_IDS,
 } from '@/lib/game/elder-isle';
-import { getIncludeElderIsle } from '@/lib/app/preferences';
+import { getIncludeElderIsle, getIncludeSeasonalEvents } from '@/lib/app/preferences';
+import { getSeasonalIds, isSeasonalItem } from '@/lib/game/seasonal-events';
 import { computeAchievements } from './achievements';
 import {
   getBones,
@@ -139,6 +140,9 @@ async function computeGuilds(ps: PlayerState): Promise<ProgressCategory> {
   };
 }
 
+/** Seasonal IDs to leave out of Progress, or null when seasonal events are included. */
+const excludedSeasonalIds = async () => (getIncludeSeasonalEvents() ? null : getSeasonalIds());
+
 const formatOneIn = (chance?: number) => (chance ? `1/${formatNumber(Math.round(1 / chance))}` : '-');
 
 async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
@@ -147,11 +151,13 @@ async function computeBosses(ps: PlayerState): Promise<ProgressCategory> {
   const seenItems = new Set((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []);
   const ownedPets = new Set(ps.raw.pets.map((p) => p.id));
   const includeElderIsle = getIncludeElderIsle();
+  const seasonal = await excludedSeasonalIds();
 
   let points = 0;
   let max = 0;
   const items: ProgressItem[] = sortBossesForDisplay(Object.values(bosses))
     .filter((boss) => includeElderIsle || !ELDER_ISLE_BOSS_IDS.has(boss.id))
+    .filter((boss) => !seasonal?.bosses.has(boss.id))
     .map((boss) => {
       const kills = enemyKills[boss.id] ?? 0;
       const drops = boss.rare_drops ?? [];
@@ -234,8 +240,10 @@ async function computeArmoury(ps: PlayerState): Promise<ProgressCategory> {
     ...Object.values(ps.raw.equipped ?? {}).filter((v): v is string => typeof v === 'string'),
   ]);
   const includeElderIsle = getIncludeElderIsle();
+  const seasonal = await excludedSeasonalIds();
   const items: ProgressItem[] = Object.entries(equipment)
     .filter(([key]) => includeElderIsle || !ELDER_ISLE_IDS.has(key))
+    .filter(([key]) => !seasonal?.items.has(key))
     .map(([key, eq]) => {
       const { group, sectionKey } = armouryPlacement(eq);
       return {
@@ -342,8 +350,10 @@ async function computePets(ps: PlayerState): Promise<ProgressCategory> {
   const pets = await getPets();
   const owned = new Set(ps.raw.pets.map((p) => p.id));
   const includeElderIsle = getIncludeElderIsle();
+  const seasonal = await excludedSeasonalIds();
   const items: ProgressItem[] = Object.values(pets)
     .filter((pet) => includeElderIsle || !ELDER_ISLE_PET_IDS.has(pet.id))
+    .filter((pet) => !seasonal?.pets.has(pet.id))
     .map((pet) => ({
       id: pet.id,
       label: pet.display_name,
@@ -412,10 +422,11 @@ async function computeTitles(ps: PlayerState): Promise<ProgressCategory> {
   // miscounted.
 
   const banners = (ps.raw.flags.seasonal_banners_earned as { event_id: string; event_display_name?: string }[]) ?? [];
-  const seasonalIds = new Set([
-    ...unlocked.filter((id) => id.startsWith('seasonal_')),
-    ...banners.map((b) => `seasonal_${b.event_id}`),
-  ]);
+  const seasonalIds = new Set(
+    getIncludeSeasonalEvents()
+      ? [...unlocked.filter((id) => id.startsWith('seasonal_')), ...banners.map((b) => `seasonal_${b.event_id}`)]
+      : [],
+  );
   for (const id of seasonalIds) {
     const eventId = id.slice('seasonal_'.length);
     const eventName =
@@ -543,9 +554,11 @@ async function computeBestiary(ps: PlayerState): Promise<ProgressCategory> {
       ? dungeons
       : Object.fromEntries(Object.entries(dungeons).filter(([key]) => !ELDER_ISLE_DUNGEON_IDS.has(key))),
   );
+  const seasonal = await excludedSeasonalIds();
   const kills = (ps.raw.flags.enemy_kills ?? {}) as Record<string, number>;
   const items: ProgressItem[] = Object.values(enemies)
     .filter((e) => includeElderIsle || !ELDER_ISLE_ENEMY_IDS.has(e.name))
+    .filter((e) => !seasonal?.enemies.has(e.name))
     .map((e) => {
       const locations = dungeonsByEnemy.get(e.name);
       if (!locations && import.meta.env.DEV) {
@@ -581,20 +594,23 @@ async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
     getRunes(),
   ]);
   const includeElderIsle = getIncludeElderIsle();
+  const seasonal = await excludedSeasonalIds();
   const isElderIsleId = (k: string) => ELDER_ISLE_IDS.has(k) || ELDER_ISLE_ENEMY_IDS.has(k);
+  const isHidden = (k: string) => (!includeElderIsle && isElderIsleId(k)) || !!seasonal?.items.has(k);
 
-  const universe = new Set<string>(Object.keys(equipment).filter((k) => includeElderIsle || !isElderIsleId(k)));
+  const universe = new Set<string>(Object.keys(equipment).filter((k) => !isHidden(k)));
   for (const e of Object.values(enemies)) {
     if (!includeElderIsle && ELDER_ISLE_ENEMY_IDS.has(e.name)) continue;
+    if (seasonal?.enemies.has(e.name)) continue;
     for (const d of e.drop_table ?? []) universe.add(d.item);
     for (const d of e.always_drops ?? []) universe.add(d.item);
   }
   for (const category of Object.values(marketplace)) for (const key of Object.keys(category.items)) universe.add(key);
   for (const resource of [gems, ores, logs, crops, bones, runes])
-    for (const key of Object.keys(resource)) if (includeElderIsle || !isElderIsleId(key)) universe.add(key);
+    for (const key of Object.keys(resource)) if (!isHidden(key)) universe.add(key);
   const seen = new Set<string>(
     [...((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []), ...Object.keys(ps.raw.inventory)].filter(
-      (k) => includeElderIsle || !isElderIsleId(k),
+      (k) => !isHidden(k),
     ),
   );
   for (const k of seen) universe.add(k);
@@ -690,7 +706,9 @@ export async function computeAllCategories(ps: PlayerState): Promise<ProgressCat
   const totalQuests = Object.keys(quests).length;
   // Save rows also include guild quests; the game only counts ones in quests.json.
   const questsCompleted = ps.raw.questProgress.filter((q) => q.completed && q.questId in quests).length;
-  const totalPets = Object.keys(pets).length;
+  const seasonal = await getSeasonalIds();
+  const includeSeasonal = getIncludeSeasonalEvents();
+  const countedPetIds = new Set(Object.keys(pets).filter((id) => includeSeasonal || !seasonal.pets.has(id)));
 
   const results = await Promise.all([
     computeQuests(ps),
@@ -704,13 +722,14 @@ export async function computeAllCategories(ps: PlayerState): Promise<ProgressCat
     computeBuilderWorkshop(ps),
     Promise.resolve(computeGrandMonument(ps)),
     Promise.resolve(computeExpeditions(ps)),
-    computeAchievements(ps, questsCompleted, totalQuests, totalPets),
+    computeAchievements(ps, questsCompleted, totalQuests, countedPetIds),
     computeBestiary(ps),
     Promise.resolve(computeInfinityTower(ps)),
     computeInventory(ps),
     computeHeirloomTools(ps),
   ]);
-  return results;
+  for (const c of results) for (const i of c.items) if (isSeasonalItem(seasonal, c.id, i.id)) i.seasonal = true;
+  return includeSeasonal ? results : results.filter((c) => c.id !== 'seasonal-events');
 }
 
 export async function computeCategory(id: string, ps: PlayerState): Promise<ProgressCategory | undefined> {

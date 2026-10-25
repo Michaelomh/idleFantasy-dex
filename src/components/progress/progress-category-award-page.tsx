@@ -78,6 +78,7 @@ export function ProgressCategoryAwardPage() {
             detail={item.detail}
             done={item.done}
             elderIsle={isElderIsleItem(category.id, item.id)}
+            seasonal={item.seasonal}
           />
         ))}
         {filteredItems.length === 0 && (

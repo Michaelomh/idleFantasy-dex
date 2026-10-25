@@ -4,7 +4,7 @@ import { getBosses, sortBossesForDisplay, type BossEntry } from '@/lib/progress/
 import { LoadingScreen } from '@/components/loading-screen';
 import { ELDER_ISLE_BOSS_IDS } from '@/lib/game/elder-isle';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
-import { ElderIsleBadge } from '@/components/elder-isle-badge';
+import { ContentBadge } from '@/components/content-badge';
 
 function BossRow({ boss, onSelect }: { boss: BossEntry; onSelect: () => void }) {
   return (
@@ -14,7 +14,8 @@ function BossRow({ boss, onSelect }: { boss: BossEntry; onSelect: () => void }) 
       className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-left hover:bg-card"
     >
       <span className="body flex-1">{boss.display_name}</span>
-      {ELDER_ISLE_BOSS_IDS.has(boss.id) && <ElderIsleBadge label="Elder Isle Boss" />}
+      {ELDER_ISLE_BOSS_IDS.has(boss.id) && <ContentBadge variant="elder-isle" label="Elder Isle Boss" />}
+      {boss.event_key && <ContentBadge variant="seasonal" label="Seasonal Boss" />}
     </button>
   );
 }

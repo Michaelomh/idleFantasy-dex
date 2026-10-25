@@ -16,14 +16,16 @@ import {
   User,
   Palette,
   ListFilter,
-  FlaskConical,
+  // FlaskConical,
   Waves,
+  SunSnow,
   Info,
   type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/lib/hooks/use-theme';
-import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
+// import { useShowExperimental } from '@/lib/hooks/use-show-experimental';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
+import { useIncludeSeasonalEvents } from '@/lib/hooks/use-include-seasonal-events';
 import type { Theme } from '@/lib/app/theme';
 import { getDefaultFilter, setDefaultFilter, FILTER_OPTIONS, type Filter } from '@/lib/app/preferences';
 import { IconToggleGroup } from '@/components/icon-toggle-group.tsx';
@@ -141,8 +143,9 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const [theme, setTheme] = useTheme();
   const [defaultFilter, setDefaultFilterState] = useState<Filter>(getDefaultFilter);
-  const [showExperimental, setShowExperimental] = useShowExperimental();
+  // const [showExperimental, setShowExperimental] = useShowExperimental();
   const [includeElderIsle, setIncludeElderIsle] = useIncludeElderIsle();
+  const [includeSeasonalEvents, setIncludeSeasonalEvents] = useIncludeSeasonalEvents();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [slots, setSlots] = useState<Record<string, CachedSave>>({});
@@ -313,13 +316,14 @@ export function SettingsPage() {
             />
           </PreferenceRow>
 
+          {/* Hidden until something is gated behind it again
           <PreferenceRow
             icon={FlaskConical}
             title="Experimental Features"
             description={showExperimental ? 'Showing experimental features' : 'Hiding experimental features'}
           >
             <Switch id="show-experimental" size="lg" checked={showExperimental} onCheckedChange={setShowExperimental} />
-          </PreferenceRow>
+          </PreferenceRow> */}
 
           <PreferenceRow
             icon={Waves}
@@ -335,6 +339,23 @@ export function SettingsPage() {
               size="lg"
               checked={includeElderIsle}
               onCheckedChange={setIncludeElderIsle}
+            />
+          </PreferenceRow>
+
+          <PreferenceRow
+            icon={SunSnow}
+            title="Include Seasonal Events"
+            description={
+              includeSeasonalEvents
+                ? 'Counting seasonal bosses, monsters, pets, gear and titles in Progress'
+                : 'Hiding seasonal bosses, monsters, pets, gear and titles in Progress'
+            }
+          >
+            <Switch
+              id="include-seasonal-events"
+              size="lg"
+              checked={includeSeasonalEvents}
+              onCheckedChange={setIncludeSeasonalEvents}
             />
           </PreferenceRow>
         </div>

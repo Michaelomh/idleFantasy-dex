@@ -79,3 +79,30 @@ export function subscribeIncludeElderIsle(listener: () => void): () => void {
   includeElderIsleListeners.add(listener);
   return () => includeElderIsleListeners.delete(listener);
 }
+
+// Defaults to included (unlike Elder Isle), so only the opt-out is stored.
+const INCLUDE_SEASONAL_EVENTS_KEY = 'idlefantasy-dex:include-seasonal-events';
+const includeSeasonalEventsListeners = new Set<() => void>();
+
+export function getIncludeSeasonalEvents(): boolean {
+  try {
+    return window.localStorage.getItem(INCLUDE_SEASONAL_EVENTS_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+}
+
+export function setIncludeSeasonalEvents(include: boolean) {
+  try {
+    if (include) window.localStorage.removeItem(INCLUDE_SEASONAL_EVENTS_KEY);
+    else window.localStorage.setItem(INCLUDE_SEASONAL_EVENTS_KEY, 'false');
+  } catch {
+    /* localStorage unavailable (private mode, etc.) - falls back to "included" next load */
+  }
+  includeSeasonalEventsListeners.forEach((listener) => listener());
+}
+
+export function subscribeIncludeSeasonalEvents(listener: () => void): () => void {
+  includeSeasonalEventsListeners.add(listener);
+  return () => includeSeasonalEventsListeners.delete(listener);
+}
