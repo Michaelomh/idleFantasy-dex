@@ -4,7 +4,7 @@ import { cn } from 'cn';
 import { usePlayerState } from '@/lib/player/use-player-state';
 import { computeCategory, type ProgressCategory, type ProgressItem } from '@/lib/progress';
 import { matchRoute } from '@/lib/app/routes';
-import { getDefaultFilter, type Filter } from '@/lib/app/preferences';
+import { getDefaultFilter, REGION_OPTIONS, type Filter } from '@/lib/app/preferences';
 import { useScrollRestoration } from '@/lib/hooks/use-scroll-restoration';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { LoadingScreen } from '@/components/loading-screen';
@@ -68,7 +68,7 @@ export function ProgressCategorySkillPage() {
     }));
   }, [filteredItems]);
 
-  useScrollRestoration(category?.id ?? null, !!category);
+  useScrollRestoration(categoryId, category?.id === categoryId);
 
   if (!playerState || !category) {
     return <LoadingScreen />;
@@ -89,17 +89,14 @@ export function ProgressCategorySkillPage() {
         showTabs={category.id === 'levels' && includeElderIsle}
         tabValue={realm}
         onTabValueChange={(value) => setRealm(value as 'mainland' | 'elder')}
-        tabOptions={[
-          { value: 'mainland', label: 'Mainland' },
-          { value: 'elder', label: 'Elder Isle' },
-        ]}
+        tabOptions={REGION_OPTIONS}
       />
 
       <div className="flex flex-col gap-6 p-4">
         {sectionGroups.map(({ section, items, remaining }) => (
           <div key={section} className="flex flex-col">
             <div className="mb-2 flex items-center justify-between">
-              <span className="label tracking-wider text-text-secondary uppercase">{section}</span>
+              <span className="subheading">{section}</span>
               <span
                 className={cn(
                   'label tracking-wider uppercase',

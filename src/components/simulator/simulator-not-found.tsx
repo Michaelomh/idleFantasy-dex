@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 
-/** Shown when a detail page's id doesn't match anything in the game data. */
 export function SimulatorNotFound({
   title,
   backLabel,

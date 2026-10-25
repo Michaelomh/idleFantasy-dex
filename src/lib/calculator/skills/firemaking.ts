@@ -1,9 +1,15 @@
 import type { PlayerState } from '@/lib/save-source/types';
-import { getLogEntries } from '../game-data';
+import { getLogEntries } from '@/lib/calculator/game-data';
 import { humanize } from '@/lib/utils/humanize';
-import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier, withBaseRow, bucketedCraftXp } from '../modifiers';
-import { craftActionDuration } from '../session-duration';
-import type { CalculatorInputs, SessionResult } from '../types';
+import {
+  resolveModifiers,
+  applyXpMultipliers,
+  applyYieldMultiplier,
+  withBaseRow,
+  bucketedCraftXp,
+} from '@/lib/calculator/modifiers';
+import { craftActionDuration } from '@/lib/calculator/session-duration';
+import type { CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 
 const ASH_FOR_LOG: Record<string, string> = {
   log: 'ashes',

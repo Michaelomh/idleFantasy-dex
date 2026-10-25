@@ -1,16 +1,22 @@
 import { ChevronDown, Info } from 'lucide-react';
-import type { PlayerState } from '@/lib/save-source/types';
+import type { PlayerState } from '@/lib/save-source';
 import { humanize } from '@/lib/utils/humanize';
 import { FOOD_EAT_CAP, playerAttackRoll, type CombatStyle, type EngineInputs } from '@/lib/simulator/combat-engine';
 import { KNOWN_ARROWS } from '@/lib/simulator/combat-tables';
 import { ARMOR_SLOTS } from '@/lib/simulator/loadout';
-import { foodHealValues, type ResolvedCombat, type Selections, type SimData } from '@/lib/simulator/resolve-inputs';
+import {
+  bestOwnedArrow,
+  foodHealValues,
+  type ResolvedCombat,
+  type Selections,
+  type SimData,
+} from '@/lib/simulator/resolve-inputs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Label } from '@/components/ui/label';
+import { Banner } from '@/components/banner';
 import { CombatStyleTabs } from './combat-style-tabs';
-import { QtyInput } from '@/components/qty-input';
 import { StatRows } from './stat-rows';
 
 const EAT_THRESHOLDS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
@@ -35,7 +41,6 @@ function finalStats(p: EngineInputs) {
   ];
 }
 
-/** [htmlFor] is the id of the select or input the label names. [info] adds an info icon with a popover. */
 function Field({
   label,
   htmlFor,
@@ -78,7 +83,6 @@ export function CombatInputsSection({
   sel: Selections;
   onChange: (sel: Selections) => void;
   resolved: ResolvedCombat;
-  /** Shown in an info popover beside the Combat style label. */
   combatStyleInfo?: string;
 }) {
   const set = <K extends keyof Selections>(key: K, value: Selections[K]) => onChange({ ...sel, [key]: value });
@@ -92,6 +96,9 @@ export function CombatInputsSection({
     ]);
   const foods = foodHealValues(data.cooking).sort((a, b) => b.heal - a.heal);
   const selectedFood = Object.keys(sel.food)[0] ?? null;
+  const autoArrow = bestOwnedArrow(playerState);
+  const autoArrowName =
+    autoArrow && (KNOWN_ARROWS.find((a) => a.key === autoArrow)?.displayName ?? humanize(autoArrow));
   const spells = Object.entries(data.spells).sort(([, a], [, b]) => a.magic_level_required - b.magic_level_required);
 
   return (
@@ -116,7 +123,7 @@ export function CombatInputsSection({
 
         <Collapsible defaultOpen={false} className="flex flex-col gap-1.5">
           <CollapsibleTrigger className="group/gear flex items-center justify-between gap-2 text-left">
-            <span className="label text-text-secondary">Gear</span>
+            <span className="subheading">Gear</span>
             <ChevronDown className="size-4 shrink-0 text-text-secondary transition-transform group-data-open/gear:rotate-180" />
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -134,9 +141,7 @@ export function CombatInputsSection({
         </Collapsible>
 
         {resolved.warnings.map((w) => (
-          <p key={w} className="body rounded-md border border-border bg-primary/10 px-3 py-2 text-sm">
-            {w}
-          </p>
+          <Banner key={w} title={w} compact />
         ))}
 
         <Field label="Potion" htmlFor="sim-potion">
@@ -193,30 +198,24 @@ export function CombatInputsSection({
 
         {resolved.style === 'ranged' && (
           <Field label="Arrows" htmlFor="sim-arrows">
-            <div className="flex gap-2">
-              <NativeSelect
-                id="sim-arrows"
-                className="w-full min-w-0"
-                value={sel.arrowKey ?? ''}
-                onChange={(e) => {
-                  const key = e.target.value || null;
-                  onChange({ ...sel, arrowKey: key, arrowQty: String(key ? inv(key) : 0) });
-                }}
-              >
-                <NativeSelectOption value="">None</NativeSelectOption>
-                {[...KNOWN_ARROWS].reverse().map((a) => (
-                  <NativeSelectOption key={a.key} value={a.key}>
-                    {a.displayName} (+{a.strengthBonus}, {inv(a.key)} owned)
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-              {sel.arrowKey && (
-                <QtyInput value={sel.arrowQty} onChange={(v) => set('arrowQty', v)} aria-label="Arrows to bring" />
-              )}
-            </div>
-            <p className="body text-sm text-text-secondary">
-              When these run out, your other arrows are used, weakest first, as in the game.
-            </p>
+            <NativeSelect
+              id="sim-arrows"
+              className="w-full min-w-0"
+              value={sel.arrowKey ?? ''}
+              onChange={(e) => {
+                onChange({ ...sel, arrowKey: e.target.value || null });
+              }}
+            >
+              <NativeSelectOption value="">Auto ({autoArrowName ?? 'none owned'})</NativeSelectOption>
+              {[...KNOWN_ARROWS].reverse().map((a) => (
+                <NativeSelectOption key={a.key} value={a.key}>
+                  {a.displayName} (+{a.strengthBonus})
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+            {!sel.arrowKey && !autoArrow && (
+              <Banner title="You have no arrows. Ranged attacks will deal 0 damage." compact />
+            )}
           </Field>
         )}
 
@@ -240,6 +239,9 @@ export function CombatInputsSection({
                 ))}
               </NativeSelect>
             </div>
+            {!resolved.spell && (
+              <Banner title="No spell selected. The game won't start a magic fight without one." compact />
+            )}
             {resolved.spell && (
               <p className="body text-sm text-text-secondary">
                 {resolved.runeKey
@@ -274,9 +276,7 @@ export function CombatInputsSection({
               {inv(selectedFood) === 0 ? ` You own none, so ${FOOD_EAT_CAP} are assumed.` : ''}
             </p>
           ) : (
-            <p className="body rounded-md border border-border bg-primary/10 px-3 py-2 text-sm">
-              No food selected. You won't heal during the run.
-            </p>
+            <Banner title="No food selected. You won't heal during the run." compact />
           )}
         </Field>
       </CollapsibleContent>

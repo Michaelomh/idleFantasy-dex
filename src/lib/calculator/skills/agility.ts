@@ -1,8 +1,8 @@
 import type { PlayerState } from '@/lib/save-source/types';
-import { getAgilityCourses } from '../game-data';
-import { resolveModifiers, applyXpMultipliers } from '../modifiers';
-import { binomialRange, binomialPmf, SESSION_FRAMES } from '../frame-roll';
-import type { CalculatorInputs, SessionResult, ModifierRow } from '../types';
+import { getAgilityCourses } from '@/lib/calculator/game-data';
+import { resolveModifiers, applyXpMultipliers } from '@/lib/calculator/modifiers';
+import { binomialRange, binomialPmf, SESSION_FRAMES } from '@/lib/calculator/frame-roll';
+import type { CalculatorInputs, SessionResult, ModifierRow } from '@/lib/calculator/types';
 import { formatNumber } from '@/lib/utils/format-number';
 
 function agilityLapsPerMinute(toolEff: number): number {

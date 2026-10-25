@@ -1,9 +1,9 @@
 import type { PlayerState } from '@/lib/save-source/types';
-import { getRuneEntries } from '../game-data';
+import { getRuneEntries } from '@/lib/calculator/game-data';
 import { humanize } from '@/lib/utils/humanize';
-import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier, withBaseRow } from '../modifiers';
-import { craftActionDuration } from '../session-duration';
-import type { CalculatorInputs, SessionResult } from '../types';
+import { resolveModifiers, applyXpMultipliers, applyYieldMultiplier, withBaseRow } from '@/lib/calculator/modifiers';
+import { craftActionDuration } from '@/lib/calculator/session-duration';
+import type { CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 
 const ASH_RC_BONUS: Record<string, number> = {
   ashes: 1,

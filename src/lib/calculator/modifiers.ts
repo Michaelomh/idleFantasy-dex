@@ -41,7 +41,6 @@ function pct(v: number): string {
   return `${v >= 0 ? '+' : ''}${v}%`;
 }
 
-/** One breakdown row for a sigil stack, or none when no stones of that colour are embedded. */
 export function sigilRows(mult: number, label: string): ModifierRow[] {
   return mult > 1 ? [{ label, value: pct(Math.round((mult - 1) * 100)) }] : [];
 }

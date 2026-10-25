@@ -1,4 +1,4 @@
-import { getAllCachedSaves } from '@/lib/save-source';
+import { getCachedSaveIdentities } from '@/lib/save-source';
 
 const SELECTED_SLOT_KEY = 'idlefantasy-dex:character';
 const EXPLORE_KEY = 'idlefantasy-dex:explore';
@@ -30,10 +30,11 @@ export function clearExplore(): void {
 }
 
 export async function resolveBootState(): Promise<BootState> {
-  const slots = await getAllCachedSaves();
+  // Keys only: this runs on every navigation, and the full saves are large.
+  const identities = await getCachedSaveIdentities();
   const selected = getSelectedSlot();
 
-  if (selected) return slots[selected] ? 'ok' : 'missing';
-  if (Object.keys(slots).length > 0) return 'missing';
+  if (selected) return identities.includes(selected) ? 'ok' : 'missing';
+  if (identities.length > 0) return 'missing';
   return isExploring() ? 'explore' : 'none';
 }

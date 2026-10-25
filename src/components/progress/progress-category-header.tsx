@@ -6,7 +6,6 @@ import { FILTER_OPTIONS, type Filter } from '@/lib/app/preferences';
 import { IconToggleGroup } from '@/components/icon-toggle-group';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export type ProgressCategoryTabOption = { value: string; label: string };
 
@@ -68,7 +67,7 @@ export function ProgressCategoryHeader({
       <div className="flex items-center gap-4">
         {complete ? (
           <div className="relative size-18 shrink-0">
-            <div className="animate-glow-pulse absolute inset-0 rounded-full bg-primary/50 blur-xl motion-reduce:animate-none motion-reduce:opacity-60" />
+            <div className="absolute inset-0 animate-glow-pulse rounded-full bg-primary/50 blur-xl motion-reduce:animate-none motion-reduce:opacity-60" />
             <div className="relative size-full rounded-full bg-primary p-1.5">
               <div className="size-full rounded-full bg-background p-1.5">
                 <div className="flex size-full items-center justify-center rounded-full bg-primary">
@@ -100,15 +99,13 @@ export function ProgressCategoryHeader({
       </div>
 
       {showTabs && tabOptions && tabValue != null && onTabValueChange && (
-        <Tabs value={tabValue} onValueChange={(value) => onTabValueChange(value as string)}>
-          <TabsList className="h-10 w-full">
-            {tabOptions.map((option) => (
-              <TabsTrigger key={option.value} value={option.value} className="capitalize">
-                {option.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <IconToggleGroup
+          value={tabValue}
+          onValueChange={onTabValueChange}
+          options={tabOptions}
+          showLabel="always"
+          className="w-full *:flex-1"
+        />
       )}
 
       <div className="relative">

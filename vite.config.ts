@@ -24,7 +24,7 @@ export default defineConfig(({ command }) => ({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.png'],
       manifest: {
         name: 'idleFantasy-dex',
         short_name: 'IF-dex',

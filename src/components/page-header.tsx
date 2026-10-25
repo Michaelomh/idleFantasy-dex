@@ -1,15 +1,13 @@
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-/** Drilled-down simulator page header: back button and name, with an optional badge on the right. */
-export function SimulatorHeader({
+export function PageHeader({
   title,
   backLabel,
   backPath,
   badge,
 }: {
   title: string;
-  /** Read out for the back button, e.g. "Back to bosses". */
   backLabel: string;
   backPath: string;
   badge?: string;

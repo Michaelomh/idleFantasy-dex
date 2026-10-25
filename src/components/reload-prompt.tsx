@@ -1,9 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
-/**
- * This function helps to identify if there is a new version of the PWA, which
- * would then prompt the user to reload the page.
- */
 export function ReloadPrompt() {
   const {
     needRefresh: [needRefresh],

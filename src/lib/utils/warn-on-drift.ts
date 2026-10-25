@@ -1,5 +1,3 @@
-// Mainly used to track when there is a new field added to dashboard data that is hardcoded.
-// e.g. characters races, titles and prestige nodes
 export function warnOnDrift<T extends string>(
   label: string,
   value: T | '' | undefined,

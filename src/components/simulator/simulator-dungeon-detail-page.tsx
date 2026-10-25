@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useSessionStorage } from '@/lib/hooks/use-session-storage';
 import { ChevronDown } from 'lucide-react';
 import { usePlayerState } from '@/lib/player/use-player-state';
-import { getDungeons, type DungeonEntry } from '@/lib/progress/game-data';
+import { getDungeons, type DungeonEntry } from '@/lib/progress';
 import { ELDER_ISLE_DUNGEON_IDS } from '@/lib/game/elder-isle';
 import { humanize } from '@/lib/utils/humanize';
 import { fmt, pct } from '@/lib/utils/format-number';
@@ -24,13 +24,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { CombatInputsSection } from './combat-inputs-section';
 import { SimulationResultsSection } from './simulation-results-section';
 import { SimulatorNotFound } from './simulator-not-found';
-import { SimulatorHeader } from './simulator-header';
+import { PageHeader } from '@/components/page-header';
 import { StatRows, type StatRow } from './stat-rows';
 
 export function SimulatorDungeonDetailPage() {
   const { dungeonId } = useParams<{ dungeonId: string }>();
   const playerState = usePlayerState();
-  // undefined while loading, null when the id matches no dungeon.
   const [dungeon, setDungeon] = useState<DungeonEntry | null | undefined>(undefined);
   const [data, setData] = useState<SimData | null>(null);
   const [edited, setSel] = useSessionStorage<Selections | null>(`simulator:dungeon:${dungeonId}`, null);
@@ -48,7 +47,8 @@ export function SimulatorDungeonDetailPage() {
     () => (playerState && data ? defaultSelections(playerState, data, isle) : null),
     [playerState, data, isle],
   );
-  const sel = edited ?? defaults;
+  // Merge over the defaults so a stored object from an older Selections shape still has every field.
+  const sel = edited && defaults ? { ...defaults, ...edited } : defaults;
   const names = useMemo(() => (data ? displayNames(data) : {}), [data]);
   const hidden = useMemo(
     () => new Set([...(data ? Object.keys(data.pets) : []), ...(dungeon?.rare_drops ?? []).map((r) => r.item)]),
@@ -92,7 +92,7 @@ export function SimulatorDungeonDetailPage() {
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <SimulatorHeader
+      <PageHeader
         title={dungeon.display_name}
         backLabel="Back to dungeons"
         backPath="/simulator/dungeon"

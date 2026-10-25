@@ -10,10 +10,18 @@ const VARIANTS: Record<ContentVariant, { icon: typeof Waves; defaultLabel: strin
   'lore-unlock': { icon: Compass, defaultLabel: 'Lore unlock. Found through expeditions' },
 };
 
-/** Marks where a piece of content comes from (Elder Isle, a seasonal event, a lore unlock). */
-export function ContentBadge({ variant, label }: { variant: ContentVariant; label?: string }) {
+/** The Elder Isle badge follows the Include Elder Isle setting unless [alwaysShow] (the Simulator, which the setting doesn't cover). */
+export function ContentBadge({
+  variant,
+  label,
+  alwaysShow = false,
+}: {
+  variant: ContentVariant;
+  label?: string;
+  alwaysShow?: boolean;
+}) {
   const [includeElderIsle] = useIncludeElderIsle();
-  if (variant === 'elder-isle' && !includeElderIsle) return null;
+  if (variant === 'elder-isle' && !includeElderIsle && !alwaysShow) return null;
 
   const { icon: Icon, defaultLabel } = VARIANTS[variant];
   const content = label ?? defaultLabel;

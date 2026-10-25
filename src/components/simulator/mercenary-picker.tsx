@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import { cn } from 'cn';
-import type { MercenaryEntry } from '@/lib/progress/game-data';
+import type { MercenaryEntry } from '@/lib/progress';
 import { humanize } from '@/lib/utils/humanize';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';

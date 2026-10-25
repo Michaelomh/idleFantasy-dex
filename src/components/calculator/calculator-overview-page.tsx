@@ -4,12 +4,13 @@ import { ChevronRight } from 'lucide-react';
 import { SKILLS, CATEGORY_ORDER } from '@/lib/game/skills';
 import { skillIcon } from '@/lib/game/skill-icons';
 import { usePlayerState } from '@/lib/player/use-player-state';
-import { getPrestigePaths, type PrestigeSkillPaths } from '@/lib/progress/game-data';
+import { getPrestigePaths, type PrestigeSkillPaths } from '@/lib/progress';
 import { useIncludeElderIsle } from '@/lib/hooks/use-include-elder-isle';
 import { useSessionStorage } from '@/lib/hooks/use-session-storage';
-import { elderLevel } from '@/lib/calculator/elder-isle';
+import { elderLevel } from '@/lib/calculator';
 import { SkillStatRow } from '@/components/skill-stat-row';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { IconToggleGroup } from '@/components/icon-toggle-group';
+import { REGION_OPTIONS } from '@/lib/app/preferences';
 
 const CALCULATOR_SKILL_IDS = new Set(
   SKILLS.filter((s) => s.category === 'Gathering' || s.category === 'Crafting').map((s) => s.id),
@@ -53,23 +54,17 @@ export function CalculatorOverviewPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-6 p-4">
       <h1 className="h1">Calculator</h1>
 
       {includeElderIsle && (
-        <Tabs
+        <IconToggleGroup
           value={isElder ? 'elder' : 'mainland'}
-          onValueChange={(value) => setRegion(value as 'mainland' | 'elder')}
-        >
-          <TabsList className="h-10 w-full">
-            <TabsTrigger value="mainland" className="capitalize">
-              Mainland
-            </TabsTrigger>
-            <TabsTrigger value="elder" className="capitalize">
-              Elder Isle
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+          onValueChange={setRegion}
+          options={REGION_OPTIONS}
+          showLabel="always"
+          className="w-full *:flex-1"
+        />
       )}
 
       {CATEGORY_ORDER.filter((category) => category !== 'Combat').map((category) => {
@@ -79,8 +74,8 @@ export function CalculatorOverviewPage() {
 
         return (
           <div key={category} className="flex flex-col gap-2">
-            <span className="h3">{category}</span>
-            <div className="flex flex-col gap-2">
+            <span className="subheading px-1">{category}</span>
+            <div className="flex flex-col overflow-hidden rounded-card border border-border bg-card">
               {skills.map((skill) => {
                 const description = isElder
                   ? playerState && `Level ${elderLevel(playerState, skill.id)}`
@@ -89,11 +84,11 @@ export function CalculatorOverviewPage() {
                   <SkillStatRow
                     key={skill.id}
                     icon={skillIcon(skill.id)}
-                    iconClassName="size-8"
+                    iconClassName="size-7"
                     label={skill.label}
                     description={description}
                     onClick={() => navigate(`/calculator/${isElder ? 'elder-isle/' : ''}${skill.id}`)}
-                    right={<ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />}
+                    right={<ChevronRight className="size-4 text-muted-foreground" />}
                   />
                 );
               })}

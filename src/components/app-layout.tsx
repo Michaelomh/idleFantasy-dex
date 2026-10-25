@@ -66,7 +66,6 @@ export function AppLayout() {
 
       const realSlotExists = state === 'ok' || state === 'missing';
 
-      // redirects for char saves
       if (pathname === '/welcome' || pathname === '/onboarding') {
         if (realSlotExists) navigate('/', { replace: true });
         return;
@@ -83,7 +82,6 @@ export function AppLayout() {
     };
   }, [location.pathname, navigate]);
 
-  // PWA Loading Screen
   if (bootState === null) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-2 text-center">

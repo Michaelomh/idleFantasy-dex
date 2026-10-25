@@ -7,10 +7,12 @@ import { useSimulation } from '@/lib/hooks/use-simulation';
 import type { SimulationJob, SimulationSummary } from '@/lib/simulator/run-simulation';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { IconToggleGroup } from '@/components/icon-toggle-group';
+import { Banner } from '@/components/banner';
 import { fmt, formatNumber, pct } from '@/lib/utils/format-number';
 import { CompactRows, HeadlineRow, type CompactRow, type RangedValue } from './stat-rows';
 
-const SAMPLE_PRESETS = [500, 2000, 5000];
+const SAMPLE_OPTIONS = [500, 2000, 5000].map((n) => ({ value: String(n), label: fmt(n) }));
 
 const SKILL_ORDER = ['attack', 'strength', 'ranged', 'magic', 'defense', 'hitpoints', 'prayer'];
 const skillLabel = (s: string) => (s === 'defense' ? 'Defence' : humanize(s));
@@ -29,7 +31,6 @@ function ranged(r: Range, mean: (v: number) => string, bound: (v: number) => str
 
 const whole = (v: number) => fmt(v);
 const twoDp = (v: number) => v.toFixed(2);
-/** Full numbers up to 100,000, then the short K / M form. */
 const compact = (v: number) => (Math.abs(v) < 100_000 ? fmt(v) : formatNumber(Math.round(v)));
 
 function Results({
@@ -98,8 +99,8 @@ function Results({
         </p>
       </div>
       <CompactRows rows={overview} />
-      <CompactRows title="Loot" rows={loot} />
       {!isBoss && <CompactRows title="Kills" rows={kills} />}
+      <CompactRows title="Loot" rows={loot} />
       <CompactRows title="Used" rows={used} />
       <div className="flex flex-col gap-2">
         <HeadlineRow label="XP" {...ranged(summary.xpTotal, compact)} />
@@ -137,26 +138,19 @@ export function SimulationResultsSection({
     <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
       <span className="h3">Simulation</span>
       <div className="flex flex-col gap-4">
-        <div role="group" aria-labelledby="sim-runs" className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5">
           <Label id="sim-runs">Runs to simulate</Label>
           <div className="flex flex-wrap items-center gap-1.5">
-            {SAMPLE_PRESETS.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                aria-pressed={samples === preset}
-                onClick={() => setSamples(preset)}
-                className={cn(
-                  'label rounded-md border border-border px-2.5 py-1.5',
-                  samples === preset && 'border-primary bg-primary/10 text-primary',
-                )}
-              >
-                {fmt(preset)}
-              </button>
-            ))}
+            <div role="group" aria-labelledby="sim-runs">
+              <IconToggleGroup
+                value={String(samples)}
+                onValueChange={(v) => setSamples(Number(v))}
+                options={SAMPLE_OPTIONS}
+              />
+            </div>
             <Button
-              size="sm"
-              className="ml-auto h-auto self-stretch py-1.5 text-xs"
+              // Same height as the run-count toggle beside it.
+              className="ml-auto h-auto self-stretch py-2.5"
               onClick={() => {
                 setRanWith(setupKey);
                 run(buildJob(samples));
@@ -190,9 +184,7 @@ export function SimulationResultsSection({
           <>
             <hr className="border-border" />
             {isStale && (
-              <p className="body rounded-md border border-notice-border bg-notice-bg px-3 py-2 text-sm text-notice-text">
-                Setup changed since this run. Start the simulation again to update the results.
-              </p>
+              <Banner title="Setup changed since this run. Start the simulation again to update the results." compact />
             )}
             <div className={cn(isStale && 'opacity-50')}>
               <Results summary={summary} kind={kind} names={names} hidden={hidden} />

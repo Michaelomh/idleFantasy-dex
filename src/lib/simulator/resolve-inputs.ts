@@ -29,7 +29,6 @@ import { resolveActiveBlessing } from '@/lib/bonuses/blessings';
 import { resolveCapeBonus } from '@/lib/bonuses/cape';
 import { sigilMultiplier } from '@/lib/bonuses/sigils';
 import { levelForXp, MAX_ITEM_LEVEL_XP } from '@/lib/utils/xp-table';
-import { parseQty } from '@/lib/utils/parse-qty';
 import {
   meleeMaxHit,
   BASE_ATTACK_SPEED_SEC,
@@ -106,9 +105,6 @@ export type Selections = {
   potionKey: string | null;
   food: Record<string, number>;
   arrowKey: string | null;
-  /** Typed amount of the selected arrow; other owned arrows back it up. */
-  arrowQty: string;
-  arrows: Record<string, number>;
   spellKey: string | null;
   eatThresholdPct: number;
   eatOrder: EatOrder;
@@ -120,6 +116,9 @@ const inv = (ps: PlayerState, key: string) => ps.raw.inventory[key] ?? 0;
 
 /** Arrow keys best → worst, the game's ARROW_TIERS. */
 export const ARROW_TIERS = [...KNOWN_ARROWS].reverse().map((a) => a.key);
+/** What Auto uses: the best arrow in the save's inventory. */
+export const bestOwnedArrow = (ps: PlayerState) => ARROW_TIERS.find((k) => inv(ps, k) > 0) ?? null;
+
 const ARROW_STRENGTH = Object.fromEntries(KNOWN_ARROWS.map((a) => [a.key, a.strengthBonus]));
 
 export function foodHealValues(cooking: Record<string, RecipeEntry>): { key: string; heal: number; name: string }[] {
@@ -147,10 +146,6 @@ export function defaultSelections(ps: PlayerState, data: SimData, isle = false):
   const best = pool.reduce<(typeof pool)[number] | null>((b, f) => (!b || f.heal > b.heal ? f : b), null);
   const food: Record<string, number> = best ? { [best.key]: inv(ps, best.key) } : {};
 
-  const arrows = Object.fromEntries(ARROW_TIERS.filter((k) => inv(ps, k) > 0).map((k) => [k, inv(ps, k)]));
-  // Best arrow owned.
-  const arrowKey = ARROW_TIERS.find((k) => inv(ps, k) > 0) ?? null;
-
   // Highest max-hit spell your Magic level can cast (runes are assumed to always be enough).
   const magicLevel = combatLevels(ps, isle).magic;
   const castable = Object.entries(data.spells).filter(([, sp]) => sp.magic_level_required <= magicLevel);
@@ -162,9 +157,8 @@ export function defaultSelections(ps: PlayerState, data: SimData, isle = false):
     weaponSlot: savedActiveWeaponSlot(ps),
     potionKey: ownedPotion,
     food,
-    arrowKey,
-    arrowQty: String(arrowKey ? inv(ps, arrowKey) : 0),
-    arrows,
+    // Auto: the best owned arrow is picked when the fight is resolved.
+    arrowKey: null,
     spellKey,
     // The game offers 10% to 90% in steps of 10.
     eatThresholdPct: Math.min(90, Math.max(10, Math.round(Number(flags.food_eat_threshold_pct ?? 50) / 10) * 10)),
@@ -362,7 +356,6 @@ export function resolveCombat(
     Object.fromEntries(COMBAT_SKILLS.map((s) => [s, row(s, pot)])) as Record<CombatSkill, LevelRow>;
 
   const spell = sel.spellKey ? (data.spells[sel.spellKey] ?? null) : null;
-  if (style === 'magic' && !spell) warnings.push('Pick a spell. The game will not start a magic fight without one.');
   if (style === 'magic' && spell && levels.magic < spell.magic_level_required) {
     warnings.push(`${spell.display_name} needs Magic ${spell.magic_level_required}.`);
   }
@@ -382,17 +375,13 @@ export function resolveCombat(
     .filter((f) => (sel.food[f.key] ?? 0) > 0)
     .map((f) => ({ key: f.key, qty: sel.food[f.key], heal: foodHeal[f.key] }));
 
-  const arrowQty = sel.arrowKey ? parseQty(sel.arrowQty) : null;
-  const stacks: Record<string, number> = sel.arrowKey ? { ...sel.arrows, [sel.arrowKey]: arrowQty ?? 0 } : sel.arrows;
-  const preferred = sel.arrowKey && (stacks[sel.arrowKey] ?? 0) > 0 ? sel.arrowKey : null;
-  const arrowOrder = preferred
-    ? [preferred, ...[...ARROW_TIERS].reverse().filter((k) => k !== preferred)]
-    : ARROW_TIERS;
-  const arrows: ArrowStack[] = arrowOrder
-    .filter((k) => (stacks[k] ?? 0) > 0)
-    .map((k) => ({ key: k, qty: stacks[k], strength: ARROW_STRENGTH[k] ?? 0 }));
-  const invalid = style === 'ranged' && sel.arrowKey && arrowQty === null ? 'Enter how many arrows to bring.' : null;
-  if (style === 'ranged' && arrows.length === 0) warnings.push('No arrows. Ranged attacks will deal 0 damage.');
+  // null is Auto: the best arrow owned, or none (0 ranged damage). The arrow never runs out, so the
+  // run isn't cut short by a small stack.
+  const arrowKey = sel.arrowKey ?? bestOwnedArrow(ps);
+  const arrows: ArrowStack[] = arrowKey
+    ? [{ key: arrowKey, qty: Number.POSITIVE_INFINITY, strength: ARROW_STRENGTH[arrowKey] ?? 0 }]
+    : [];
+  const invalid = null;
 
   const petBoostPct = ps.ironman
     ? 0

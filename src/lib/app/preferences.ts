@@ -1,4 +1,4 @@
-import { CircleCheck, CircleDashed, ListChecks, type LucideIcon } from 'lucide-react';
+import { CircleCheck, CircleDashed, ListChecks, TreePine, Waves, type LucideIcon } from 'lucide-react';
 
 export type Filter = 'all' | 'done' | 'missing';
 
@@ -6,6 +6,13 @@ export const FILTER_OPTIONS: { value: Filter; label: string; icon: LucideIcon }[
   { value: 'all', label: 'All', icon: ListChecks },
   { value: 'done', label: 'Done', icon: CircleCheck },
   { value: 'missing', label: 'Missing', icon: CircleDashed },
+];
+
+export type Region = 'mainland' | 'elder';
+
+export const REGION_OPTIONS: { value: Region; label: string; icon: LucideIcon }[] = [
+  { value: 'mainland', label: 'Mainland', icon: TreePine },
+  { value: 'elder', label: 'Elder Isle', icon: Waves },
 ];
 
 const DEFAULT_FILTER_KEY = 'idlefantasy-dex:default-filter';

@@ -45,6 +45,10 @@ export async function getAllCachedSaves(): Promise<Record<string, CachedSave>> {
   return Object.fromEntries(keys.map((key, i) => [key, values[i]]));
 }
 
+export async function getCachedSaveIdentities(): Promise<string[]> {
+  return (await getDb()).getAllKeys('playerState');
+}
+
 export async function putCachedSave(identity: string, value: CachedSave): Promise<void> {
   await (await getDb()).put('playerState', value, identity);
   memoryCache.set(identity, value);

@@ -71,7 +71,7 @@ export function ProgressCategoryCombatPage() {
     }));
   }, [filteredItems]);
 
-  useScrollRestoration(category?.id ?? null, !!category);
+  useScrollRestoration(categoryId, category?.id === categoryId);
 
   if (!playerState || !category) {
     return <LoadingScreen />;
@@ -96,7 +96,7 @@ export function ProgressCategoryCombatPage() {
           sectionGroups.map(({ section, items, remaining }) => (
             <div key={section} className="flex flex-col">
               <div className="mb-2 flex items-center justify-between">
-                <span className="label tracking-wider text-text-secondary uppercase">{section}</span>
+                <span className="subheading">{section}</span>
                 <span
                   className={cn(
                     'label tracking-wider uppercase',

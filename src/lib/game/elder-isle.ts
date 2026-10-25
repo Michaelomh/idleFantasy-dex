@@ -157,7 +157,6 @@ export const ELDER_SKILL_IDS = [
 
 const ELDER_QUEST_IDS = new Set(ELDER_QUEST_CHAIN.map((q) => q.id));
 
-/** Whether a progress item belongs to Elder Isle, for showing the Elder Isle badge. */
 export function isElderIsleItem(categoryId: string, itemId: string): boolean {
   switch (categoryId) {
     case 'pets':

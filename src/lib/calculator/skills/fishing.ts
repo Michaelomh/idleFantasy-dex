@@ -1,5 +1,5 @@
 import type { PlayerState } from '@/lib/save-source/types';
-import { getFishEntries, getFishingSkillData } from '../game-data';
+import { getFishEntries, getFishingSkillData } from '@/lib/calculator/game-data';
 import { humanize } from '@/lib/utils/humanize';
 import {
   resolveModifiers,
@@ -8,9 +8,9 @@ import {
   withBaseRow,
   toolEfficiencyRows,
   yieldSourceNames,
-} from '../modifiers';
-import { SESSION_FRAMES, expectedAndChance, gatheringFrameXpTotal } from '../frame-roll';
-import type { CalculatorInputs, SessionResult } from '../types';
+} from '@/lib/calculator/modifiers';
+import { SESSION_FRAMES, expectedAndChance, gatheringFrameXpTotal } from '@/lib/calculator/frame-roll';
+import type { CalculatorInputs, SessionResult } from '@/lib/calculator/types';
 
 export function tierFor(level: number, tiers: Record<string, unknown>): string {
   const keys = Object.keys(tiers)
