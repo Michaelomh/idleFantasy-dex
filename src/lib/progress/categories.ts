@@ -24,6 +24,7 @@ import {
 } from '@/lib/game/elder-isle';
 import { getIncludeElderIsle, getIncludeSeasonalEvents } from '@/lib/app/preferences';
 import { getSeasonalIds, isSeasonalItem } from '@/lib/game/seasonal-events';
+import { getFishingSkillData, getRecipes, getThievingNpcs } from '@/lib/calculator/game-data';
 import { computeAchievements } from './achievements';
 import {
   getBones,
@@ -34,6 +35,7 @@ import {
   getDungeons,
   getEnemies,
   getEquipment,
+  getFish,
   getGems,
   getGuildQuests,
   getLogs,
@@ -579,8 +581,34 @@ async function computeBestiary(ps: PlayerState): Promise<ProgressCategory> {
   };
 }
 
+/** Obtainable items with no source in our vendored game data (expeditions, boss drops, the Elder Isle shop). */
+const HARDCODED_INVENTORY_IDS = [
+  'bird_nest',
+  'teak_log',
+  'tree_seed',
+  'race_change_token',
+  'elder_amethyst',
+  'elder_emerald',
+  'elder_topaz',
+];
+
 async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
-  const [equipment, enemies, marketplace, gems, ores, logs, crops, bones, runes] = await Promise.all([
+  const [
+    equipment,
+    enemies,
+    marketplace,
+    gems,
+    ores,
+    logs,
+    crops,
+    bones,
+    runes,
+    pets,
+    fish,
+    thieving,
+    fishing,
+    recipes,
+  ] = await Promise.all([
     getEquipment(),
     getEnemies(),
     getMarketplace(),
@@ -590,6 +618,13 @@ async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
     getCrops(),
     getBones(),
     getRunes(),
+    getPets(),
+    getFish(),
+    getThievingNpcs(),
+    getFishingSkillData(),
+    Promise.all(
+      (['smithing', 'cooking', 'fletching', 'crafting', 'herblore', 'construction'] as const).map(getRecipes),
+    ),
   ]);
   const includeElderIsle = getIncludeElderIsle();
   const seasonal = await excludedSeasonalIds();
@@ -604,21 +639,37 @@ async function computeInventory(ps: PlayerState): Promise<ProgressCategory> {
     for (const d of e.always_drops ?? []) universe.add(d.item);
   }
   for (const category of Object.values(marketplace)) for (const key of Object.keys(category.items)) universe.add(key);
-  for (const resource of [gems, ores, logs, crops, bones, runes])
-    for (const key of Object.keys(resource)) if (!isHidden(key)) universe.add(key);
+  const craftedAndGathered = [
+    ...[gems, ores, logs, crops, bones, runes, fish].flatMap((resource) => Object.keys(resource)),
+    // A recipe's key is usually its output, but cooking keys aren't item IDs (rat_meat -> cooked_rat_meat).
+    ...recipes.flatMap((book) =>
+      Object.entries(book).flatMap(([key, r]) => [
+        r.cooked_item ?? r.item_name ?? key,
+        ...(r.raw_item ? [r.raw_item] : []),
+        ...Object.keys(r.materials ?? {}),
+      ]),
+    ),
+    ...thieving.flatMap((npc) => npc.loot_table.map((d) => d.item)),
+    ...Object.values(fishing.drop_tables).flatMap((rows) => rows.map((d) => d.item)),
+    ...HARDCODED_INVENTORY_IDS,
+  ];
+  for (const key of craftedAndGathered) if (!isHidden(key)) universe.add(key);
   const seen = new Set<string>(
     [...((ps.raw.flags.seen_item_keys as string[] | undefined) ?? []), ...Object.keys(ps.raw.inventory)].filter(
       (k) => !isHidden(k),
     ),
   );
   for (const k of seen) universe.add(k);
+  // Elder Isle pets are listed in enemy drop tables, but they're tracked under Pets.
+  for (const k of Object.keys(pets)) universe.delete(k);
+  universe.delete('coins');
   const owned = [...universe].filter((k) => seen.has(k));
   return {
     id: 'inventory',
     label: 'Inventory',
     points: owned.length,
     max: universe.size,
-    info: 'Built from armoury items, monster drops, and your own save - not an official item list, and not fully accurate.',
+    info: 'Built from game data and your own save - not an official item list, and not fully accurate.',
     hasDrilldown: true,
     items: [...universe]
       .map((k) => ({ id: k, label: humanize(k), done: seen.has(k) }))
