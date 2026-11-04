@@ -63,6 +63,17 @@ export const ELDER_ISLE_IDS = new Set([
   // equipment.json (elder_* and ancient_signet drop from Elder-only sources; the rest are
   // the same IDs as the smithing recipes above)
   'ancient_signet',
+  // Elder Isle drops and shop rewards, only obtainable on the isle
+  'ancient_sigil',
+  'elder_amethyst',
+  'elder_emerald',
+  'elder_topaz',
+  'elder_bone',
+  'elder_diamond',
+  'elder_essence',
+  'elder_ruby',
+  'elder_sapphire',
+  'sacred_wood',
 ]);
 
 export const ELDER_ISLE_DUNGEON_IDS = new Set(['beach_and_cliffs', 'ancient_forest', 'volcano_peak', 'abyssal_depths']);
