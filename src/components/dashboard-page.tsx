@@ -186,7 +186,13 @@ export function DashboardPage() {
         {chips.length > 0 && (
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             {chips.map((chip) => (
-              <span key={chip} className="label rounded-full border border-border px-3 py-1 text-text-secondary">
+              <span
+                key={chip}
+                className={cn(
+                  'label rounded-full border px-3 py-1',
+                  chip === 'Ironman' ? 'border-fresh text-fresh' : 'border-border text-text-secondary',
+                )}
+              >
                 {chip}
               </span>
             ))}

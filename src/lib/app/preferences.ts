@@ -1,4 +1,13 @@
-import { CircleCheck, CircleDashed, ListChecks, TreePine, Waves, type LucideIcon } from 'lucide-react';
+import {
+  ChartNoAxesColumnIncreasing,
+  CircleCheck,
+  CircleDashed,
+  ListChecks,
+  Network,
+  TreePine,
+  Waves,
+  type LucideIcon,
+} from 'lucide-react';
 
 export type Filter = 'all' | 'done' | 'missing';
 
@@ -13,6 +22,13 @@ export type Region = 'mainland' | 'elder';
 export const REGION_OPTIONS: { value: Region; label: string; icon: LucideIcon }[] = [
   { value: 'mainland', label: 'Mainland', icon: TreePine },
   { value: 'elder', label: 'Elder Isle', icon: Waves },
+];
+
+export type LevelsView = 'levels' | 'skill-trees';
+
+export const LEVELS_VIEW_OPTIONS: { value: LevelsView; label: string; icon: LucideIcon }[] = [
+  { value: 'levels', label: 'Levels', icon: ChartNoAxesColumnIncreasing },
+  { value: 'skill-trees', label: 'Skill Trees', icon: Network },
 ];
 
 const DEFAULT_FILTER_KEY = 'idlefantasy-dex:default-filter';

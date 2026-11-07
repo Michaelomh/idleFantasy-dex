@@ -7,14 +7,14 @@ import { IconToggleGroup } from '@/components/icon-toggle-group';
 import { CircularProgress } from '@/components/ui/circular-progress';
 import { Input } from '@/components/ui/input';
 
-export type ProgressCategoryTabOption = { value: string; label: string };
+export type ProgressCategoryTabOption = { value: string; label: string; disabled?: boolean };
 
 const COMPLETE_HEADLINES: Record<string, string> = {
   quests: 'All quests completed',
   guilds: 'Every guild maxed',
   bosses: 'All bosses slain',
   armoury: 'Armoury fully stocked',
-  levels: 'All prestiges earned',
+  levels: 'All prestiges and upgrades earned',
   pets: 'All pets collected',
   titles: 'All titles earned',
   expeditions: 'All notes found',
@@ -32,6 +32,9 @@ export function ProgressCategoryHeader({
   onQueryChange,
   filter,
   onFilterChange,
+  viewValue,
+  onViewValueChange,
+  viewOptions,
   showTabs,
   tabValue,
   onTabValueChange,
@@ -45,6 +48,9 @@ export function ProgressCategoryHeader({
   onQueryChange: (value: string) => void;
   filter: Filter;
   onFilterChange: (filter: Filter) => void;
+  viewValue?: string;
+  onViewValueChange?: (value: string) => void;
+  viewOptions?: ProgressCategoryTabOption[];
   showTabs?: boolean;
   tabValue?: string;
   onTabValueChange?: (value: string) => void;
@@ -103,6 +109,16 @@ export function ProgressCategoryHeader({
           value={tabValue}
           onValueChange={onTabValueChange}
           options={tabOptions}
+          showLabel="always"
+          className="w-full *:flex-1"
+        />
+      )}
+
+      {viewOptions && viewValue != null && onViewValueChange && (
+        <IconToggleGroup
+          value={viewValue}
+          onValueChange={onViewValueChange}
+          options={viewOptions}
           showLabel="always"
           className="w-full *:flex-1"
         />
