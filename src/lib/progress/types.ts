@@ -13,6 +13,21 @@ export type ProgressItem = {
   cap?: number;
   kills?: number;
   drops?: ProgressDrop[];
+  paths?: ProgressPath[];
+};
+
+export type ProgressPath = {
+  id: string;
+  label: string;
+  current: number;
+  cap: number;
+  segments: ProgressPathSegment[];
+};
+
+export type ProgressPathSegment = {
+  races: string[];
+  current: number;
+  cap: number;
 };
 
 export type ProgressDrop = {

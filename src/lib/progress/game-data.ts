@@ -92,7 +92,7 @@ export type MercenaryEntry = {
 };
 export const getMercenaries = () => load<MercenaryEntry[]>('mercenaries.json');
 
-export type PrestigePathNode = { id: string; cost: number; effect?: string; value?: number };
+export type PrestigePathNode = { id: string; cost: number; effect?: string; value?: number; races?: string[] };
 export type PrestigePath = { key: string; auto: boolean; nodes: PrestigePathNode[] };
 export type PrestigeSkillPaths = { skill: string; paths: PrestigePath[] };
 export const getPrestigePaths = () => load<PrestigeSkillPaths[]>('prestige_paths.json');

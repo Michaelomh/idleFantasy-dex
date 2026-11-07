@@ -84,6 +84,11 @@ efficiency, pet boost percentages, prestige nodes, active XP Boosts. Scattered a
 Save Export by source; resolved into one set before any Projection runs.
 _Avoid_: Boosts (the game uses that for its timed XP purchase specifically), buffs, multipliers
 
+**Skill Tree**:
+A skill's set of upgrades bought with prestige points, each skill having one. Some upgrades are
+locked to one or more races. Auto-earned XP tiers are excluded from Skill Tree progress.
+_Avoid_: Race tree (races have locked upgrades inside shared trees, not trees of their own)
+
 ## Skills
 
 23 skills, split across four categories. The category grouping matters beyond flavor - it's

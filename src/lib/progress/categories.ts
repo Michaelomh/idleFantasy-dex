@@ -26,6 +26,7 @@ import { getIncludeElderIsle, getIncludeSeasonalEvents } from '@/lib/app/prefere
 import { getSeasonalIds, isSeasonalItem } from '@/lib/game/seasonal-events';
 import { getFishingSkillData, getRecipes, getThievingNpcs } from '@/lib/calculator/game-data';
 import { computeAchievements } from './achievements';
+import { computeSkillTrees, isReachable } from './skill-trees';
 import {
   getBones,
   getBosses,
@@ -271,7 +272,7 @@ async function computeArmoury(ps: PlayerState): Promise<ProgressCategory> {
 }
 
 async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCategory> {
-  const paths = await getPrestigePaths();
+  const [paths, skillTrees] = await Promise.all([getPrestigePaths(), computeSkillTrees(ps)]);
   const prestige = (ps.raw.flags.skill_prestige ?? {}) as Record<string, number>;
   const orderedPaths = [...paths].sort((a, b) => SKILL_IDS.indexOf(a.skill) - SKILL_IDS.indexOf(b.skill));
 
@@ -283,6 +284,7 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
       const nonXpCost = skillPaths.paths
         .filter((p) => !p.auto)
         .flatMap((p) => p.nodes)
+        .filter((n) => isReachable(n, ps))
         .reduce((sum, n) => sum + n.cost, 0);
       const cap = Math.ceil(nonXpCost / 3);
       const owned = Math.min(prestige[skillPaths.skill] ?? 0, cap);
@@ -339,8 +341,8 @@ async function computeLevelsAndPrestige(ps: PlayerState): Promise<ProgressCatego
   return {
     id: 'levels',
     label: 'Levels & Prestige',
-    points,
-    max,
+    points: points + skillTrees.points,
+    max: max + skillTrees.max,
     hasDrilldown: true,
     items,
   };

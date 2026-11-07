@@ -6,6 +6,7 @@ export type IconToggleOption<T extends string> = {
   value: T;
   label: string;
   icon?: LucideIcon;
+  disabled?: boolean;
 };
 
 export function IconToggleGroup<T extends string>({
@@ -32,13 +33,14 @@ export function IconToggleGroup<T extends string>({
       }}
       className={cn('gap-1 rounded-full border border-border bg-bg-overlay p-1', className)}
     >
-      {options.map(({ value: optionValue, label, icon: Icon }) => {
+      {options.map(({ value: optionValue, label, icon: Icon, disabled }) => {
         const selected = optionValue === value;
         const showText = showLabel === 'always' || (showLabel === 'selected' && selected);
         return (
           <ToggleGroupItem
             key={optionValue}
             value={optionValue}
+            disabled={disabled}
             size="sm"
             aria-label={label}
             className={cn(
